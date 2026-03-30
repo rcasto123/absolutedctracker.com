@@ -13,6 +13,109 @@
 // ============================================================
 
 (function() {
+  // ── Preview mode: block owned-toggling for signed-out users ──
+  // We intercept clicks on issue cards and show a sign-up prompt
+  // instead of toggling ownership when the user isn't signed in.
+
+  function injectPreviewBanner() {
+    var banner = document.createElement('div');
+    banner.id = 'previewBanner';
+    banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:1000;background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-top:2px solid #3b82f6;padding:0.9rem 1.2rem;display:flex;align-items:center;justify-content:center;gap:1rem;box-shadow:0 -4px 24px rgba(0,0,0,0.5);';
+    banner.innerHTML = ''
+      + '<div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;justify-content:center">'
+      + '  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+      + '  <span style="color:#cbd5e1;font-size:0.9rem"><strong style="color:#fff">Preview Mode</strong> — Create a free account to track your collection and sync across devices</span>'
+      + '  <a href="auth.html" style="background:#3b82f6;color:#fff;padding:0.5rem 1.2rem;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600;white-space:nowrap;transition:background 0.2s" onmouseenter="this.style.background=\'#2563eb\'" onmouseleave="this.style.background=\'#3b82f6\'">Sign Up Free</a>'
+      + '</div>';
+    document.body.appendChild(banner);
+    // Add bottom padding so banner doesn't cover content
+    document.body.style.paddingBottom = '70px';
+  }
+
+  function removePreviewBanner() {
+    var banner = document.getElementById('previewBanner');
+    if (banner) banner.remove();
+    document.body.style.paddingBottom = '';
+  }
+
+  // Show a sign-up prompt modal when a signed-out user tries to interact
+  function showSignUpPrompt() {
+    // Don't show if one is already open
+    if (document.getElementById('signUpPromptOverlay')) return;
+
+    var overlay = document.createElement('div');
+    overlay.id = 'signUpPromptOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);animation:fadeIn 0.2s ease';
+
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:2rem;max-width:380px;width:90%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,0.5);animation:slideUp 0.25s ease';
+
+    modal.innerHTML = ''
+      + '<div style="width:56px;height:56px;background:rgba(59,130,246,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">'
+      + '  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+      + '</div>'
+      + '<h3 style="color:#fff;font-size:1.15rem;margin:0 0 0.5rem;font-weight:700">Create an Account to Track</h3>'
+      + '<p style="color:#94a3b8;font-size:0.88rem;margin:0 0 1.5rem;line-height:1.5">Sign up for free to mark issues as owned, sync your collection across devices, and never miss a release.</p>'
+      + '<a href="auth.html" style="display:block;padding:0.7rem;background:#3b82f6;color:#fff;border-radius:10px;text-decoration:none;font-size:0.95rem;font-weight:600;margin-bottom:0.6rem;transition:background 0.2s" onmouseenter="this.style.background=\'#2563eb\'" onmouseleave="this.style.background=\'#3b82f6\'">Sign Up / Sign In</a>'
+      + '<button id="signUpPromptClose" style="background:none;border:none;color:#64748b;font-size:0.85rem;cursor:pointer;padding:0.4rem;transition:color 0.2s" onmouseenter="this.style.color=\'#94a3b8\'" onmouseleave="this.style.color=\'#64748b\'">Continue browsing</button>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Close handlers
+    document.getElementById('signUpPromptClose').onclick = function() { overlay.remove(); };
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    // Add animation styles if not present
+    if (!document.getElementById('previewAnimStyles')) {
+      var style = document.createElement('style');
+      style.id = 'previewAnimStyles';
+      style.textContent = '@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}';
+      document.head.appendChild(style);
+    }
+  }
+
+  // Intercept ownership clicks for signed-out users
+  // We add a capturing event listener that catches clicks on issue cards
+  // before the regular toggleOwned handler can fire.
+  function installPreviewGuard() {
+    document.addEventListener('click', function(e) {
+      // Only block when signed out
+      if (auth.currentUser) return;
+
+      // Check if the click is on an issue card or inside one
+      var card = e.target.closest('.issue-card');
+      if (card) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        showSignUpPrompt();
+        return;
+      }
+
+      // Also block TPB cards
+      var tpbCard = e.target.closest('.tpb-card');
+      if (tpbCard) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        showSignUpPrompt();
+        return;
+      }
+    }, true); // "true" = capturing phase, runs before the card's own click handler
+
+    // Also block keyboard toggles
+    document.addEventListener('keydown', function(e) {
+      if (auth.currentUser) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        var card = e.target.closest('.issue-card') || e.target.closest('.tpb-card');
+        if (card) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          showSignUpPrompt();
+        }
+      }
+    }, true);
+  }
+
   // Inject auth UI button into the page
   function injectAuthUI() {
     // Create the user button container
@@ -96,12 +199,18 @@
       menuHTML += '<button onclick="window._authSignOut()" style="display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#f87171;font-size:0.85rem;cursor:pointer;border-radius:6px" onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'none\'">Sign out</button>';
       menuHTML += '</div>';
       dropdown.innerHTML = menuHTML;
+
+      // Remove preview banner when signed in
+      removePreviewBanner();
     } else {
       // Signed out — show login button
       btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
       btn.style.color = '#aaa';
       btn.style.background = 'rgba(255,255,255,0.08)';
       dropdown.innerHTML = '<div style="padding:1rem;text-align:center"><div style="font-size:0.85rem;color:#aaa;margin-bottom:0.75rem">Sign in to sync your collection across devices</div><a href="auth.html" style="display:block;padding:0.6rem;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600">Sign In / Sign Up</a></div>';
+
+      // Show preview banner when signed out
+      injectPreviewBanner();
     }
   }
 
@@ -211,6 +320,7 @@
   function init() {
     injectAuthUI();
     patchLocalStorage();
+    installPreviewGuard();
 
     auth.onAuthStateChanged(function(user) {
       updateAuthUI(user);
