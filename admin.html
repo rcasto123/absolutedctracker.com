@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Absolute Universe Collection Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0c10;color:#e0e0e0;min-height:100vh}
+.admin-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)}
+.admin-header h1{font-size:1.1rem;color:#fff;display:flex;align-items:center;gap:0.5rem}
+.admin-header h1 span{color:#f59e0b;font-size:0.7rem;background:rgba(245,158,11,0.15);padding:0.15rem 0.5rem;border-radius:4px}
+.admin-nav{display:flex;gap:0.5rem}
+.admin-nav a{color:#aaa;text-decoration:none;font-size:0.85rem;padding:0.4rem 0.8rem;border-radius:6px;transition:all 0.2s}
+.admin-nav a:hover{background:rgba(255,255,255,0.06);color:#fff}
+.admin-body{padding:2rem;max-width:1200px;margin:0 auto}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1.25rem}
+.stat-card .label{font-size:0.75rem;color:#888;text-transform:uppercase;letter-spacing:1px}
+.stat-card .value{font-size:1.8rem;font-weight:700;color:#fff;margin-top:0.25rem}
+.stat-card .sub{font-size:0.8rem;color:#666;margin-top:0.25rem}
+.section{margin-bottom:2rem}
+.section h2{font-size:1rem;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+.search-bar{display:flex;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:200px;padding:0.6rem 0.9rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:0.85rem;outline:none}
+.search-bar input:focus{border-color:#3b82f6}
+.search-bar input::placeholder{color:#555}
+.search-bar select{padding:0.6rem 0.9rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ccc;font-size:0.85rem;outline:none}
+.users-table{width:100%;border-collapse:collapse}
+.users-table th{text-align:left;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#888;padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+.users-table td{padding:0.7rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.85rem;vertical-align:middle}
+.users-table tr:hover td{background:rgba(255,255,255,0.02)}
+.user-email{color:#fff;font-weight:500}
+.user-name{color:#aaa;font-size:0.8rem}
+.badge{display:inline-block;padding:0.15rem 0.4rem;border-radius:4px;font-size:0.7rem;font-weight:600}
+.badge-admin{background:rgba(245,158,11,0.15);color:#f59e0b}
+.badge-active{background:rgba(34,197,94,0.12);color:#4ade80}
+.badge-inactive{background:rgba(156,163,175,0.12);color:#9ca3af}
+.collection-bar{display:flex;align-items:center;gap:0.5rem}
+.collection-bar .bar{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;max-width:100px}
+.collection-bar .bar-fill{height:100%;background:#3b82f6;border-radius:3px}
+.collection-bar .bar-text{font-size:0.8rem;color:#aaa;min-width:40px}
+.action-btns{display:flex;gap:0.3rem}
+.action-btn{background:none;border:1px solid rgba(255,255,255,0.1);color:#aaa;padding:0.3rem 0.5rem;border-radius:5px;cursor:pointer;font-size:0.75rem;transition:all 0.2s}
+.action-btn:hover{background:rgba(255,255,255,0.06);color:#fff}
+.action-btn.danger{border-color:rgba(239,68,68,0.3);color:#f87171}
+.action-btn.danger:hover{background:rgba(239,68,68,0.1)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.5rem;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h3{color:#fff;font-size:1rem;margin-bottom:0.5rem}
+.modal p{color:#aaa;font-size:0.85rem;margin-bottom:1rem}
+.modal-actions{display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1.5rem}
+.btn-sm{padding:0.5rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s;border:none}
+.btn-cancel{background:rgba(255,255,255,0.08);color:#ccc}
+.btn-cancel:hover{background:rgba(255,255,255,0.12)}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-primary-sm{background:#3b82f6;color:#fff}
+.btn-primary-sm:hover{background:#2563eb}
+.user-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+.user-detail-grid .detail{background:rgba(255,255,255,0.03);padding:0.6rem 0.8rem;border-radius:6px}
+.user-detail-grid .detail-label{font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.5px}
+.user-detail-grid .detail-value{font-size:0.9rem;color:#fff;margin-top:0.15rem}
+.collection-list{margin-top:1rem;max-height:200px;overflow-y:auto;background:rgba(255,255,255,0.03);border-radius:8px;padding:0.75rem}
+.collection-list .item{font-size:0.8rem;color:#ccc;padding:0.2rem 0}
+.loading{text-align:center;padding:3rem;color:#888}
+.empty{text-align:center;padding:2rem;color:#666;font-size:0.9rem}
+.denied{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80vh;text-align:center}
+.denied h2{color:#f87171;margin-bottom:0.5rem}
+.denied p{color:#888;margin-bottom:1rem}
+.pagination{display:flex;gap:0.5rem;justify-content:center;margin-top:1rem}
+.pagination button{padding:0.4rem 0.8rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#aaa;cursor:pointer;font-size:0.8rem}
+.pagination button:hover{background:rgba(255,255,255,0.1);color:#fff}
+.pagination button.active{background:#3b82f6;border-color:#3b82f6;color:#fff}
+@media(max-width:768px){.admin-body{padding:1rem}.stats-grid{grid-template-columns:1fr 1fr}.users-table{font-size:0.8rem}.user-detail-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="admin-header">
+  <h1>Absolute Universe <span>Admin</span></h1>
+  <div class="admin-nav">
+    <a href="index.html">&larr; Back to Tracker</a>
+  </div>
+</div>
+
+<div id="accessDenied" class="denied" style="display:none">
+  <h2>Access Denied</h2>
+  <p>You must be an admin to view this page.</p>
+  <a href="index.html" style="color:#3b82f6;text-decoration:none">Return to tracker</a>
+</div>
+
+<div id="adminContent" class="admin-body" style="display:none">
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">Total Users</div>
+      <div class="value" id="statTotalUsers">-</div>
+      <div class="sub" id="statNewUsers"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Active This Week</div>
+      <div class="value" id="statActiveWeek">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg. Collection</div>
+      <div class="value" id="statAvgCollection">-</div>
+      <div class="sub">issues owned</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Completionists</div>
+      <div class="value" id="statCompletionists">-</div>
+      <div class="sub">own 100+ issues</div>
+    </div>
+  </div>
+
+  <!-- User Management -->
+  <div class="section">
+    <h2>User Management</h2>
+    <div class="search-bar">
+      <input type="text" id="userSearch" placeholder="Search by name or email..." oninput="filterUsers()">
+      <select id="sortBy" onchange="sortUsers()">
+        <option value="lastLogin">Last Login</option>
+        <option value="createdAt">Date Joined</option>
+        <option value="collection">Collection Size</option>
+        <option value="name">Name</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Joined</th>
+            <th>Last Active</th>
+            <th>Collection</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <tr><td colspan="5" class="loading">Loading users...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal-overlay" id="userDetailModal">
+  <div class="modal">
+    <h3 id="modalUserName">User Details</h3>
+    <p id="modalUserEmail" style="color:#888;font-size:0.85rem;margin-bottom:1rem"></p>
+    <div class="user-detail-grid" id="modalDetails"></div>
+    <div id="modalCollection"></div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-cancel" onclick="closeModal('userDetailModal')">Close</button>
+      <button class="btn-sm btn-primary-sm" id="modalResetBtn" onclick="">Reset Password</button>
+      <button class="btn-sm btn-danger" id="modalDeleteBtn" onclick="">Delete User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <h3 id="confirmTitle">Confirm</h3>
+    <p id="confirmMsg"></p>
+    <div class="modal-actions">
+      <button class="btn-sm btn-cancel" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn-sm btn-danger" id="confirmBtn" onclick="">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+var allUsers = [];
+var filteredUsers = [];
+var currentPage = 0;
+var pageSize = 25;
+var TOTAL_ISSUES = 110; // Update as new issues are added
+
+// Auth check
+auth.onAuthStateChanged(async function(user) {
+  if (!user) {
+    window.location.href = 'auth.html?redirect=admin.html';
+    return;
+  }
+  var admin = await isCurrentUserAdmin();
+  if (!admin) {
+    document.getElementById('accessDenied').style.display = 'flex';
+    return;
+  }
+  document.getElementById('adminContent').style.display = 'block';
+  loadAllUsers();
+});
+
+// Load all users from Firestore
+async function loadAllUsers() {
+  try {
+    var snapshot = await db.collection('users').get();
+    allUsers = [];
+    snapshot.forEach(function(doc) {
+      var data = doc.data();
+      data.uid = doc.id;
+      data.ownedCount = data.owned ? Object.keys(data.owned).filter(function(k){return data.owned[k]}).length : 0;
+      allUsers.push(data);
+    });
+    filteredUsers = allUsers.slice();
+    updateStats();
+    sortUsers();
+  } catch(e) {
+    console.error('Failed to load users:', e);
+    document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="5" class="empty">Failed to load users. Check Firestore rules.</td></tr>';
+  }
+}
+
+// Update stats
+function updateStats() {
+  document.getElementById('statTotalUsers').textContent = allUsers.length;
+
+  // Active this week
+  var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  var activeWeek = allUsers.filter(function(u) {
+    return u.lastLogin && u.lastLogin.toDate && u.lastLogin.toDate() > weekAgo;
+  }).length;
+  document.getElementById('statActiveWeek').textContent = activeWeek;
+
+  // Average collection
+  var totalOwned = allUsers.reduce(function(sum, u) { return sum + u.ownedCount; }, 0);
+  var avg = allUsers.length > 0 ? Math.round(totalOwned / allUsers.length) : 0;
+  document.getElementById('statAvgCollection').textContent = avg;
+
+  // Completionists (100+)
+  var completionists = allUsers.filter(function(u) { return u.ownedCount >= 100; }).length;
+  document.getElementById('statCompletionists').textContent = completionists;
+
+  // New users this week
+  var newThisWeek = allUsers.filter(function(u) {
+    return u.createdAt && u.createdAt.toDate && u.createdAt.toDate() > weekAgo;
+  }).length;
+  if (newThisWeek > 0) {
+    document.getElementById('statNewUsers').textContent = '+' + newThisWeek + ' this week';
+  }
+}
+
+// Render users table
+function renderUsers() {
+  var tbody = document.getElementById('usersTableBody');
+  var start = currentPage * pageSize;
+  var pageUsers = filteredUsers.slice(start, start + pageSize);
+
+  if (pageUsers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No users found</td></tr>';
+    return;
+  }
+
+  var html = '';
+  pageUsers.forEach(function(u) {
+    var joined = u.createdAt && u.createdAt.toDate ? formatDate(u.createdAt.toDate()) : 'Unknown';
+    var lastActive = u.lastLogin && u.lastLogin.toDate ? formatRelative(u.lastLogin.toDate()) : 'Never';
+    var pct = Math.round((u.ownedCount / TOTAL_ISSUES) * 100);
+    var isAdmin = u.email === ADMIN_EMAIL;
+    var isActive = u.lastLogin && u.lastLogin.toDate && (Date.now() - u.lastLogin.toDate().getTime()) < 7 * 24 * 60 * 60 * 1000;
+
+    html += '<tr>';
+    html += '<td><div class="user-email">' + escapeHtml(u.displayName || 'No name') + (isAdmin ? ' <span class="badge badge-admin">Admin</span>' : '') + '</div><div class="user-name">' + escapeHtml(u.email || 'No email') + '</div></td>';
+    html += '<td style="color:#aaa;font-size:0.8rem">' + joined + '</td>';
+    html += '<td><span class="badge ' + (isActive ? 'badge-active' : 'badge-inactive') + '">' + lastActive + '</span></td>';
+    html += '<td><div class="collection-bar"><div class="bar"><div class="bar-fill" style="width:' + pct + '%"></div></div><div class="bar-text">' + u.ownedCount + '/' + TOTAL_ISSUES + '</div></div></td>';
+    html += '<td><div class="action-btns"><button class="action-btn" onclick="viewUser(\'' + u.uid + '\')">View</button><button class="action-btn" onclick="resetUserPassword(\'' + u.uid + '\')">Reset PW</button>' + (isAdmin ? '' : '<button class="action-btn danger" onclick="confirmDeleteUser(\'' + u.uid + '\')">Delete</button>') + '</div></td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+  renderPagination();
+}
+
+// Pagination
+function renderPagination() {
+  var totalPages = Math.ceil(filteredUsers.length / pageSize);
+  if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  var html = '';
+  for (var i = 0; i < totalPages; i++) {
+    html += '<button class="' + (i === currentPage ? 'active' : '') + '" onclick="goToPage(' + i + ')">' + (i + 1) + '</button>';
+  }
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goToPage(p) { currentPage = p; renderUsers(); }
+
+// Filter
+function filterUsers() {
+  var q = document.getElementById('userSearch').value.toLowerCase();
+  filteredUsers = allUsers.filter(function(u) {
+    return (u.email || '').toLowerCase().indexOf(q) >= 0 || (u.displayName || '').toLowerCase().indexOf(q) >= 0;
+  });
+  currentPage = 0;
+  renderUsers();
+}
+
+// Sort
+function sortUsers() {
+  var by = document.getElementById('sortBy').value;
+  filteredUsers.sort(function(a, b) {
+    if (by === 'lastLogin') {
+      var aDate = a.lastLogin && a.lastLogin.toDate ? a.lastLogin.toDate().getTime() : 0;
+      var bDate = b.lastLogin && b.lastLogin.toDate ? b.lastLogin.toDate().getTime() : 0;
+      return bDate - aDate;
+    } else if (by === 'createdAt') {
+      var aDate = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : 0;
+      var bDate = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : 0;
+      return bDate - aDate;
+    } else if (by === 'collection') {
+      return b.ownedCount - a.ownedCount;
+    } else {
+      return (a.displayName || '').localeCompare(b.displayName || '');
+    }
+  });
+  currentPage = 0;
+  renderUsers();
+}
+
+// View user details
+function viewUser(uid) {
+  var u = allUsers.find(function(x) { return x.uid === uid; });
+  if (!u) return;
+
+  document.getElementById('modalUserName').textContent = u.displayName || 'No name';
+  document.getElementById('modalUserEmail').textContent = u.email || 'No email';
+
+  var joined = u.createdAt && u.createdAt.toDate ? formatDate(u.createdAt.toDate()) : 'Unknown';
+  var lastActive = u.lastLogin && u.lastLogin.toDate ? formatDate(u.lastLogin.toDate()) + ' (' + formatRelative(u.lastLogin.toDate()) + ')' : 'Never';
+  var lastSync = u.lastSync && u.lastSync.toDate ? formatDate(u.lastSync.toDate()) : 'Never';
+  var pct = Math.round((u.ownedCount / TOTAL_ISSUES) * 100);
+
+  document.getElementById('modalDetails').innerHTML =
+    '<div class="detail"><div class="detail-label">UID</div><div class="detail-value" style="font-size:0.75rem;word-break:break-all">' + u.uid + '</div></div>' +
+    '<div class="detail"><div class="detail-label">Joined</div><div class="detail-value">' + joined + '</div></div>' +
+    '<div class="detail"><div class="detail-label">Last Active</div><div class="detail-value">' + lastActive + '</div></div>' +
+    '<div class="detail"><div class="detail-label">Last Sync</div><div class="detail-value">' + lastSync + '</div></div>' +
+    '<div class="detail"><div class="detail-label">Collection</div><div class="detail-value">' + u.ownedCount + ' / ' + TOTAL_ISSUES + ' (' + pct + '%)</div></div>' +
+    '<div class="detail"><div class="detail-label">Provider</div><div class="detail-value">' + (u.provider || 'email') + '</div></div>';
+
+  // Show owned issues
+  if (u.owned) {
+    var items = Object.keys(u.owned).filter(function(k) { return u.owned[k]; }).sort();
+    var listHTML = '<div class="collection-list"><div style="font-size:0.75rem;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem">Owned Issues (' + items.length + ')</div>';
+    items.forEach(function(item) {
+      listHTML += '<div class="item">' + escapeHtml(item) + '</div>';
+    });
+    listHTML += '</div>';
+    document.getElementById('modalCollection').innerHTML = listHTML;
+  } else {
+    document.getElementById('modalCollection').innerHTML = '<div class="empty" style="margin-top:1rem">No collection data</div>';
+  }
+
+  document.getElementById('modalResetBtn').onclick = function() { resetUserPassword(uid); };
+  document.getElementById('modalDeleteBtn').onclick = function() { closeModal('userDetailModal'); confirmDeleteUser(uid); };
+  document.getElementById('modalDeleteBtn').style.display = u.email === ADMIN_EMAIL ? 'none' : 'inline-block';
+
+  openModal('userDetailModal');
+}
+
+// Reset user password (sends reset email)
+async function resetUserPassword(uid) {
+  var u = allUsers.find(function(x) { return x.uid === uid; });
+  if (!u || !u.email) { alert('No email associated with this user.'); return; }
+  try {
+    await auth.sendPasswordResetEmail(u.email);
+    alert('Password reset email sent to ' + u.email);
+  } catch(e) {
+    alert('Failed to send reset email: ' + e.message);
+  }
+}
+
+// Delete user
+function confirmDeleteUser(uid) {
+  var u = allUsers.find(function(x) { return x.uid === uid; });
+  if (!u) return;
+  document.getElementById('confirmTitle').textContent = 'Delete User';
+  document.getElementById('confirmMsg').textContent = 'Are you sure you want to delete ' + (u.displayName || u.email) + '? This will remove their collection data. This cannot be undone.';
+  document.getElementById('confirmBtn').onclick = function() { deleteUser(uid); };
+  openModal('confirmModal');
+}
+
+async function deleteUser(uid) {
+  try {
+    // Delete their Firestore document
+    await db.collection('users').doc(uid).delete();
+    // Note: Deleting the Firebase Auth account requires Admin SDK (server-side)
+    // The Firestore doc is deleted; the auth account can be cleaned up via Firebase Console
+    allUsers = allUsers.filter(function(u) { return u.uid !== uid; });
+    filteredUsers = filteredUsers.filter(function(u) { return u.uid !== uid; });
+    updateStats();
+    renderUsers();
+    closeModal('confirmModal');
+    closeModal('userDetailModal');
+    alert('User data deleted. Note: To fully remove the auth account, do so in the Firebase Console.');
+  } catch(e) {
+    alert('Failed to delete user: ' + e.message);
+  }
+}
+
+// Modal helpers
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// Date formatting
+function formatDate(d) {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatRelative(d) {
+  var diff = Date.now() - d.getTime();
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return mins + 'm ago';
+  var hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + 'h ago';
+  var days = Math.floor(hours / 24);
+  if (days < 7) return days + 'd ago';
+  return formatDate(d);
+}
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// Close modals on outside click
+document.querySelectorAll('.modal-overlay').forEach(function(el) {
+  el.addEventListener('click', function(e) {
+    if (e.target === el) closeModal(el.id);
+  });
+});
+</script>
+</body>
+</html>

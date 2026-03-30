@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Issue Details — Absolute Universe Collection Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0e17; color: #e0e0e0; font-family: 'Inter', sans-serif; min-height: 100vh; }
+  a { color: #4fc3f7; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .back-bar {
+    background: rgba(10,14,23,0.95); border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 32px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px);
+  }
+  .back-bar a { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #90caf9; font-weight: 500; }
+  .back-bar a:hover { color: #fff; text-decoration: none; }
+  .back-bar svg { width: 18px; height: 18px; }
+
+  .hero {
+    position: relative; overflow: hidden; min-height: 520px;
+    display: flex; align-items: flex-end; padding: 0 0 48px 0;
+  }
+  .hero-bg {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background-size: cover; background-position: center top;
+    filter: blur(20px) brightness(0.3); transform: scale(1.2);
+  }
+  .hero-overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(10,14,23,0.4) 0%, rgba(10,14,23,0.95) 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2; display: flex; gap: 40px; padding: 0 48px;
+    max-width: 1200px; margin: 0 auto; width: 100%; align-items: flex-end;
+  }
+  .cover-wrapper {
+    flex-shrink: 0; width: 300px; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .cover-wrapper img { width: 100%; display: block; }
+  .hero-info { flex: 1; padding-bottom: 8px; }
+  .series-label {
+    font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 3px; color: #f44336;
+    margin-bottom: 8px;
+  }
+  .issue-title {
+    font-family: 'Oswald', sans-serif; font-size: 48px; font-weight: 700;
+    text-transform: uppercase; color: #fff; line-height: 1.1; margin-bottom: 16px;
+  }
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;
+  }
+  .meta-item {
+    display: flex; align-items: center; gap: 8px; font-size: 14px; color: #aaa;
+  }
+  .meta-item svg { width: 16px; height: 16px; opacity: 0.7; }
+  .meta-item strong { color: #e0e0e0; font-weight: 500; }
+  .badge-released {
+    display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .badge-released.released { background: rgba(76,175,80,0.2); color: #66bb6a; }
+  .badge-released.upcoming { background: rgba(255,193,7,0.2); color: #ffc107; }
+
+  .content-area {
+    max-width: 1200px; margin: 0 auto; padding: 48px; display: grid;
+    grid-template-columns: 1fr 340px; gap: 48px;
+  }
+
+  .section { margin-bottom: 40px; }
+  .section-title {
+    font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 2px; color: #fff;
+    padding-bottom: 12px; border-bottom: 2px solid rgba(255,255,255,0.08);
+    margin-bottom: 20px;
+  }
+  .synopsis-text { font-size: 16px; line-height: 1.8; color: #bbb; }
+
+  .credits-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .credit-item { }
+  .credit-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 4px; }
+  .credit-value { font-size: 15px; color: #e0e0e0; font-weight: 500; }
+
+  .sidebar { }
+  .purchase-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 24px; margin-bottom: 24px;
+  }
+  .purchase-card .section-title { font-size: 18px; border-bottom: none; padding-bottom: 0; margin-bottom: 16px; }
+  .price-tag {
+    font-family: 'Oswald', sans-serif; font-size: 36px; color: #4fc3f7;
+    font-weight: 700; margin-bottom: 4px;
+  }
+  .price-note { font-size: 12px; color: #666; margin-bottom: 20px; }
+  .retailer-list { list-style: none; }
+  .retailer-list li { margin-bottom: 10px; }
+  .retailer-link {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 12px 16px; transition: all 0.2s;
+    color: #e0e0e0; text-decoration: none;
+  }
+  .retailer-link:hover {
+    background: rgba(79,195,247,0.1); border-color: rgba(79,195,247,0.3);
+    text-decoration: none; color: #fff;
+  }
+  .retailer-name { font-weight: 500; font-size: 14px; }
+  .retailer-arrow { color: #4fc3f7; font-size: 18px; }
+
+  .details-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 24px;
+  }
+  .detail-row {
+    display: flex; justify-content: space-between; padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { color: #666; }
+  .detail-value { color: #e0e0e0; font-weight: 500; text-align: right; }
+
+  .nav-strip {
+    display: flex; justify-content: space-between; align-items: center;
+    max-width: 1200px; margin: 0 auto; padding: 32px 48px 64px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; color: #ccc; font-size: 14px; transition: all 0.2s;
+  }
+  .nav-btn:hover { background: rgba(79,195,247,0.1); border-color: rgba(79,195,247,0.3); color: #fff; text-decoration: none; }
+  .nav-btn svg { width: 16px; height: 16px; }
+
+  .not-found {
+    text-align: center; padding: 120px 48px; max-width: 600px; margin: 0 auto;
+  }
+  .not-found h1 { font-family: 'Oswald', sans-serif; font-size: 48px; color: #fff; margin-bottom: 16px; }
+  .not-found p { color: #888; font-size: 16px; margin-bottom: 32px; }
+
+  @media (max-width: 900px) {
+    .hero-content { flex-direction: column; align-items: center; text-align: center; padding: 0 24px; }
+    .cover-wrapper { width: 220px; }
+    .content-area { grid-template-columns: 1fr; padding: 24px; }
+    .credits-grid { grid-template-columns: 1fr; }
+    .issue-title { font-size: 32px; }
+    .nav-strip { padding: 24px; }
+  }
+
+    .variant-section{margin-top:2rem}
+    .variant-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-top:1rem}
+    .variant-card{border-radius:8px;overflow:hidden;background:rgba(255,255,255,0.05);transition:transform 0.2s,box-shadow 0.2s;cursor:pointer}
+    .variant-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+    .variant-card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block}
+    .variant-card .variant-name{padding:0.5rem;font-size:0.7rem;color:#aaa;line-height:1.3;text-align:center}
+    .variant-count{color:#888;font-size:0.9rem;margin-left:0.5rem}
+    .variant-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:1000;justify-content:center;align-items:center;padding:2rem}
+    .variant-modal.active{display:flex}
+    .variant-modal img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px}
+    .variant-modal-close{position:fixed;top:1rem;right:1.5rem;color:white;font-size:2rem;cursor:pointer;z-index:1001;background:none;border:none}
+    .show-more-variants{display:inline-block;margin-top:0.75rem;padding:0.4rem 1rem;background:rgba(255,255,255,0.1);color:#ccc;border:1px solid rgba(255,255,255,0.15);border-radius:6px;font-size:0.8rem;cursor:pointer}
+    .show-more-variants:hover{background:rgba(255,255,255,0.15)}
+  </style>
+</head>
+<body>
+
+<div class="back-bar">
+  <a href="/projects/absolutetracker/">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Collection Tracker
+  </a>
+</div>
+
+<div id="app"></div>
+
+<script>
+var ISSUES = {
+"dc-all-in-special": {
+  name: "DC All In Special", series: "DC All In", issueNum: "One-Shot",
+  releaseDate: "October 1, 2024", coverPrice: "$5.99", pageCount: 64, format: "Flip Book Special",
+  writers: ["Scott Snyder", "Joshua Williamson"], artists: ["Daniel Sampere", "Wes Craig"],
+  colorists: ["Alejandro Sanchez", "Mike Spicer"], letterers: ["Steve Wands"],
+  coverArtists: ["Daniel Sampere"],
+  synopsis: "The 64-page flip book that launched DC's new era. One side follows Superman and the formation of a new Justice League as they face an unprecedented cosmic threat, while the other reveals Darkseid's machinations and the birth of the Absolute Universe\u2014a dark mirror reality where Earth's greatest heroes were stripped of everything that made them who they are. Designed to be read from either direction, this special sets the stage for the entire Absolute line.",
+  coverUrl: "https://static.dc.com/2024-09/DC_ALLIN_SP_Cv1_00111_C1.jpg"
+},
+"absolute-batman-1": {
+  name: "Absolute Batman #1", series: "Absolute Batman", issueNum: "#1",
+  releaseDate: "October 8, 2024", coverPrice: "$4.99", pageCount: 48, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Welcome to the Absolute Universe, where Bruce Wayne is not a billionaire but a 24-year-old blue-collar civil engineer. Alfred Pennyworth, an MI6 agent, arrives in Gotham to investigate the terrorist organization known as the Party Animals, led by Roman Sionis. Batman disrupts their assassination plot against Mayor James Gordon, kicking off a brutal war in the streets of Gotham.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-1-max-1-per-customer-193132.jpg"
+},
+"absolute-batman-2": {
+  name: "Absolute Batman #2", series: "Absolute Batman", issueNum: "#2",
+  releaseDate: "November 12, 2024", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nich,Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Batman continues his war against Black Mask and the Party Animals as Alfred Pennyworth closes in on the identity of Gotham's mysterious vigilante. Bruce must balance his day job as a civil engineer with his nighttime crusade while the Party Animals escalate their campaign of terror across the city.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8081353.jpg"
+},
+"absolute-batman-3": {
+  name: "Absolute Batman #3", series: "Absolute Batman", issueNum: "#3",
+  releaseDate: "December 10, 2024", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "The battle against the Party Animals reaches a fever pitch as Batman discovers the true scope of Roman Sionis's network. Alfred makes a critical breakthrough in his investigation, leading to a confrontation that will reshape both their destinies.",
+  coverUrl: "https://static.dc.com/2024-12/ABS_BM_Cv3_00311_DIGITAL.jpg"
+},
+"absolute-batman-4": {
+  name: "Absolute Batman #4", series: "Absolute Batman", issueNum: "#4",
+  releaseDate: "January 7, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Alfred Pennyworth deduces Bruce Wayne's secret identity as Batman. As the Party Animals' assassination plot nears its climax, an unlikely alliance forms between the MI6 agent and the working-class vigilante. Bruce's childhood friends\u2014Edward Nygma, Waylon Jones, Harvey Dent, and Oswald Cobblepot\u2014are drawn into the conflict.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-4-cover-a-nick-dragotta-1168052.jpg"
+},
+"absolute-batman-5": {
+  name: "Absolute Batman #5", series: "Absolute Batman", issueNum: "#5",
+  releaseDate: "February 11, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "The Zoo arc reaches its penultimate chapter as Batman and Alfred launch their assault on the Party Animals' stronghold. Roman Sionis unleashes his full arsenal against Gotham's protector, forcing Batman to use every tool and weapon at his disposal to save the city.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-5-cover-a-nick-dragotta-2209862.jpg"
+},
+"absolute-batman-6": {
+  name: "Absolute Batman #6", series: "Absolute Batman", issueNum: "#6",
+  releaseDate: "March 11, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Bruce breaks down Black Mask and his Party Animals with Alfred's help, concluding the first major arc. His childhood friends play crucial roles in Batman's emerging legacy as Gotham's vigilante. An ominous epilogue reveals the Joker has been orchestrating events from the shadows and has summoned Bane to Gotham.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-6-cover-a-nick-dragotta-3268437.jpg"
+},
+"absolute-batman-7": {
+  name: "Absolute Batman #7", series: "Absolute Batman", issueNum: "#7",
+  releaseDate: "April 8, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "The Absolute Zero arc begins. Bruce's childhood friends gather for a funeral to remember Mitchell 'Matches' Malone's death. Batman infiltrates V-Tech, a Gotham company specializing in cryo-technology, and meets Victor Fries Jr., who operates the business with cryogenically frozen patients\u2014including his own parents.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-7-cover-a-nick-dragotta-4425750.jpg"
+},
+"absolute-batman-8": {
+  name: "Absolute Batman #8", series: "Absolute Batman", issueNum: "#8",
+  releaseDate: "May 13, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Batman wakes up trapped in a cryo-stasis chamber by Victor Fries Jr., who explains Bruce will experience endless pain. Facing a choice between submission and survival, Batman musters his willpower to escape the frozen prison and continue his mission to protect Gotham.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-8-cover-a-nick-dragotta-5531270.jpg"
+},
+"absolute-batman-9": {
+  name: "Absolute Batman #9", series: "Absolute Batman", issueNum: "#9",
+  releaseDate: "June 10, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Batman tears through Gotham's underworld searching for his kidnapped friend Waylon Jones, discovering a years-old conspiracy. He and his allies plan an infiltration of Ark-M, a vast underground facility, where Batman encounters the massive and terrifying form of Bane.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-9-cover-a-nick-dragotta-6489413.jpg"
+},
+"absolute-batman-10": {
+  name: "Absolute Batman #10", series: "Absolute Batman", issueNum: "#10",
+  releaseDate: "July 8, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Deep in Ark-M, Batman discovers his best friend Waylon has been transformed into a monstrous creature. When he confronts the monster in its cell, it grips his throat before releasing him, allowing Bruce to ride on its back to escape through the sewer tunnels beneath Gotham.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-10-cover-a-nick-dragotta-7499050.jpg"
+},
+"absolute-batman-11": {
+  name: "Absolute Batman #11", series: "Absolute Batman", issueNum: "#11",
+  releaseDate: "August 12, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "This issue explores Bane's origin from his perspective. Bane grew up on the occupied island of Santa Prisca, imprisoned in Pe\u00f1a Duro where he survived by eating rats and learning to fight. After eleven years, he leads a prison escape and eventually encounters the Joker, receiving his iconic mask from his father.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-11-cover-a-nick-dragotta-8200202.jpg"
+},
+"absolute-batman-12": {
+  name: "Absolute Batman #12", series: "Absolute Batman", issueNum: "#12",
+  releaseDate: "September 9, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Batman is at Bane's mercy, his body severely damaged by torture. Though physically broken, Batman's mind and spirit remain strong as he endures Bane's brutal onslaught deep within Ark-M. The question becomes whether willpower alone can overcome raw, unstoppable power.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-12-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-13": {
+  name: "Absolute Batman #13", series: "Absolute Batman", issueNum: "#13",
+  releaseDate: "October 14, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Batman and Bane face their final confrontation in the depths of Ark-M. With everything on the line, Batman must find a way to defeat this unstoppable behemoth or lose everything he's fought to protect.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-13-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-14": {
+  name: "Absolute Batman #14", series: "Absolute Batman", issueNum: "#14",
+  releaseDate: "November 11, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Batman and Catwoman face down Bane in a final battle for Ark-M. As the dust settles from their climactic clash, the aftermath reshapes Batman's future and the power dynamics of Gotham's criminal underworld.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-14-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-15": {
+  name: "Absolute Batman #15", series: "Absolute Batman", issueNum: "#15",
+  releaseDate: "December 9, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Alfred reveals to Bruce the story of the man he's been pursuing for years. The Joker is formally introduced into the Absolute Batman mythology, and his terrifying vision for Gotham begins to take shape.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-15-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-16": {
+  name: "Absolute Batman #16", series: "Absolute Batman", issueNum: "#16",
+  releaseDate: "January 13, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Part one of the Batman/Wonder Woman crossover. Bruce searches desperately for a cure to help Waylon, now transformed into a monstrous crocodile in the sewers. His only option is to turn to Wonder Woman for divine help, potentially descending into Hell itself.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-16-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-17": {
+  name: "Absolute Batman #17", series: "Absolute Batman", issueNum: "#17",
+  releaseDate: "February 10, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Eric Canete"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Poison Ivy origin issue. Dr. Pamela Isley is unleashed from Ark-M with burning hatred and desire for revenge on Gotham City. Batman hunts her through a labyrinth of horrors as he tries to save the city from a monster it created. Martha Wayne is revealed to be working for the Court of Owls.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-17-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-18": {
+  name: "Absolute Batman #18", series: "Absolute Batman", issueNum: "#18",
+  releaseDate: "March 10, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Eric Canete"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Batman continues fighting Poison Ivy's mutated monsters and uncovers even more gruesome horrors embedded in Gotham's foundations. The Joker's machinations begin to coalesce in partnership with Dr. Jonathan Crane, the Scarecrow.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-18-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-19": {
+  name: "Absolute Batman #19", series: "Absolute Batman", issueNum: "#19",
+  releaseDate: "April 14, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "Poison Ivy proved to be only one of many horrors within Ark-M. As the Joker sets his sights on Batman, he enlists Dr. Jonathan Crane as his Scarecrow. Bruce aligns himself with Barbara Gordon as multiple alliances form in this darker, more twisted chapter.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-19-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-20": {
+  name: "Absolute Batman #20", series: "Absolute Batman", issueNum: "#20",
+  releaseDate: "May 12, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "A tragic loss rocks Gotham City. As the dust settles, the Robins enter the scene ready to hunt. More than one secret is revealed in this seminal issue that changes the trajectory of the Absolute Batman saga forever.",
+  coverUrl: "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-20-cover-a-nick-dragotta.jpg"
+},
+"absolute-batman-2025-annual-1": {
+  name: "Absolute Batman 2025 Annual #1", series: "Absolute Batman", issueNum: "Annual #1",
+  releaseDate: "2025", coverPrice: "$5.99", pageCount: 48, format: "Annual",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "An oversized annual that expands the world of Absolute Batman. Dive deeper into the mythology of this reimagined Dark Knight with stories that explore the characters and corners of Gotham that the main series hasn't had time to visit.",
+  coverUrl: "https://static.dc.com/2025-10/T2469000015001.jpg"
+},
+"absolute-batman-ark-m-special-1": {
+  name: "Absolute Batman: Ark M Special #1", series: "Absolute Batman", issueNum: "Special",
+  releaseDate: "2025", coverPrice: "$5.99", pageCount: 48, format: "Special",
+  writers: ["Scott Snyder"], artists: ["Nick Dragotta"],
+  colorists: ["Frank Martin"], letterers: ["Clayton Cowles"],
+  coverArtists: ["Nick Dragotta"],
+  synopsis: "A special issue spotlighting Ark-M, the vast underground facility that houses Gotham's most dangerous secrets. Uncover the dark history of the facility and the horrors that lurk within its walls.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7993695.jpg"
+},
+"absolute-wonder-woman-1": {
+  name: "Absolute Wonder Woman #1", series: "Absolute Wonder Woman", issueNum: "#1",
+  releaseDate: "October 23, 2024", coverPrice: "$4.99", pageCount: 48, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "An unknown upside-down pyramid appears off the coast of Gateway City, unleashing hundreds of flying creatures called Harbingers upon civilians. Diana of the Wild Isle arrives to confront the threat, engaging in her first battle to protect the people of this unfamiliar world. Raised in Hell by the sorceress Circe rather than on Paradise Island, this Wonder Woman is unlike any you've known.",
+  coverUrl: ""
+},
+"absolute-wonder-woman-2": {
+  name: "Absolute Wonder Woman #2", series: "Absolute Wonder Woman", issueNum: "#2",
+  releaseDate: "November 26, 2024", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana confronts the massive Harbinger Prime while smaller harbingers test her defenses. The Nemesis Lasso\u2014forged from a basilisk and imbued with Prometheus's blood\u2014is revealed to inflict pain proportional to the sins of its prisoners. After an exchange of words, Harbinger Prime retreats, and Steve Trevor emerges from the beach.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6278246.jpg"
+},
+"absolute-wonder-woman-3": {
+  name: "Absolute Wonder Woman #3", series: "Absolute Wonder Woman", issueNum: "#3",
+  releaseDate: "December 24, 2024", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana and Steve Trevor search for a way to send him back to the surface world, leading them to Gateway City's local witch for spell ingredients. To cast the spell, Diana makes a devastating sacrifice: she cuts off her own right arm as payment for the magic.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2965850.jpg"
+},
+"absolute-wonder-woman-4": {
+  name: "Absolute Wonder Woman #4", series: "Absolute Wonder Woman", issueNum: "#4",
+  releaseDate: "January 28, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Using twisted sorcery learned from Circe in Hell, Diana casts a spell to the goddess Hecate to reforge her arm, requiring blood donations from Etta, Gia, and Steve. She encounters historian Barbara Minerva, who recognizes Diana as an Amazon and the 'Wonder Woman,' leading Diana to adopt the identity.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2319654.jpg"
+},
+"absolute-wonder-woman-5": {
+  name: "Absolute Wonder Woman #5", series: "Absolute Wonder Woman", issueNum: "#5",
+  releaseDate: "February 25, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana's giant sword shatters against the Tetracide as it begins healing itself. Recalling an ancient legend, Diana uses the Nemesis Lasso on herself to transform into Medusa, turning the Tetracide to stone with her gaze and ending the devastating conflict.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3348187.jpg"
+},
+"absolute-wonder-woman-6": {
+  name: "Absolute Wonder Woman #6", series: "Absolute Wonder Woman", issueNum: "#6",
+  releaseDate: "March 25, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana is summoned before Hades, lord of the underworld, who takes her escape from Hell as a personal affront. Through flashbacks, Diana reveals how she acquired her magical Nemesis Lasso through a ritual involving Prometheus's blood and survived encounters with a Basilisk.",
+  coverUrl: ""
+},
+"absolute-wonder-woman-7": {
+  name: "Absolute Wonder Woman #7", series: "Absolute Wonder Woman", issueNum: "#7",
+  releaseDate: "April 22, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Extended flashbacks reveal young Diana on the Wild Isle of Hell, conversing with the goddess Persephone. Circe tells Diana the fable of 'The Lady and the Tiger' as a cryptic lesson. Persephone feeds Diana a pomegranate seed, binding her to spend one month annually in Hell but allowing her to live on Earth.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4846924.jpg"
+},
+"absolute-wonder-woman-8": {
+  name: "Absolute Wonder Woman #8", series: "Absolute Wonder Woman", issueNum: "#8",
+  releaseDate: "May 27, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "A mysterious building appears in a jungle setting as Diana shifts to a new adventure with an Indiana Jones-like quality. A new villain emerges, and Thompson gathers Diana's supporting cast as Steve Trevor, Barbara Minerva, and Gia Candy form Wonder Woman's team of humans.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2750287.jpg"
+},
+"absolute-wonder-woman-9": {
+  name: "Absolute Wonder Woman #9", series: "Absolute Wonder Woman", issueNum: "#9",
+  releaseDate: "June 24, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana opens a portal to the Labyrinth seeking her lost sister and encounters a minotaur named Ferdinand fighting Men-Fish. She discovers Clea, an Atlantean ruler who commands a creature army and seeks a child named Petra. Clea's claim of being an Amazon raises questions about Diana's origins.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3559835.jpg"
+},
+"absolute-wonder-woman-10": {
+  name: "Absolute Wonder Woman #10", series: "Absolute Wonder Woman", issueNum: "#10",
+  releaseDate: "July 22, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana works with her minotaur companion Ferdinand to save the child Petra from Clea's grasp. Poisoned by a powerful hallucinogenic substance, Diana's perception is sent into a mind-bending state, leaving her unable to see her enemy clearly.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3167576.jpg"
+},
+"absolute-wonder-woman-11": {
+  name: "Absolute Wonder Woman #11", series: "Absolute Wonder Woman", issueNum: "#11",
+  releaseDate: "August 26, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "At the bottom of the Labyrinth's pit, Diana discovers what she's been searching for her entire life. Still suffering from the hallucinogen's effects, she makes a vulnerable decision about finding a new family among the maze's inhabitants.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6904268.jpg"
+},
+"absolute-wonder-woman-12": {
+  name: "Absolute Wonder Woman #12", series: "Absolute Wonder Woman", issueNum: "#12",
+  releaseDate: "September 23, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "With a surprising ally at her side, Diana makes her final moves inside the Labyrinth's maze. Despite winning the day and saving those she fought for, Diana experiences devastating losses that underscore the costs of her choices, bringing the major arc to a poignant conclusion.",
+  coverUrl: ""
+},
+"absolute-wonder-woman-13": {
+  name: "Absolute Wonder Woman #13", series: "Absolute Wonder Woman", issueNum: "#13",
+  releaseDate: "October 28, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "A new chapter begins as Diana faces the consequences of her Labyrinth adventure. New threats emerge in Gateway City as the Absolute Universe continues to expand, challenging Diana's understanding of her place in this world.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6966871.jpg"
+},
+"absolute-wonder-woman-14": {
+  name: "Absolute Wonder Woman #14", series: "Absolute Wonder Woman", issueNum: "#14",
+  releaseDate: "November 25, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana's world expands as she uncovers deeper connections between Gateway City and the mystical forces at play. Her bond with her growing found family is tested as a powerful new adversary sets their sights on the Wonder Woman.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7801063.jpg"
+},
+"absolute-wonder-woman-15": {
+  name: "Absolute Wonder Woman #15", series: "Absolute Wonder Woman", issueNum: "#15",
+  releaseDate: "December 23, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "The crossover with Absolute Batman begins. Diana's path intersects with Bruce Wayne's as a threat too large for either hero to handle alone forces them to join forces. Together, they venture into dangerous territory that bridges both their worlds.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7164499.jpg"
+},
+"absolute-wonder-woman-16": {
+  name: "Absolute Wonder Woman #16", series: "Absolute Wonder Woman", issueNum: "#16",
+  releaseDate: "January 27, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "The Batman/Wonder Woman crossover continues as Diana and Bruce navigate the intersection of technology and magic. Their different approaches to heroism create tension even as they work together against a common enemy.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7126669.jpg"
+},
+"absolute-wonder-woman-17": {
+  name: "Absolute Wonder Woman #17", series: "Absolute Wonder Woman", issueNum: "#17",
+  releaseDate: "February 24, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana faces new challenges as the consequences of the crossover ripple through Gateway City. The mythology of the Absolute Universe deepens as connections between heroes and villains become clearer.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8091930.jpg"
+},
+"absolute-wonder-woman-18": {
+  name: "Absolute Wonder Woman #18", series: "Absolute Wonder Woman", issueNum: "#18",
+  releaseDate: "March 24, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "A pivotal chapter in Diana's journey as she confronts truths about her past in Hell and her future on Earth. The mystical forces that shaped her continue to pull at the threads of her new life in Gateway City.",
+  coverUrl: ""
+},
+"absolute-wonder-woman-19": {
+  name: "Absolute Wonder Woman #19", series: "Absolute Wonder Woman", issueNum: "#19",
+  releaseDate: "April 28, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Kelly Thompson"], artists: ["Hayden Sherman"],
+  colorists: ["Jordie Bellaire"], letterers: ["Becca Carey"],
+  coverArtists: ["Hayden Sherman", "Jordie Bellaire"],
+  synopsis: "Diana faces her greatest test yet as the forces of Hell reach into Gateway City. With her found family at stake and the boundaries between worlds weakening, Wonder Woman must decide how far she's willing to go to protect those she loves.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1701890.jpg"
+},
+"absolute-superman-1": {
+  name: "Absolute Superman #1", series: "Absolute Superman", issueNum: "#1",
+  releaseDate: "November 6, 2024", coverPrice: "$4.99", pageCount: 48, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Kal-El grows up in Krypton's lowest caste system as a member of the Labor Guild. In the present day, he is attacked by Peacemakers in a work camp, fighting back with his AI suit Sol warning of casualties. After witnessing years of human exploitation, Kal-El leaps into battle to protect miners from corporate forces.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7938850.jpg"
+},
+"absolute-superman-2": {
+  name: "Absolute Superman #2", series: "Absolute Superman", issueNum: "#2",
+  releaseDate: "December 4, 2024", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Superman finds himself handcuffed to military operative Lois Lane as Peacemakers hunt them in a Brazilian diamond mine. As they flee together, Lane witnesses Superman's true power and becomes impressed by his heroism despite the danger.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1356696.jpg"
+},
+"absolute-superman-3": {
+  name: "Absolute Superman #3", series: "Absolute Superman", issueNum: "#3",
+  releaseDate: "January 1, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "A flashback explores young Kal-El struggling in Krypton's rigid society. Clark discovers something extraordinary hidden beneath the ice\u2014a World Seed, a semi-sentient terraforming archive from a previous universal cycle that recognizes him as its key.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3909135.jpg"
+},
+"absolute-superman-4": {
+  name: "Absolute Superman #4", series: "Absolute Superman", issueNum: "#4",
+  releaseDate: "February 5, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Lois Lane visits Lazarus facilities seeking information about Superman, trying to convince workers to talk before he accidentally harms someone. Jo\u00e3o reveals to Lois that she has been changed by her encounter with Superman as the corporate Peacemakers close in.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4509167.jpg"
+},
+"absolute-superman-5": {
+  name: "Absolute Superman #5", series: "Absolute Superman", issueNum: "#5",
+  releaseDate: "March 5, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Superman attacks a Lazarus Ship hunting the Peacemaker responsible for killing 23 civilians. Sol hacks into Lazarus Corp systems long enough to identify Brainiac operating behind the scenes, coordinating the Peacemakers and corporate operations.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3601635.jpg"
+},
+"absolute-superman-6": {
+  name: "Absolute Superman #6", series: "Absolute Superman", issueNum: "#6",
+  releaseDate: "April 2, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Sol and Kal-El drift through space searching for habitable planets. The trauma of losing his world sends Kal-El through depression and rage before resigned acceptance. After seventeen months, Sol discovers Earth can sustain life and guides him there.",
+  coverUrl: ""
+},
+"absolute-superman-7": {
+  name: "Absolute Superman #7", series: "Absolute Superman", issueNum: "#7",
+  releaseDate: "May 7, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Brainiac's disturbing origin and his connection to Lazarus Corp are revealed. Operating from a lair filled with bottled cities, Brainiac tortures them relentlessly. Peacemaker Smith undergoes cybernetic enhancements in preparation for a confrontation with Superman.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6840272.jpg"
+},
+"absolute-superman-8": {
+  name: "Absolute Superman #8", series: "Absolute Superman", issueNum: "#8",
+  releaseDate: "June 4, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Superman secretly visits Martha Kent in her Smallville retirement home, sharing stories and leaving her seashells. When he tries to resist killing Peacemaker Smith, a Krypton-based bullet strikes him down, poisoning and draining his powers.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4132139.jpg"
+},
+"absolute-superman-9": {
+  name: "Absolute Superman #9", series: "Absolute Superman", issueNum: "#9",
+  releaseDate: "July 1, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "A critically injured Superman undergoes emergency surgery by Omega Men agents as anesthesia proves ineffective. Superman experiences vivid flashbacks to Krypton while his body fights multiple Krypton-forged bullets embedded in his chest.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1662918.jpg"
+},
+"absolute-superman-10": {
+  name: "Absolute Superman #10", series: "Absolute Superman", issueNum: "#10",
+  releaseDate: "August 5, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Superman storms Ra's al Ghul's fortress in Greenland, easily defeating Peacemaker Smith. Tempted to kill him, Superman remembers Jor-El's words about moral justification. Talia al Ghul reveals herself as Primus and stabs Superman in the back.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7031658.jpg"
+},
+"absolute-superman-11": {
+  name: "Absolute Superman #11", series: "Absolute Superman", issueNum: "#11",
+  releaseDate: "September 2, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Superman finds himself imprisoned in Brainiac's mind-bending simulation, experiencing false memories. Ra's al Ghul and Brainiac break his mind to force him into committing genocide. Sol and the Sunstone crystals activate as Sam Lane fights to rescue Lois and Jimmy.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2583532.jpg"
+},
+"absolute-superman-12": {
+  name: "Absolute Superman #12", series: "Absolute Superman", issueNum: "#12",
+  releaseDate: "September 30, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Ra's al Ghul threatens to destroy Smallville unless Superman submits as his 'Son of the Demon.' The invasion of Kansas begins as Superman is forced to choose between his ideals and protecting the people he cares about most.",
+  coverUrl: ""
+},
+"absolute-superman-13": {
+  name: "Absolute Superman #13", series: "Absolute Superman", issueNum: "#13",
+  releaseDate: "October 28, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "The Battle of Kansas escalates as Superman rallies his allies against Ra's al Ghul's forces. With Smallville under siege, Superman must prove that hope can triumph over tyranny even in the darkest of the Absolute Universe.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3106468.jpg"
+},
+"absolute-superman-14": {
+  name: "Absolute Superman #14", series: "Absolute Superman", issueNum: "#14",
+  releaseDate: "November 25, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Superman's confrontation with Ra's al Ghul and Brainiac reaches a critical turning point. The fate of Smallville and the Absolute Universe hangs in the balance as Superman pushes his powers to their absolute limit.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8208323.jpg"
+},
+"absolute-superman-15": {
+  name: "Absolute Superman #15", series: "Absolute Superman", issueNum: "#15",
+  releaseDate: "December 23, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "In the aftermath of the Battle of Kansas, Superman and his allies regroup. New threats emerge as the Absolute Universe's larger conspiracy begins to reveal itself, connecting Superman's fight to the struggles of other heroes.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6230146.jpg"
+},
+"absolute-superman-16": {
+  name: "Absolute Superman #16", series: "Absolute Superman", issueNum: "#16",
+  releaseDate: "January 27, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "A new arc begins as Superman faces the next chapter of his journey in the Absolute Universe. With the dust settled from Kansas, Kal-El must reckon with who he wants to be in a world that seems designed to break him.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2567304.jpg"
+},
+"absolute-superman-17": {
+  name: "Absolute Superman #17", series: "Absolute Superman", issueNum: "#17",
+  releaseDate: "February 24, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Superman discovers new dimensions to the corporate conspiracy that controls much of Earth. Lois Lane and Jimmy Olsen uncover critical information that could expose the truth behind Lazarus Corp's global operations.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7505264.jpg"
+},
+"absolute-superman-18": {
+  name: "Absolute Superman #18", series: "Absolute Superman", issueNum: "#18",
+  releaseDate: "March 24, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jason Aaron"], artists: ["Rafa Sandoval"],
+  colorists: ["Ulises Arreola"], letterers: ["Becca Carey"],
+  coverArtists: ["Rafa Sandoval"],
+  synopsis: "Superman confronts the expanding web of villainy that threatens the Absolute Universe. As connections between the various threats become clearer, Kal-El realizes the scale of the challenge ahead is far greater than any single hero can face alone.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2985577.jpg"
+},
+"absolute-flash-1": {
+  name: "Absolute Flash #1", series: "Absolute Flash", issueNum: "#1",
+  releaseDate: "February 19, 2025", coverPrice: "$4.99", pageCount: 48, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "Fifteen-year-old Army brat Wally West experiences a panic attack and accidentally demonstrates super-speed abilities at a government laboratory. Scientist Barry Allen helps calm him, but something sinister is happening behind the scenes with the project that gave Wally his powers.",
+  coverUrl: ""
+},
+"absolute-flash-2": {
+  name: "Absolute Flash #2", series: "Absolute Flash", issueNum: "#2",
+  releaseDate: "March 19, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "After Barry Allen is killed, Wally is hunted by the project's commander Elenore Thawne and her team of rogues. Wally must learn to use his powers on the fly while evading capture by the very people who created him.",
+  coverUrl: ""
+},
+"absolute-flash-3": {
+  name: "Absolute Flash #3", series: "Absolute Flash", issueNum: "#3",
+  releaseDate: "April 16, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "Wally encounters Grodd, a telepathic test subject from the same government program. Together they escape the facility and go on the run, forming an unlikely bond as they flee from Elenore Thawne's relentless pursuit.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1613026.jpg"
+},
+"absolute-flash-4": {
+  name: "Absolute Flash #4", series: "Absolute Flash", issueNum: "#4",
+  releaseDate: "May 14, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "On the run from the government, Wally and Grodd meet homeless teenagers Ralph Dibney and Linda Park. The group forms a makeshift family while trying to survive and stay one step ahead of Thawne's rogues.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7234696.jpg"
+},
+"absolute-flash-5": {
+  name: "Absolute Flash #5", series: "Absolute Flash", issueNum: "#5",
+  releaseDate: "June 11, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "Wally pushes his speed powers to new limits as Thawne's rogues close in on the group. The true nature of the government program that created the Flash is revealed, and its implications are far more terrifying than anyone imagined.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8900255.jpg"
+},
+"absolute-flash-6": {
+  name: "Absolute Flash #6", series: "Absolute Flash", issueNum: "#6",
+  releaseDate: "July 9, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "Wally faces a devastating betrayal that forces him to question everything he thought he knew about his allies. The rogues corner the group, and Wally must make an impossible choice to save the people he cares about.",
+  coverUrl: "https://static.dc.com/2025-08/AB_FLS_Cv6_00611_DIGITAL.jpg"
+},
+"absolute-flash-7": {
+  name: "Absolute Flash #7", series: "Absolute Flash", issueNum: "#7",
+  releaseDate: "August 6, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "Wally discovers a deeper connection to the speed that powers him, one that transcends the government's experiments. As he learns to tap into this primal force, the stakes escalate as Eobard Thawne enters the picture.",
+  coverUrl: ""
+},
+"absolute-flash-8": {
+  name: "Absolute Flash #8", series: "Absolute Flash", issueNum: "#8",
+  releaseDate: "September 3, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "The connection between Elenore Thawne and the mysterious Eobard Thawne is explored. Wally's powers continue to evolve in unexpected ways, creating both new possibilities and new dangers for everyone around him.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3834156.jpg"
+},
+"absolute-flash-9": {
+  name: "Absolute Flash #9", series: "Absolute Flash", issueNum: "#9",
+  releaseDate: "October 1, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "Wally and his allies launch a daring mission to expose the government program and free the remaining test subjects. But the facility holds secrets that could change everything about what Wally understands about his powers.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2250466.jpg"
+},
+"absolute-flash-10": {
+  name: "Absolute Flash #10", series: "Absolute Flash", issueNum: "#10",
+  releaseDate: "November 5, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "The battle at Fort Fox begins as Wally confronts the full might of the government's anti-speedster arsenal. Grodd discovers his father in a containment tube, revealing the personal stakes hidden within the program.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8744594.jpg"
+},
+"absolute-flash-11": {
+  name: "Absolute Flash #11", series: "Absolute Flash", issueNum: "#11",
+  releaseDate: "December 3, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "The penultimate chapter as Wally races toward his destiny. Eobard Thawne reveals his true power and the final trap is sprung. Everything Wally has learned about speed, sacrifice, and friendship is put to the ultimate test.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8285365.jpg"
+},
+"absolute-flash-12": {
+  name: "Absolute Flash #12", series: "Absolute Flash", issueNum: "#12",
+  releaseDate: "January 7, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "Wally faces off against Eobard Thawne in an explosive final confrontation at Fort Fox. Meanwhile, Grodd discovers his father in a containment tube, setting up the future of the Flash in the Absolute Universe.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-5446399.jpg"
+},
+"absolute-flash-13": {
+  name: "Absolute Flash #13", series: "Absolute Flash", issueNum: "#13",
+  releaseDate: "February 4, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "A new chapter begins for Wally West after the fall of Fort Fox. With Eobard Thawne defeated but the larger conspiracy still intact, the Flash must decide what kind of hero he wants to be in a world that fears speedsters.",
+  coverUrl: ""
+},
+"absolute-flash-14": {
+  name: "Absolute Flash #14", series: "Absolute Flash", issueNum: "#14",
+  releaseDate: "March 4, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Jeff Lemire"], artists: ["Nick Robles"],
+  colorists: ["Adriano Lucas"], letterers: ["Tom Napolitano"],
+  coverArtists: ["Nick Robles"],
+  synopsis: "Wally explores the limits of his evolving speed powers while new threats emerge from the ashes of the government program. The connections between the Flash and the broader Absolute Universe deepen.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2061139.jpg"
+},
+"absolute-martian-manhunter-1": {
+  name: "Absolute Martian Manhunter #1", series: "Absolute Martian Manhunter", issueNum: "#1",
+  releaseDate: "March 5, 2025", coverPrice: "$4.99", pageCount: 48, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "One year after moving to Middleton, FBI Agent John Jones survives a suicide bombing. While investigating, he encounters an otherworldly consciousness presenting itself as a green alien from Mars. This Martian offers to help him uncover the social unrest plaguing the city in this psychological horror reimagining.",
+  coverUrl: ""
+},
+"absolute-martian-manhunter-2": {
+  name: "Absolute Martian Manhunter #2", series: "Absolute Martian Manhunter", issueNum: "#2",
+  releaseDate: "April 2, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "The Martian continues invading John's mind as he's pulled into a cosmic war. The alien discovers the White Martian, another cosmic entity that has planted psychological anomalies feeding off human bigotry and violence, beginning with a mass shooting incident.",
+  coverUrl: ""
+},
+"absolute-martian-manhunter-3": {
+  name: "Absolute Martian Manhunter #3", series: "Absolute Martian Manhunter", issueNum: "#3",
+  releaseDate: "May 7, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "The White Martian's influence spreads deeper into Middleton as John Jones struggles to separate the alien voice in his head from his own thoughts. The investigation takes a dark turn as more incidents of violence erupt across the city.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4573663.jpg"
+},
+"absolute-martian-manhunter-4": {
+  name: "Absolute Martian Manhunter #4", series: "Absolute Martian Manhunter", issueNum: "#4",
+  releaseDate: "June 4, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "The White Martian plants a white sun in Middleton, triggering a heat wave that escalates violence and unrest throughout the city. John investigates the immolation of 24 homeless people, discovering the extent of the White Martian's corruption.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4272772.jpg"
+},
+"absolute-martian-manhunter-5": {
+  name: "Absolute Martian Manhunter #5", series: "Absolute Martian Manhunter", issueNum: "#5",
+  releaseDate: "July 2, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "John Jones confronts the growing horror in Middleton as the boundaries between his reality and the Martian's world blur. The cosmic battle between the Green and White Martians threatens to consume everything John holds dear.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4643183.jpg"
+},
+"absolute-martian-manhunter-6": {
+  name: "Absolute Martian Manhunter #6", series: "Absolute Martian Manhunter", issueNum: "#6",
+  releaseDate: "August 6, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "The psychological horror deepens as John's investigation leads him to the heart of Middleton's corruption. The Martian reveals a devastating truth about the nature of the White Martian's hold on the city and its people.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7379797.jpg"
+},
+"absolute-martian-manhunter-7": {
+  name: "Absolute Martian Manhunter #7", series: "Absolute Martian Manhunter", issueNum: "#7",
+  releaseDate: "September 3, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "John must choose between his humanity and the alien power being offered to him. As the White Martian's influence reaches its peak, the battle for Middleton becomes a battle for John Jones's very soul.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3472304.jpg"
+},
+"absolute-martian-manhunter-8": {
+  name: "Absolute Martian Manhunter #8", series: "Absolute Martian Manhunter", issueNum: "#8",
+  releaseDate: "October 1, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "The truth about Middleton's founding and its connection to the Martian entities is revealed. John Jones embraces his role as the bridge between two worlds, setting the stage for the cosmic showdown.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1616741.jpg"
+},
+"absolute-martian-manhunter-9": {
+  name: "Absolute Martian Manhunter #9", series: "Absolute Martian Manhunter", issueNum: "#9",
+  releaseDate: "November 5, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "The penultimate chapter as the Green Martian and White Martian clash with Middleton as their battleground. John Jones must use everything he's learned to save his city from annihilation.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8933371.jpg"
+},
+"absolute-martian-manhunter-10": {
+  name: "Absolute Martian Manhunter #10", series: "Absolute Martian Manhunter", issueNum: "#10",
+  releaseDate: "December 3, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "The epic conclusion to Absolute Martian Manhunter's first arc. John Jones makes his final stand against the White Martian, with the fate of Middleton and possibly the entire Absolute Universe hanging in the balance.",
+  coverUrl: ""
+},
+"absolute-martian-manhunter-11": {
+  name: "Absolute Martian Manhunter #11", series: "Absolute Martian Manhunter", issueNum: "#11",
+  releaseDate: "January 7, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "In the aftermath of the White Martian conflict, John Jones rebuilds his life in Middleton. But the Martian consciousness remains, and new mysteries emerge that suggest the cosmic war is far from over.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7595139.jpg"
+},
+"absolute-martian-manhunter-12": {
+  name: "Absolute Martian Manhunter #12", series: "Absolute Martian Manhunter", issueNum: "#12",
+  releaseDate: "February 4, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Deniz Camp"], artists: ["Javier Rodr\u00edguez"],
+  colorists: ["Javier Rodr\u00edguez"], letterers: ["Hassan Otsmane-Elhaou"],
+  coverArtists: ["Javier Rodr\u00edguez"],
+  synopsis: "The Martian Manhunter's journey continues as John Jones discovers that the events in Middleton are connected to the larger Absolute Universe. New alliances and new enemies emerge in this pivotal chapter.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7124600.jpg"
+},
+"absolute-green-lantern-1": {
+  name: "Absolute Green Lantern #1", series: "Absolute Green Lantern", issueNum: "#1",
+  releaseDate: "March 19, 2025", coverPrice: "$4.99", pageCount: 48, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "Hal Jordan emerges from the Nevada desert in mortal fear after a traumatic experience. Five days earlier, a green dome fell around the small town of Evergreen as a massive alien Green Lantern descended, causing chaos and trapping the townspeople inside the emerald barrier.",
+  coverUrl: ""
+},
+"absolute-green-lantern-2": {
+  name: "Absolute Green Lantern #2", series: "Absolute Green Lantern", issueNum: "#2",
+  releaseDate: "April 16, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "Jo Mullein has a vision of a ring of light in darkness. The alien Abin Sur confronts Sheriff Guy Gardner and deputies in the streets of Evergreen, commanding them to 'be without fear' as it establishes its presence within the emerald dome.",
+  coverUrl: ""
+},
+"absolute-green-lantern-3": {
+  name: "Absolute Green Lantern #3", series: "Absolute Green Lantern", issueNum: "#3",
+  releaseDate: "May 14, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "The four Green Lanterns\u2014Hal Jordan, John Stewart, Jo Mullein, and Guy Gardner\u2014navigate the horror-tinged mystery within the emerald dome. The reinvented emotional spectrum based on steps toward enlightenment begins to reveal itself.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3629696.jpg"
+},
+"absolute-green-lantern-4": {
+  name: "Absolute Green Lantern #4", series: "Absolute Green Lantern", issueNum: "#4",
+  releaseDate: "June 11, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "The Blackstars turn their attention to Earth as the situation within the dome escalates. Each Lantern confronts their own fears and desires as the emotional spectrum tests them in unexpected ways.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-5445219.jpg"
+},
+"absolute-green-lantern-5": {
+  name: "Absolute Green Lantern #5", series: "Absolute Green Lantern", issueNum: "#5",
+  releaseDate: "July 9, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "Todd Rice, trapped under rubble, encounters the ring of light and hears voices telling him judgment is not in progress. The mystery deepens as each Lantern discovers the true nature of the alien presence in Evergreen.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1569974.jpg"
+},
+"absolute-green-lantern-6": {
+  name: "Absolute Green Lantern #6", series: "Absolute Green Lantern", issueNum: "#6",
+  releaseDate: "August 6, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "The cosmic horror within the dome reaches new heights as the Green Lanterns are pushed to their limits. Tomar-Re's role in the larger conflict becomes clearer as the Blackstars close in on Earth.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3668202.jpg"
+},
+"absolute-green-lantern-7": {
+  name: "Absolute Green Lantern #7", series: "Absolute Green Lantern", issueNum: "#7",
+  releaseDate: "September 3, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "The four Lanterns must unite their different approaches to overcome the dome's guardians. The emotional spectrum's path to enlightenment demands something different from each of them\u2014and not all may survive the journey.",
+  coverUrl: ""
+},
+"absolute-green-lantern-8": {
+  name: "Absolute Green Lantern #8", series: "Absolute Green Lantern", issueNum: "#8",
+  releaseDate: "October 1, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "Revelations about the origin of the dome and Abin Sur's true mission shake the Lanterns to their core. The boundary between fear and courage becomes the central battlefield as the climax approaches.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-5343448.jpg"
+},
+"absolute-green-lantern-9": {
+  name: "Absolute Green Lantern #9", series: "Absolute Green Lantern", issueNum: "#9",
+  releaseDate: "November 5, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "The penultimate chapter of the Evergreen saga. The dome begins to crack as the Lanterns make their final play against the alien forces. But what lies beyond the emerald barrier may be worse than what's inside.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8476102.jpg"
+},
+"absolute-green-lantern-10": {
+  name: "Absolute Green Lantern #10", series: "Absolute Green Lantern", issueNum: "#10",
+  releaseDate: "December 3, 2025", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "The dome of Evergreen falls as the Green Lanterns face their ultimate test. The aftermath reshapes the Lanterns' understanding of themselves and the cosmic forces at play in the Absolute Universe.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7884761.jpg"
+},
+"absolute-green-lantern-11": {
+  name: "Absolute Green Lantern #11", series: "Absolute Green Lantern", issueNum: "#11",
+  releaseDate: "January 7, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "In the aftermath of Evergreen, the four Lanterns chart different paths forward. The Blackstars' threat looms larger as the cosmic stakes of the Absolute Universe continue to escalate.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7329570.jpg"
+},
+"absolute-green-lantern-12": {
+  name: "Absolute Green Lantern #12", series: "Absolute Green Lantern", issueNum: "#12",
+  releaseDate: "February 4, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "A new chapter begins as the Green Lanterns face the expanding Blackstar threat. The reinvented emotional spectrum reveals new dimensions as the Lanterns discover they're part of something far larger than themselves.",
+  coverUrl: ""
+},
+"absolute-green-lantern-13": {
+  name: "Absolute Green Lantern #13", series: "Absolute Green Lantern", issueNum: "#13",
+  releaseDate: "March 4, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Al Ewing"], artists: ["Jahnoy Lindsay"],
+  colorists: ["Jahnoy Lindsay"], letterers: ["Luca Gattoni"],
+  coverArtists: ["Jahnoy Lindsay"],
+  synopsis: "The Green Lanterns confront the next wave of cosmic threats as the Absolute Universe's tapestry of heroes and villains grows more interconnected. Each Lantern's unique perspective on the emotional spectrum proves essential.",
+  coverUrl: "https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4835946.jpg"
+},
+"absolute-green-arrow-1": {
+  name: "Absolute Green Arrow #1", series: "Absolute Green Arrow", issueNum: "#1",
+  releaseDate: "May 20, 2026", coverPrice: "$4.99", pageCount: 48, format: "Single Issue",
+  writers: ["Pornsak Pichetshote"], artists: ["Rafael Albuquerque"],
+  colorists: ["Marcelo Maiolo"], letterers: ["TBD"],
+  coverArtists: ["Rafael Albuquerque"],
+  synopsis: "A serial killer targets corrupt billionaires, marking victims with green arrows. Executive protection specialist Dinah Lance investigates suspects from DC's archer roster, all connected to the recently murdered Oliver Queen. This six-issue horror murder-mystery reimagines Green Arrow as a dangerous urban thriller.",
+  coverUrl: ""
+},
+"absolute-green-arrow-2": {
+  name: "Absolute Green Arrow #2", series: "Absolute Green Arrow", issueNum: "#2",
+  releaseDate: "June 17, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Pornsak Pichetshote"], artists: ["Rafael Albuquerque"],
+  colorists: ["Marcelo Maiolo"], letterers: ["TBD"],
+  coverArtists: ["Rafael Albuquerque"],
+  synopsis: "Still reeling from the previous issue's revelations, Dinah interrogates suspect Mia Dearden and uncovers secrets from Oliver Queen's past that change everything about the investigation into the green arrow murders.",
+  coverUrl: ""
+},
+"absolute-green-arrow-3": {
+  name: "Absolute Green Arrow #3", series: "Absolute Green Arrow", issueNum: "#3",
+  releaseDate: "July 15, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Pornsak Pichetshote"], artists: ["Rafael Albuquerque"],
+  colorists: ["Marcelo Maiolo"], letterers: ["TBD"],
+  coverArtists: ["Rafael Albuquerque"],
+  synopsis: "The investigation deepens as Dinah Lance discovers connections between the murdered billionaires that point to a shared dark secret. The list of suspects narrows as another archer emerges from the shadows.",
+  coverUrl: ""
+},
+"absolute-green-arrow-4": {
+  name: "Absolute Green Arrow #4", series: "Absolute Green Arrow", issueNum: "#4",
+  releaseDate: "August 12, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Pornsak Pichetshote"], artists: ["Rafael Albuquerque"],
+  colorists: ["Marcelo Maiolo"], letterers: ["TBD"],
+  coverArtists: ["Rafael Albuquerque"],
+  synopsis: "Dinah Lance becomes a target herself as the killer's pattern shifts. The horror elements escalate as the true nature of the conspiracy connecting the billionaire victims is revealed in shocking detail.",
+  coverUrl: ""
+},
+"absolute-green-arrow-5": {
+  name: "Absolute Green Arrow #5", series: "Absolute Green Arrow", issueNum: "#5",
+  releaseDate: "September 9, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Pornsak Pichetshote"], artists: ["Rafael Albuquerque"],
+  colorists: ["Marcelo Maiolo"], letterers: ["TBD"],
+  coverArtists: ["Rafael Albuquerque"],
+  synopsis: "The penultimate chapter of this murder-mystery miniseries. Dinah closes in on the killer's identity as the final pieces of the puzzle fall into place, but the truth may be more devastating than she imagined.",
+  coverUrl: ""
+},
+"absolute-green-arrow-6": {
+  name: "Absolute Green Arrow #6", series: "Absolute Green Arrow", issueNum: "#6",
+  releaseDate: "October 7, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Pornsak Pichetshote"], artists: ["Rafael Albuquerque"],
+  colorists: ["Marcelo Maiolo"], letterers: ["TBD"],
+  coverArtists: ["Rafael Albuquerque"],
+  synopsis: "The identity of the killer is revealed in the stunning conclusion to this six-issue horror murder-mystery. Dinah Lance confronts the truth about Oliver Queen and the legacy of the green arrow in the Absolute Universe.",
+  coverUrl: ""
+},
+"absolute-catwoman-1": {
+  name: "Absolute Catwoman #1", series: "Absolute Catwoman", issueNum: "#1",
+  releaseDate: "March 24, 2026", coverPrice: "$4.99", pageCount: 48, format: "Single Issue",
+  writers: ["Che Grayson", "Scott Snyder"], artists: ["Bengal"],
+  colorists: ["Bengal"], letterers: ["TBD"],
+  coverArtists: ["Bengal"],
+  synopsis: "Selina Kyle is the apex predator of the Absolute Universe\u2014the wealthy, high-tech counterpart to the Dark Knight. This origin miniseries reveals her journey from orphan in foster care to building a criminal empire and community. When someone from her past arrives, everything she's built threatens to collapse.",
+  coverUrl: ""
+},
+"absolute-catwoman-2": {
+  name: "Absolute Catwoman #2", series: "Absolute Catwoman", issueNum: "#2",
+  releaseDate: "April 21, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Che Grayson", "Scott Snyder"], artists: ["Bengal"],
+  colorists: ["Bengal"], letterers: ["TBD"],
+  coverArtists: ["Bengal"],
+  synopsis: "Selina's past in Gotham's foster care system alongside Bruce Wayne is explored through flashbacks. In the present, the mysterious figure from her past forces Selina to confront the choices that made her who she is.",
+  coverUrl: ""
+},
+"absolute-catwoman-3": {
+  name: "Absolute Catwoman #3", series: "Absolute Catwoman", issueNum: "#3",
+  releaseDate: "May 19, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Che Grayson", "Scott Snyder"], artists: ["Bengal"],
+  colorists: ["Bengal"], letterers: ["TBD"],
+  coverArtists: ["Bengal"],
+  synopsis: "Selina descends into the shadows of the Absolute Universe to survive and uncover hidden mysteries. Her skills and intelligence are put to the test as the threat from her past proves more dangerous than anything she's faced before.",
+  coverUrl: ""
+},
+"absolute-catwoman-4": {
+  name: "Absolute Catwoman #4", series: "Absolute Catwoman", issueNum: "#4",
+  releaseDate: "June 16, 2026", coverPrice: "$4.99", pageCount: 32, format: "Single Issue",
+  writers: ["Che Grayson", "Scott Snyder"], artists: ["Bengal"],
+  colorists: ["Bengal"], letterers: ["TBD"],
+  coverArtists: ["Bengal"],
+  synopsis: "The connection between Selina Kyle and the broader Absolute Universe mythology deepens. As her origin story continues, the lines between hero and villain blur in ways unique to this reimagined Catwoman.",
+  coverUrl: ""
+},
+"absolute-evil-1": {
+  name: "Absolute Evil", series: "Absolute Evil", issueNum: "One-Shot",
+  releaseDate: "October 1, 2025", coverPrice: "$4.99", pageCount: 48, format: "One-Shot Special",
+  writers: ["Al Ewing"], artists: ["Giuseppe Camuncoli", "Stefano Nesi"],
+  colorists: ["Romulo Fajardo Jr."], letterers: ["Tom Napolitano"],
+  coverArtists: ["Giuseppe Camuncoli"],
+  synopsis: "The villains of the Absolute Universe unite. Ra's al Ghul, Veronica Cale, Hector Hammond, Elenore Thawne, and the Joker align their powers and purposes. In a flashback to 1951, Hawkman testifies before the House Un-American Activities Committee. An insidious betrayal from within threatens their alliance, while new players reshape the Absolute Universe's second year.",
+  coverUrl: ""
+}
+};
+
+// Helper: generate slug from issue name
+function makeSlug(name) {
+  return name.toLowerCase()
+    .replace(/[:#]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// Build ordered list for navigation
+var ISSUE_ORDER = [
+  "dc-all-in-special",
+  "absolute-batman-1","absolute-batman-2","absolute-batman-3","absolute-batman-4","absolute-batman-5",
+  "absolute-batman-6","absolute-batman-7","absolute-batman-8","absolute-batman-9","absolute-batman-10",
+  "absolute-batman-11","absolute-batman-12","absolute-batman-13","absolute-batman-14","absolute-batman-15",
+  "absolute-batman-16","absolute-batman-17","absolute-batman-18","absolute-batman-19","absolute-batman-20",
+  "absolute-batman-2025-annual-1","absolute-batman-ark-m-special-1",
+  "absolute-wonder-woman-1","absolute-wonder-woman-2","absolute-wonder-woman-3","absolute-wonder-woman-4",
+  "absolute-wonder-woman-5","absolute-wonder-woman-6","absolute-wonder-woman-7","absolute-wonder-woman-8",
+  "absolute-wonder-woman-9","absolute-wonder-woman-10","absolute-wonder-woman-11","absolute-wonder-woman-12",
+  "absolute-wonder-woman-13","absolute-wonder-woman-14","absolute-wonder-woman-15","absolute-wonder-woman-16",
+  "absolute-wonder-woman-17","absolute-wonder-woman-18","absolute-wonder-woman-19",
+  "absolute-superman-1","absolute-superman-2","absolute-superman-3","absolute-superman-4",
+  "absolute-superman-5","absolute-superman-6","absolute-superman-7","absolute-superman-8",
+  "absolute-superman-9","absolute-superman-10","absolute-superman-11","absolute-superman-12",
+  "absolute-superman-13","absolute-superman-14","absolute-superman-15","absolute-superman-16",
+  "absolute-superman-17","absolute-superman-18",
+  "absolute-flash-1","absolute-flash-2","absolute-flash-3","absolute-flash-4",
+  "absolute-flash-5","absolute-flash-6","absolute-flash-7","absolute-flash-8",
+  "absolute-flash-9","absolute-flash-10","absolute-flash-11","absolute-flash-12",
+  "absolute-flash-13","absolute-flash-14",
+  "absolute-martian-manhunter-1","absolute-martian-manhunter-2","absolute-martian-manhunter-3",
+  "absolute-martian-manhunter-4","absolute-martian-manhunter-5","absolute-martian-manhunter-6",
+  "absolute-martian-manhunter-7","absolute-martian-manhunter-8","absolute-martian-manhunter-9",
+  "absolute-martian-manhunter-10","absolute-martian-manhunter-11","absolute-martian-manhunter-12",
+  "absolute-green-lantern-1","absolute-green-lantern-2","absolute-green-lantern-3","absolute-green-lantern-4",
+  "absolute-green-lantern-5","absolute-green-lantern-6","absolute-green-lantern-7","absolute-green-lantern-8",
+  "absolute-green-lantern-9","absolute-green-lantern-10","absolute-green-lantern-11","absolute-green-lantern-12",
+  "absolute-green-lantern-13",
+  "absolute-green-arrow-1","absolute-green-arrow-2","absolute-green-arrow-3",
+  "absolute-green-arrow-4","absolute-green-arrow-5","absolute-green-arrow-6",
+  "absolute-catwoman-1","absolute-catwoman-2","absolute-catwoman-3","absolute-catwoman-4",
+  "absolute-evil-1"
+];
+
+function getRetailerLinks(name) {
+  var q = encodeURIComponent(name);
+  return [
+    { name: "Amazon", url: "https://www.amazon.com/s?k=" + q + "+dc+comics", icon: "\ud83d\udce6" },
+    { name: "Midtown Comics", url: "https://www.midtowncomics.com/search?cat=702&q=" + q, icon: "\ud83c\udfe2" },
+    { name: "TFAW", url: "https://www.tfaw.com/search?q=" + q, icon: "\ud83d\udcda" },
+    { name: "MyComicShop", url: "https://www.mycomicshop.com/search?q=" + q, icon: "\ud83d\udd0d" },
+    { name: "eBay", url: "https://www.ebay.com/sch/i.html?_nkw=" + q + "+dc+comics", icon: "\ud83c\udf10" },
+    { name: "InStockTrades", url: "https://www.instocktrades.com/search?q=" + q, icon: "\ud83d\udce5" }
+  ];
+}
+
+// Dynamically load cover URLs from the tracker page's coverMap
+(function loadCovers() {
+  fetch('/projects/absolutetracker/')
+    .then(function(r) { return r.text(); })
+    .then(function(html) {
+      var match = html.match(/var coverMap\s*=\s*(\{[\s\S]*?\});/);
+      if (match) {
+        try {
+          var cm = new Function('return ' + match[1])();
+          function makeSlugFromName(n) { return n.toLowerCase().replace(/[:#]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''); }
+          Object.keys(cm).forEach(function(name) {
+            var slug = makeSlugFromName(name);
+            if (ISSUES[slug] && !ISSUES[slug].coverUrl) {
+              ISSUES[slug].coverUrl = cm[name];
+            } else if (ISSUES[slug]) {
+              // Keep existing if set
+            }
+          });
+          render(); // Re-render with covers
+        } catch(e) { console.log('Cover parse error:', e); }
+      }
+    }).catch(function() { /* silent fail */ });
+})();
+
+function getParam(name) {
+  var params = new URLSearchParams(window.location.search);
+  return params.get(name);
+}
+
+function render() {
+  var id = getParam('id');
+  var app = document.getElementById('app');
+
+  if (!id || !ISSUES[id]) {
+    app.innerHTML = '<div class="not-found"><h1>Issue Not Found</h1><p>The issue you\'re looking for doesn\'t exist in our database.</p><a href="/projects/absolutetracker/" class="nav-btn">Back to Collection Tracker</a></div>';
+    return;
+  }
+
+  var issue = ISSUES[id];
+  var coverUrl = issue.coverUrl || '';
+  var retailers = getRetailerLinks(issue.name);
+
+  // Prev/Next navigation
+  var idx = ISSUE_ORDER.indexOf(id);
+  var prevId = idx > 0 ? ISSUE_ORDER[idx - 1] : null;
+  var nextId = idx < ISSUE_ORDER.length - 1 ? ISSUE_ORDER[idx + 1] : null;
+  var prevIssue = prevId ? ISSUES[prevId] : null;
+  var nextIssue = nextId ? ISSUES[nextId] : null;
+
+  var badgeClass = issue.releaseDate && (issue.releaseDate.indexOf('2026') > -1 && new Date(issue.releaseDate) > new Date()) ? 'upcoming' : 'released';
+  var badgeText = badgeClass === 'upcoming' ? 'Upcoming' : 'Released';
+
+  var heroImage = coverUrl ? '<div class="hero-bg" style="background-image:url(' + coverUrl + ')"></div>' : '<div class="hero-bg" style="background:#1a1e2e"></div>';
+
+  var coverHTML = coverUrl
+    ? '<div class="cover-wrapper"><img src="' + coverUrl + '" alt="' + issue.name + ' cover" onerror="this.parentElement.innerHTML=\'<div style=padding:60px;text-align:center;background:rgba(255,255,255,0.05);color:#666;font-size:14px>Cover image unavailable</div>\'"></div>'
+    : '<div class="cover-wrapper" style="background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;min-height:400px;"><div style="text-align:center;color:#555;padding:40px;"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><p style="margin-top:12px">Cover image<br>coming soon</p></div></div>';
+
+  var html = heroImage + '<div class="hero-overlay"></div>'
+    + '<div class="hero-content">'
+    + coverHTML
+    + '<div class="hero-info">'
+    + '<div class="series-label">' + issue.series + '</div>'
+    + '<h1 class="issue-title">' + issue.name + '</h1>'
+    + '<div class="meta-row">'
+    + '<div class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><strong>' + issue.releaseDate + '</strong></div>'
+    + '<div class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><strong>' + issue.format + '</strong></div>'
+    + '<div class="meta-item"><span class="badge-released ' + badgeClass + '">' + badgeText + '</span></div>'
+    + '</div>'
+    + '</div></div>';
+
+  var mainHTML = '<div class="section"><h2 class="section-title">Synopsis</h2><p class="synopsis-text">' + issue.synopsis + '</p></div>'
+    + '<div class="section"><h2 class="section-title">Creative Team</h2><div class="credits-grid">'
+    + '<div class="credit-item"><div class="credit-label">Writer' + (issue.writers.length > 1 ? 's' : '') + '</div><div class="credit-value">' + issue.writers.join(', ') + '</div></div>'
+    + '<div class="credit-item"><div class="credit-label">Artist' + (issue.artists.length > 1 ? 's' : '') + '</div><div class="credit-value">' + issue.artists.join(', ') + '</div></div>'
+    + '<div class="credit-item"><div class="credit-label">Colorist' + (issue.colorists.length > 1 ? 's' : '') + '</div><div class="credit-value">' + issue.colorists.join(', ') + '</div></div>'
+    + '<div class="credit-item"><div class="credit-label">Letterer' + (issue.letterers.length > 1 ? 's' : '') + '</div><div class="credit-value">' + issue.letterers.join(', ') + '</div></div>'
+    + (issue.coverArtists ? '<div class="credit-item"><div class="credit-label">Cover Artist' + (issue.coverArtists.length > 1 ? 's' : '') + '</div><div class="credit-value">' + issue.coverArtists.join(', ') + '</div></div>' : '')
+    + '</div></div>';
+
+  var sidebarHTML = '<div class="purchase-card"><h3 class="section-title">Where to Buy</h3>'
+    + '<div class="price-tag">' + issue.coverPrice + '</div>'
+    + '<div class="price-note">Cover price \u00b7 Actual prices may vary by retailer</div>'
+    + '<ul class="retailer-list">'
+    + retailers.map(function(r) { return '<li><a class="retailer-link" href="' + r.url + '" target="_blank" rel="noopener"><span class="retailer-name">' + r.icon + '  ' + r.name + '</span><span class="retailer-arrow">\u2192</span></a></li>'; }).join('')
+    + '</ul></div>'
+    + '<div class="details-card"><h3 class="section-title" style="font-size:16px">Issue Details</h3>'
+    + '<div class="detail-row"><span class="detail-label">Publisher</span><span class="detail-value">DC Comics</span></div>'
+    + '<div class="detail-row"><span class="detail-label">Series</span><span class="detail-value">' + issue.series + '</span></div>'
+    + '<div class="detail-row"><span class="detail-label">Issue</span><span class="detail-value">' + issue.issueNum + '</span></div>'
+    + '<div class="detail-row"><span class="detail-label">Release Date</span><span class="detail-value">' + issue.releaseDate + '</span></div>'
+    + '<div class="detail-row"><span class="detail-label">Format</span><span class="detail-value">' + issue.format + '</span></div>'
+    + '<div class="detail-row"><span class="detail-label">Pages</span><span class="detail-value">' + issue.pageCount + '</span></div>'
+    + '<div class="detail-row"><span class="detail-label">Cover Price</span><span class="detail-value">' + issue.coverPrice + '</span></div>'
+    + '</div>';
+
+  var navHTML = '<div class="nav-strip">'
+    + (prevIssue ? '<a class="nav-btn" href="?id=' + prevId + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>' + prevIssue.name + '</a>' : '<span></span>')
+    + (nextIssue ? '<a class="nav-btn" href="?id=' + nextId + '">' + nextIssue.name + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>' : '<span></span>')
+    + '</div>';
+
+  app.innerHTML = '<div class="hero">' + html + '</div>'
+    + '<div class="content-area"><div class="main-content">' + mainHTML + '</div>'
+    + '<div class="sidebar">' + sidebarHTML + '</div></div>'
+    + navHTML;
+
+  document.title = issue.name + ' \u2014 Absolute Universe Collection Tracker';
+}
+
+render();
+window.addEventListener('popstate', render);
+</script>
+
+  <script>
+  // Variant Covers Gallery - runs after page loads
+  (function() {
+    var slug = new URLSearchParams(window.location.search).get("id");
+    if (!slug) return;
+    fetch("variants.json").then(function(r){return r.json()}).then(function(allVariants){
+      var vs = allVariants[slug];
+      if (!vs || vs.length === 0) return;
+      var mainContent = document.querySelector(".main-content");
+      if (!mainContent) return;
+      var sec = document.createElement("div");
+      sec.className = "section variant-section";
+      var n = 8;
+      var h = "<h2 class=section-title>Variant Covers <span class=variant-count>(" + vs.length + ")</span></h2>";
+      h += "<div class=variant-gallery>";
+      for (var i = 0; i < vs.length; i++) {
+        var d = i >= n ? " style=display:none data-xv=1" : "";
+        var sn = vs[i].name.split("#").pop() || vs[i].name;
+        h += "<div class=variant-card" + d + "><img src=" + vs[i].url + " loading=lazy onerror=this.parentElement.style.display=String.fromCharCode(110,111,110,101)><div class=variant-name>" + sn + "</div></div>";
+      }
+      h += "</div>";
+      if (vs.length > n) h += "<div style=text-align:center;margin-top:0.75rem><button class=show-more-variants id=showMoreBtn>Show All " + vs.length + " Variants</button></div>";
+      sec.innerHTML = h;
+      mainContent.appendChild(sec);
+      var btn = document.getElementById("showMoreBtn");
+      if (btn) btn.onclick = function() { document.querySelectorAll("[data-xv]").forEach(function(el){el.style.display=""}); btn.parentElement.remove(); };
+      var modal = document.createElement("div");
+      modal.className = "variant-modal";
+      modal.id = "variantModal";
+      var cb = document.createElement("button");
+      cb.className = "variant-modal-close";
+      cb.textContent = "\u00D7";
+      cb.onclick = function(){ modal.classList.remove("active"); };
+      var mi = document.createElement("img");
+      mi.id = "variantModalImg";
+      modal.appendChild(cb);
+      modal.appendChild(mi);
+      modal.onclick = function(e){ if(e.target===modal) modal.classList.remove("active"); };
+      document.body.appendChild(modal);
+      sec.onclick = function(e){ var c=e.target.closest(".variant-card"); if(c){var img=c.querySelector("img"); if(img){mi.src=img.src; modal.classList.add("active");}} };
+    }).catch(function(){});
+  })();
+  </script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="auth-integration.js"></script>
+</body>
+</html>

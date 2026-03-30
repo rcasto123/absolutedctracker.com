@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DC Absolute Universe â Collection Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg-primary: #0a0c10;
+    --bg-secondary: #12151c;
+    --bg-card: #181c26;
+    --bg-card-hover: #1e2330;
+    --border: #2a2f3e;
+    --text-primary: #e8eaf0;
+    --text-secondary: #8b92a8;
+    --text-muted: #5a6178;
+    --accent-blue: #1a7aff;
+    --accent-red: #dc2626;
+    --accent-gold: #d4a844;
+    --accent-green: #22c55e;
+    --accent-purple: #8b5cf6;
+    --accent-cyan: #06b6d4;
+    --owned-bg: rgba(34, 197, 94, 0.08);
+    --owned-border: rgba(34, 197, 94, 0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ââ Hero Section ââ */
+  .hero {
+    position: relative;
+    height: 70vh;
+    min-height: 500px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(10,12,16,0.3) 0%,
+      rgba(10,12,16,0.6) 50%,
+      rgba(10,12,16,0.95) 85%,
+      rgba(10,12,16,1) 100%
+    );
+    z-index: 2;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 3;
+    padding: 0 48px 48px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: var(--accent-red);
+    color: white;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    padding: 4px 16px;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 7vw, 96px);
+    letter-spacing: 2px;
+    line-height: 0.95;
+    color: white;
+    margin-bottom: 8px;
+  }
+
+  .hero h1 span { color: var(--accent-blue); }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    max-width: 600px;
+  }
+
+  /* ââ Stats Bar ââ */
+  .stats-bar {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 48px;
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: white;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+  }
+
+  .stat-number.accent-green { color: var(--accent-green); }
+  .stat-number.accent-gold { color: var(--accent-gold); }
+  .stat-number.accent-blue { color: var(--accent-blue); }
+  .stat-number.accent-red { color: var(--accent-red); }
+
+  /* ââ Navigation Tabs ââ */
+  .main-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 48px;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-top: 32px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-tab:hover { color: var(--text-secondary); }
+  .nav-tab:focus { outline: 2px solid var(--accent-blue); outline-offset: -2px; }
+  .nav-tab.active {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  /* ââ Tab Content ââ */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ââ Filter Bar ââ */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-btn {
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--text-muted); color: var(--text-primary); }
+  .filter-btn:focus { outline: 2px solid var(--accent-blue); outline-offset: 0; }
+  .filter-btn.active { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(26,122,255,0.08); }
+
+  .search-input {
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    outline: none;
+    min-width: 220px;
+    font-family: inherit;
+  }
+
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(26,122,255,0.1); }
+
+  /* ââ Series Section ââ */
+  .series-block { margin-bottom: 40px; }
+
+  .series-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .series-color {
+    width: 4px;
+    height: 40px;
+    border-radius: 2px;
+  }
+
+  .series-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: white;
+  }
+
+  .series-meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .series-meta strong { color: var(--text-secondary); }
+
+  .series-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+  }
+
+  .progress-bar {
+    width: 120px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent-green);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    min-width: 36px;
+  }
+
+  /* ââ Issue Grid ââ */
+  .issue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+  }
+
+  .issue-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .issue-card:hover { background: var(--bg-card-hover); border-color: var(--text-muted); }
+  .issue-card:focus { outline: 2px solid var(--accent-blue); outline-offset: -1px; }
+  .issue-card.owned {
+    background: var(--owned-bg);
+    border-color: var(--owned-border);
+  }
+
+  .issue-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    border: 2px solid var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .issue-card.owned .issue-checkbox {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+  }
+
+  .issue-checkbox svg { opacity: 0; transition: opacity 0.15s; }
+  .issue-card.owned .issue-checkbox svg { opacity: 1; }
+
+  .issue-info { flex: 1; min-width: 0; }
+
+  .issue-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .issue-date {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .issue-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .badge-released { background: rgba(34,197,94,0.12); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
+  .badge-upcoming { background: rgba(212,168,68,0.12); color: var(--accent-gold); border: 1px solid rgba(212,168,68,0.3); }
+  .badge-announced { background: rgba(139,92,246,0.12); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
+
+  /* ââ Release Calendar ââ */
+  .calendar-month { margin-bottom: 32px; }
+
+  .calendar-month-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  .calendar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .calendar-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  .calendar-item:hover { background: var(--bg-card-hover); }
+
+  .calendar-date {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--text-muted);
+    min-width: 80px;
+  }
+
+  .calendar-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .calendar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .calendar-writer {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .calendar-item.past { opacity: 0.5; }
+  .calendar-item.today { border-color: var(--accent-gold); background: rgba(212,168,68,0.06); }
+
+  /* ââ Series Info Cards ââ */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .info-card:hover { border-color: var(--text-muted); }
+
+  .info-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .info-card-color {
+    width: 4px;
+    height: 32px;
+    border-radius: 2px;
+  }
+
+  .info-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 1px;
+    color: white;
+  }
+
+  .info-card-type {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    background: rgba(26,122,255,0.1);
+    color: var(--accent-blue);
+    border: 1px solid rgba(26,122,255,0.3);
+  }
+
+  .info-card-type.limited {
+    background: rgba(212,168,68,0.1);
+    color: var(--accent-gold);
+    border: 1px solid rgba(212,168,68,0.3);
+  }
+
+  .info-card-type.special {
+    background: rgba(139,92,246,0.1);
+    color: var(--accent-purple);
+    border: 1px solid rgba(139,92,246,0.3);
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(42,47,62,0.5);
+    font-size: 14px;
+  }
+
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: var(--text-muted); }
+  .info-value { color: var(--text-secondary); font-weight: 600; text-align: right; }
+
+  .info-description {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  /* ââ TPB Section ââ */
+  .tpb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+
+  .tpb-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .tpb-card:hover { background: var(--bg-card-hover); }
+  .tpb-card:focus { outline: 2px solid var(--accent-blue); outline-offset: -1px; }
+  .tpb-card.owned { background: var(--owned-bg); border-color: var(--owned-border); }
+
+  .tpb-info { flex: 1; }
+  .tpb-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .tpb-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ââ Video Section ââ */
+  .media-section {
+    margin: 48px 0;
+    padding: 32px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .media-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: white;
+    margin-bottom: 16px;
+  }
+
+  .video-container {
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 16 / 9;
+  }
+
+  .video-container video {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* ââ Empty State ââ */
+  .empty-state {
+    color: var(--text-muted);
+    padding: 64px 32px;
+    text-align: center;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  /* ââ Footer ââ */
+  footer {
+    margin-top: 64px;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ââ Responsive ââ */
+  @media (max-width: 768px) {
+    .hero { height: 50vh; min-height: 350px; }
+    .hero-content { padding: 0 20px 32px; }
+    .stats-bar { padding: 16px 20px; gap: 24px; }
+    .main-wrap { padding: 0 20px; }
+    .issue-grid { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+    .tpb-grid { grid-template-columns: 1fr; }
+    .series-header { flex-wrap: wrap; }
+    .series-meta { margin-left: 0; text-align: left; }
+    .series-progress { margin-left: 0; }
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .search-input { min-width: unset; }
+    .nav-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .media-section { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ââ Hero ââ -->
+<section class="hero" role="banner">
+  <video class="hero-video" autoplay muted loop playsinline aria-label="DC Absolute Universe background animation">
+    <source src="dc_absolute_universe_bg.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-badge">EARTH-ALPHA</div>
+    <h1>ABSOLUTE <span>UNIVERSE</span></h1>
+    <p class="hero-sub">Track your collection. Never miss a release. Every issue, every series â all in one place.</p>
+  </div>
+</section>
+
+<!-- ââ Stats Bar ââ -->
+<div class="stats-bar" id="statsBar" role="complementary" aria-label="Collection statistics">
+  <div class="stat-item">
+    <div class="stat-number accent-green" id="statOwned" aria-label="Issues owned">0</div>
+    <div class="stat-label">Issues Owned</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number accent-gold" id="statReleased" aria-label="Total released issues">0</div>
+    <div class="stat-label">Released Issues</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number accent-blue" id="statPercent" aria-label="Collection completion percentage">0%</div>
+    <div class="stat-label">Complete</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number accent-red" id="statUpcoming" aria-label="Upcoming issues">0</div>
+    <div class="stat-label">Upcoming</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number" id="statSeries" aria-label="Active series count">0</div>
+    <div class="stat-label">Active Series</div>
+  </div>
+</div>
+
+<!-- ââ Main ââ -->
+<div class="main-wrap">
+
+  <nav class="nav-tabs" role="tablist" aria-label="Main navigation">
+    <button class="nav-tab active" data-tab="collection" role="tab" aria-selected="true" aria-controls="tab-collection">Collection</button>
+    <button class="nav-tab" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar">Release Calendar</button>
+    <button class="nav-tab" data-tab="series" role="tab" aria-selected="false" aria-controls="tab-series">Series Guide</button>
+    <button class="nav-tab" data-tab="trades" role="tab" aria-selected="false" aria-controls="tab-trades">Trade Paperbacks</button>
+    <button class="nav-tab" data-tab="media" role="tab" aria-selected="false" aria-controls="tab-media">Media</button>
+  </nav>
+
+  <!-- âââ COLLECTION TAB âââ -->
+  <div class="tab-content active" id="tab-collection" role="tabpanel">
+    <div class="filter-bar" role="toolbar" aria-label="Collection filters">
+      <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
+      <button class="filter-btn" data-filter="owned" aria-pressed="false">Owned</button>
+      <button class="filter-btn" data-filter="missing" aria-pressed="false">Missing</button>
+      <button class="filter-btn" data-filter="upcoming" aria-pressed="false">Upcoming</button>
+      <input class="search-input" type="text" id="searchInput" placeholder="Search issues..." aria-label="Search issues by title, writer, or artist">
+    </div>
+    <div id="collectionContainer"></div>
+  </div>
+
+  <!-- âââ CALENDAR TAB âââ -->
+  <div class="tab-content" id="tab-calendar" role="tabpanel">
+    <div class="filter-bar" role="toolbar" aria-label="Calendar filters">
+      <button class="filter-btn active" data-calendar-filter="upcoming" aria-pressed="true">Upcoming</button>
+      <button class="filter-btn" data-calendar-filter="all" aria-pressed="false">All Dates</button>
+    </div>
+    <div id="calendarContainer"></div>
+  </div>
+
+  <!-- âââ SERIES GUIDE TAB âââ -->
+  <div class="tab-content" id="tab-series" role="tabpanel">
+    <div id="seriesGuideContainer"></div>
+  </div>
+
+  <!-- âââ TRADES TAB âââ -->
+  <div class="tab-content" id="tab-trades" role="tabpanel">
+    <div id="tradesContainer"></div>
+  </div>
+
+  <!-- âââ MEDIA TAB âââ -->
+  <div class="tab-content" id="tab-media" role="tabpanel">
+    <div class="media-section" style="margin-top:0;">
+      <h2>Absolute Universe â Character Showcase</h2>
+      <div class="video-container">
+        <video controls preload="metadata" aria-label="DC Absolute Universe character showcase video">
+          <source src="dc_absolute_universe_bg.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Data sourced from <a href="https://dc.fandom.com/wiki/Absolute_Universe" target="_blank" rel="noopener">DC Fandom Wiki</a>
+    &amp; <a href="https://en.wikipedia.org/wiki/Absolute_Universe" target="_blank" rel="noopener">Wikipedia</a>.
+    Release dates may shift â check your local comic shop. &copy; 2026
+  </footer>
+</div>
+
+<script>
+// ââââââââââââââââââââââââââââââââââââââââ
+//  DATA â DC Absolute Universe Comics
+// ââââââââââââââââââââââââââââââââââââââââ
+
+const TODAY = new Date('2026-03-29');
+
+const SERIES_COLORS = {
+  'Absolute Batman':            '#1a1a1a',
+  'Absolute Wonder Woman':      '#b91c1c',
+  'Absolute Superman':          '#1a7aff',
+  'Absolute Flash':             '#dc2626',
+  'Absolute Martian Manhunter': '#22c55e',
+  'Absolute Green Lantern':     '#16a34a',
+  'Absolute Green Arrow':       '#15803d',
+  'Absolute Catwoman':          '#8b5cf6',
+  'DC All In':                  '#d4a844',
+  'Absolute Evil':              '#6b21a8',
+};
+
+const ALL_ISSUES = [
+  { series:'DC All In', issue:'Special #1', title:'DC All In Special', date:'2024-10-02', writer:'Scott Snyder & Joshua Williamson', artist:'Daniel Sampere & Wes Craig' },
+  { series:'Absolute Batman', issue:'#1', title:'Absolute Batman #1', date:'2024-10-09', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#2', title:'Absolute Batman #2', date:'2024-11-13', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#3', title:'Absolute Batman #3', date:'2024-12-11', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#4', title:'Absolute Batman #4', date:'2025-01-08', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#5', title:'Absolute Batman #5', date:'2025-02-12', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#6', title:'Absolute Batman #6', date:'2025-03-12', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#7', title:'Absolute Batman #7', date:'2025-04-09', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#8', title:'Absolute Batman #8', date:'2025-05-14', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#9', title:'Absolute Batman #9', date:'2025-06-11', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#10', title:'Absolute Batman #10', date:'2025-07-09', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#11', title:'Absolute Batman #11', date:'2025-08-13', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#12', title:'Absolute Batman #12', date:'2025-09-10', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#13', title:'Absolute Batman #13', date:'2025-10-08', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#14', title:'Absolute Batman #14', date:'2025-11-12', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#15', title:'Absolute Batman #15', date:'2025-12-10', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#16', title:'Absolute Batman #16', date:'2026-01-14', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#17', title:'Absolute Batman #17', date:'2026-02-11', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#18', title:'Absolute Batman #18', date:'2026-03-11', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#19', title:'Absolute Batman #19', date:'2026-04-08', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'#20', title:'Absolute Batman #20', date:'2026-05-13', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'Annual #1', title:'Absolute Batman 2025 Annual #1', date:'2025-11-26', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Batman', issue:'Ark M #1', title:'Absolute Batman: Ark M Special #1', date:'2026-01-07', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'Absolute Wonder Woman', issue:'#1', title:'Absolute Wonder Woman #1', date:'2024-10-23', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#2', title:'Absolute Wonder Woman #2', date:'2024-11-27', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#3', title:'Absolute Wonder Woman #3', date:'2024-12-18', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#4', title:'Absolute Wonder Woman #4', date:'2025-01-22', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#5', title:'Absolute Wonder Woman #5', date:'2025-02-26', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#6', title:'Absolute Wonder Woman #6', date:'2025-03-26', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#7', title:'Absolute Wonder Woman #7', date:'2025-04-23', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#8', title:'Absolute Wonder Woman #8', date:'2025-05-28', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#9', title:'Absolute Wonder Woman #9', date:'2025-06-25', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#10', title:'Absolute Wonder Woman #10', date:'2025-07-23', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#11', title:'Absolute Wonder Woman #11', date:'2025-08-27', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#12', title:'Absolute Wonder Woman #12', date:'2025-09-24', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#13', title:'Absolute Wonder Woman #13', date:'2025-10-22', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#14', title:'Absolute Wonder Woman #14', date:'2025-11-26', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#15', title:'Absolute Wonder Woman #15', date:'2025-12-24', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#16', title:'Absolute Wonder Woman #16', date:'2026-01-28', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#17', title:'Absolute Wonder Woman #17', date:'2026-02-25', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#18', title:'Absolute Wonder Woman #18', date:'2026-03-25', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#19', title:'Absolute Wonder Woman #19', date:'2026-04-22', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Superman', issue:'#1', title:'Absolute Superman #1', date:'2024-11-06', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#2', title:'Absolute Superman #2', date:'2024-12-04', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#3', title:'Absolute Superman #3', date:'2025-01-01', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#4', title:'Absolute Superman #4', date:'2025-02-05', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#5', title:'Absolute Superman #5', date:'2025-03-05', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#6', title:'Absolute Superman #6', date:'2025-04-02', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#7', title:'Absolute Superman #7', date:'2025-05-07', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#8', title:'Absolute Superman #8', date:'2025-06-04', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#9', title:'Absolute Superman #9', date:'2025-07-02', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#10', title:'Absolute Superman #10', date:'2025-08-06', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#11', title:'Absolute Superman #11', date:'2025-09-03', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#12', title:'Absolute Superman #12', date:'2025-10-01', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#13', title:'Absolute Superman #13', date:'2025-11-05', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#14', title:'Absolute Superman #14', date:'2025-12-03', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#15', title:'Absolute Superman #15', date:'2026-01-07', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#16', title:'Absolute Superman #16', date:'2026-02-04', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#17', title:'Absolute Superman #17', date:'2026-03-04', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#18', title:'Absolute Superman #18', date:'2026-04-01', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Flash', issue:'#1', title:'Absolute Flash #1', date:'2025-03-19', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#2', title:'Absolute Flash #2', date:'2025-04-16', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#3', title:'Absolute Flash #3', date:'2025-05-21', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#4', title:'Absolute Flash #4', date:'2025-06-18', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#5', title:'Absolute Flash #5', date:'2025-07-16', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#6', title:'Absolute Flash #6', date:'2025-08-20', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#7', title:'Absolute Flash #7', date:'2025-09-17', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#8', title:'Absolute Flash #8', date:'2025-10-15', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#9', title:'Absolute Flash #9', date:'2025-11-19', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#10', title:'Absolute Flash #10', date:'2025-12-17', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#11', title:'Absolute Flash #11', date:'2026-01-21', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#12', title:'Absolute Flash #12', date:'2026-02-18', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#13', title:'Absolute Flash #13', date:'2026-03-18', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Flash', issue:'#14', title:'Absolute Flash #14', date:'2026-04-15', writer:'Jeff Lemire', artist:'Nick Robles' },
+  { series:'Absolute Martian Manhunter', issue:'#1', title:'Absolute Martian Manhunter #1', date:'2025-03-26', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#2', title:'Absolute Martian Manhunter #2', date:'2025-04-23', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#3', title:'Absolute Martian Manhunter #3', date:'2025-05-28', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#4', title:'Absolute Martian Manhunter #4', date:'2025-06-25', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#5', title:'Absolute Martian Manhunter #5', date:'2025-07-23', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#6', title:'Absolute Martian Manhunter #6', date:'2025-08-27', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#7', title:'Absolute Martian Manhunter #7', date:'2025-09-24', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#8', title:'Absolute Martian Manhunter #8', date:'2025-10-22', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#9', title:'Absolute Martian Manhunter #9', date:'2025-11-26', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#10', title:'Absolute Martian Manhunter #10', date:'2025-12-24', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#11', title:'Absolute Martian Manhunter #11', date:'2026-01-28', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#12', title:'Absolute Martian Manhunter #12', date:'2026-05-27', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Green Lantern', issue:'#1', title:'Absolute Green Lantern #1', date:'2025-04-02', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#2', title:'Absolute Green Lantern #2', date:'2025-05-07', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#3', title:'Absolute Green Lantern #3', date:'2025-06-04', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#4', title:'Absolute Green Lantern #4', date:'2025-07-02', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#5', title:'Absolute Green Lantern #5', date:'2025-08-06', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#6', title:'Absolute Green Lantern #6', date:'2025-09-03', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#7', title:'Absolute Green Lantern #7', date:'2025-10-01', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#8', title:'Absolute Green Lantern #8', date:'2025-11-05', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#9', title:'Absolute Green Lantern #9', date:'2025-12-03', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#10', title:'Absolute Green Lantern #10', date:'2026-01-07', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#11', title:'Absolute Green Lantern #11', date:'2026-02-04', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#12', title:'Absolute Green Lantern #12', date:'2026-03-04', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Lantern', issue:'#13', title:'Absolute Green Lantern #13', date:'2026-04-01', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
+  { series:'Absolute Green Arrow', issue:'#1', title:'Absolute Green Arrow #1', date:'2025-12-10', writer:'Pornsak Pichetshote', artist:'Rafael Albuquerque' },
+  { series:'Absolute Green Arrow', issue:'#2', title:'Absolute Green Arrow #2', date:'2026-01-14', writer:'Pornsak Pichetshote', artist:'Rafael Albuquerque' },
+  { series:'Absolute Green Arrow', issue:'#3', title:'Absolute Green Arrow #3', date:'2026-02-11', writer:'Pornsak Pichetshote', artist:'Rafael Albuquerque' },
+  { series:'Absolute Green Arrow', issue:'#4', title:'Absolute Green Arrow #4', date:'2026-03-11', writer:'Pornsak Pichetshote', artist:'Rafael Albuquerque' },
+  { series:'Absolute Green Arrow', issue:'#5', title:'Absolute Green Arrow #5', date:'2026-04-08', writer:'Pornsak Pichetshote', artist:'Rafael Albuquerque' },
+  { series:'Absolute Green Arrow', issue:'#6', title:'Absolute Green Arrow #6', date:'2026-05-20', writer:'Pornsak Pichetshote', artist:'Rafael Albuquerque' },
+  { series:'Absolute Catwoman', issue:'#1', title:'Absolute Catwoman #1', date:'2026-03-25', writer:'Scott Snyder & Che Grayson', artist:'Bengal' },
+  { series:'Absolute Catwoman', issue:'#2', title:'Absolute Catwoman #2', date:'2026-04-22', writer:'Scott Snyder & Che Grayson', artist:'Bengal' },
+  { series:'Absolute Catwoman', issue:'#3', title:'Absolute Catwoman #3', date:'2026-05-20', writer:'Scott Snyder & Che Grayson', artist:'Bengal' },
+  { series:'Absolute Catwoman', issue:'#4', title:'Absolute Catwoman #4', date:'2026-06-10', writer:'Scott Snyder & Che Grayson', artist:'Bengal' },
+  { series:'Absolute Evil', issue:'#1', title:'Absolute Evil #1', date:'2025-10-08', writer:'Scott Snyder', artist:'Wes Craig' },
+];
+
+const TRADES = [
+  { title:'Absolute Batman Vol. 1', subtitle:'Collects #1â6', date:'2025-07-15', series:'Absolute Batman' },
+  { title:'Absolute Wonder Woman Vol. 1: The Last Amazon', subtitle:'Collects #1â7', date:'2025-08-12', series:'Absolute Wonder Woman' },
+  { title:'Absolute Superman Vol. 1: Last Dust of Krypton', subtitle:'Collects #1â6', date:'2025-08-19', series:'Absolute Superman' },
+  { title:'Absolute Green Lantern Vol. 1: Without Fear', subtitle:'Collects #1â6', date:'2025-12-09', series:'Absolute Green Lantern' },
+  { title:'Absolute Flash Vol. 1: Of Two Worlds', subtitle:'Collects #1â6', date:'2025-12-23', series:'Absolute Flash' },
+  { title:'Absolute Batman Vol. 2', subtitle:'Collects #7â12', date:'2026-02-06', series:'Absolute Batman' },
+  { title:'Absolute Wonder Woman Vol. 2', subtitle:'Collects #8â14', date:'2026-02-17', series:'Absolute Wonder Woman' },
+  { title:'Absolute Superman Vol. 2', subtitle:'Collects #7â12', date:'2026-03-03', series:'Absolute Superman' },
+  { title:'Absolute Green Lantern Vol. 2', subtitle:'Collects #7â12', date:'2026-06-09', series:'Absolute Green Lantern' },
+  { title:'Absolute Flash Vol. 2', subtitle:'Collects #7â12', date:'2026-06-23', series:'Absolute Flash' },
+];
+
+const SERIES_INFO = [
+  { name:'Absolute Batman', writer:'Scott Snyder', artist:'Nick Dragotta', colorist:'Frank Martin', start:'Oct 2024', type:'Ongoing', description:'Bruce Wayne is a blue-collar construction worker with no Wayne fortune. His mother Martha is alive. His ally Alfred is a CIA operative. Batman builds his own gear in a Gotham where he fights as a true underdog.' },
+  { name:'Absolute Wonder Woman', writer:'Kelly Thompson', artist:'Hayden Sherman', colorist:'Jordie Bellaire', start:'Oct 2024', type:'Ongoing', description:'Diana was raised in Hell by Circe and the Greek gods. She fights her way to become a warrior unlike any version before. Won Best New Series at the 2025 Eisner Awards.' },
+  { name:'Absolute Superman', writer:'Jason Aaron', artist:'Rafa Sandoval', colorist:'Ulises Arreola', start:'Nov 2024', type:'Ongoing', description:'Kal-El grew up on Krypton and arrived as an adult, living as undocumented. His companion is an AI called Sol. He must define heroism without the Kents.' },
+  { name:'Absolute Flash', writer:'Jeff Lemire', artist:'Nick Robles', colorist:'Adriano Lucas', start:'Mar 2025', type:'Ongoing', description:'Wally West carries guilt for Barry Allen\'s death. He travels with a mutant Grodd, redefining the speedster legacy.' },
+  { name:'Absolute Martian Manhunter', writer:'Deniz Camp', artist:'Javier RodrÃ­guez', colorist:'Javier RodrÃ­guez', start:'Mar 2025', type:'Limited (12)', description:'J\'onn J\'onzz is reimagined as a detective whose mind is invaded by an alien consciousness. Exploring identity and otherness.' },
+  { name:'Absolute Green Lantern', writer:'Al Ewing', artist:'Jahnoy Lindsay', colorist:'Jahnoy Lindsay', start:'Apr 2025', type:'Ongoing', description:'The spectrum reduced to 4 colors. Sojourner Mullein navigates a universe with different rules of willpower and fear.' },
+  { name:'Absolute Green Arrow', writer:'Pornsak Pichetshote', artist:'Rafael Albuquerque', colorist:'TBA', start:'Dec 2025', type:'Limited (6)', description:'A 6-issue limited series with a new take on Oliver Queen for Earth-Alpha.' },
+  { name:'Absolute Catwoman', writer:'Scott Snyder & Che Grayson', artist:'Bengal', colorist:'Bengal', start:'Mar 2026', type:'Limited', description:'Selina Kyle enters Earth-Alpha with art by acclaimed Bengal.' },
+  { name:'Absolute Evil', writer:'Scott Snyder', artist:'Wes Craig', colorist:'TBA', start:'Oct 2025', type:'Special', description:'Special event exploring darker forces in the Absolute Universe.' },
+];
+
+// Default owned state from Google Sheet (synced 2026-03-29)
+const SHEET_OWNED = {
+  'Absolute Batman|#1': true, 'Absolute Batman|#2': true, 'Absolute Batman|#3': true,
+  'Absolute Batman|#4': true, 'Absolute Batman|#5': true, 'Absolute Batman|#6': true,
+  'Absolute Batman|#8': true, 'Absolute Batman|#12': true, 'Absolute Batman|#13': true,
+  'Absolute Flash|#1': true, 'Absolute Flash|#2': true, 'Absolute Flash|#3': true,
+  'Absolute Flash|#4': true, 'Absolute Flash|#5': true, 'Absolute Flash|#6': true,
+  'Absolute Flash|#7': true,
+  'Absolute Martian Manhunter|#1': true, 'Absolute Martian Manhunter|#2': true,
+  'Absolute Martian Manhunter|#3': true, 'Absolute Martian Manhunter|#4': true,
+  'Absolute Martian Manhunter|#5': true,
+  'Absolute Green Lantern|#1': true, 'Absolute Green Lantern|#2': true,
+  'Absolute Green Lantern|#4': true, 'Absolute Green Lantern|#5': true,
+  'Absolute Green Lantern|#6': true, 'Absolute Green Lantern|#7': true,
+  'Absolute Wonder Woman|#1': true, 'Absolute Wonder Woman|#2': true,
+  'Absolute Wonder Woman|#3': true, 'Absolute Wonder Woman|#4': true,
+  'Absolute Wonder Woman|#5': true, 'Absolute Wonder Woman|#6': true,
+  'Absolute Wonder Woman|#7': true, 'Absolute Wonder Woman|#8': true,
+  'Absolute Wonder Woman|#9': true, 'Absolute Wonder Woman|#10': true,
+  'Absolute Superman|#1': true, 'Absolute Superman|#2': true,
+  'Absolute Superman|#3': true, 'Absolute Superman|#4': true,
+  'Absolute Superman|#5': true, 'Absolute Superman|#6': true,
+  'Absolute Superman|#7': true, 'Absolute Superman|#8': true,
+  'Absolute Superman|#11': true, 'Absolute Superman|#12': true,
+  'Absolute Evil|#1': true,
+};
+
+let owned = {};
+let ownedTrades = {};
+try {
+  const stored = localStorage.getItem('au_owned');
+  if (stored) {
+    owned = JSON.parse(stored);
+  } else {
+    // First visit: initialize from Google Sheet data
+    owned = Object.assign({}, SHEET_OWNED);
+  }
+  ownedTrades = JSON.parse(localStorage.getItem('au_trades') || '{}');
+} catch(e) {
+  owned = Object.assign({}, SHEET_OWNED);
+}
+
+function saveOwned() { try { localStorage.setItem('au_owned', JSON.stringify(owned)); } catch(e){} }
+function saveTrades() { try { localStorage.setItem('au_trades', JSON.stringify(ownedTrades)); } catch(e){} }
+
+function issueKey(issue) { return issue.series + '|' + issue.issue; }
+function makeSlug(name) { return name.toLowerCase().replace(/[:#]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''); }
+
+function tradeKey(t) { return t.title; }
+
+function isReleased(dateStr) { return new Date(dateStr) <= TODAY; }
+function isUpcoming(dateStr) { return new Date(dateStr) > TODAY; }
+
+const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function getSeriesNames() {
+  const s = new Set();
+  ALL_ISSUES.forEach(i => s.add(i.series));
+  return [...s];
+}
+
+function renderStats() {
+  const released = ALL_ISSUES.filter(i => isReleased(i.date)).length;
+  const ownedCount = ALL_ISSUES.filter(i => owned[issueKey(i)]).length;
+  const upcoming = ALL_ISSUES.filter(i => isUpcoming(i.date)).length;
+  const series = new Set(ALL_ISSUES.filter(i => isReleased(i.date)).map(i => i.series));
+  const pct = released > 0 ? Math.round((ownedCount / released) * 100) : 0;
+
+  document.getElementById('statOwned').textContent = ownedCount;
+  document.getElementById('statReleased').textContent = released;
+  document.getElementById('statPercent').textContent = pct + '%';
+  document.getElementById('statUpcoming').textContent = upcoming;
+  document.getElementById('statSeries').textContent = series.size;
+}
+
+function renderCollection(filter, search) {
+  const container = document.getElementById('collectionContainer');
+  container.innerHTML = '';
+  const seriesNames = getSeriesNames();
+  let hasContent = false;
+
+  seriesNames.forEach(sName => {
+    let issues = ALL_ISSUES.filter(i => i.series === sName);
+    if (filter === 'owned') issues = issues.filter(i => owned[issueKey(i)]);
+    else if (filter === 'missing') issues = issues.filter(i => !owned[issueKey(i)] && isReleased(i.date));
+    else if (filter === 'upcoming') issues = issues.filter(i => isUpcoming(i.date));
+
+    if (search) {
+      const q = search.toLowerCase();
+      issues = issues.filter(i => i.title.toLowerCase().includes(q) || i.writer.toLowerCase().includes(q) || i.artist.toLowerCase().includes(q));
+    }
+
+    if (issues.length === 0) return;
+    hasContent = true;
+
+    const block = document.createElement('div');
+    block.className = 'series-block';
+
+    const allInSeries = ALL_ISSUES.filter(i => i.series === sName && isReleased(i.date));
+    const ownedInSeries = allInSeries.filter(i => owned[issueKey(i)]).length;
+    const pct = allInSeries.length > 0 ? Math.round((ownedInSeries / allInSeries.length) * 100) : 0;
+    const color = SERIES_COLORS[sName] || '#555';
+
+    block.innerHTML = `
+      <div class="series-header">
+        <div class="series-color" style="background:${color}"></div>
+        <div class="series-title">${sName}</div>
+        <div class="series-progress">
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <div class="progress-text">${ownedInSeries}/${allInSeries.length}</div>
+        </div>
+        <div class="series-meta"><strong>${issues.length}</strong> issues shown</div>
+      </div>
+      <div class="issue-grid"></div>
+    `;
+
+    const grid = block.querySelector('.issue-grid');
+    issues.forEach(issue => {
+      const key = issueKey(issue);
+      const isOwned = !!owned[key];
+      const released = isReleased(issue.date);
+      const card = document.createElement('div');
+      card.className = 'issue-card' + (isOwned ? ' owned' : '');
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-pressed', isOwned ? 'true' : 'false');
+      card.setAttribute('aria-label', `Toggle: ${issue.title}`);
+
+      const badgeClass = released ? 'badge-released' : 'badge-upcoming';
+      const badgeText = released ? 'Released' : 'Upcoming';
+      const d = new Date(issue.date);
+      const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+      card.innerHTML = `
+        <div class="issue-checkbox">${checkSvg}</div>
+        <div class="issue-info">
+          <div class="issue-name"><a href="issue.html?id=${makeSlug(issue.title)}" onclick="event.stopPropagation()">${issue.title}</a></div>
+          <div class="issue-date">${dateStr} Â· ${issue.writer}</div>
+        </div>
+        <div class="issue-badge ${badgeClass}">${badgeText}</div>
+      `;
+
+      const toggleOwned = () => {
+        if (owned[key]) delete owned[key];
+        else owned[key] = true;
+        saveOwned();
+        renderCollection(currentFilter, currentSearch);
+        renderStats();
+      };
+
+      card.addEventListener('click', toggleOwned);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleOwned();
+        }
+      });
+
+      grid.appendChild(card);
+    });
+
+    container.appendChild(block);
+  });
+
+  if (!hasContent) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">ð­</div><p>No issues match your filters.</p></div>';
+  }
+}
+
+function renderCalendar(showAll) {
+  const container = document.getElementById('calendarContainer');
+  container.innerHTML = '';
+
+  let issues = [...ALL_ISSUES].sort((a,b) => new Date(a.date) - new Date(b.date));
+  if (!showAll) issues = issues.filter(i => isUpcoming(i.date));
+
+  if (issues.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">ð</div><p>No upcoming releases.</p></div>';
+    return;
+  }
+
+  const months = {};
+  issues.forEach(i => {
+    const d = new Date(i.date);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    if (!months[key]) months[key] = [];
+    months[key].push(i);
+  });
+
+  Object.keys(months).sort().forEach(mKey => {
+    const items = months[mKey];
+    const d = new Date(items[0].date);
+    const monthName = d.toLocaleDateString('en-US', { month:'long', year:'numeric' });
+
+    const monthDiv = document.createElement('div');
+    monthDiv.className = 'calendar-month';
+    monthDiv.innerHTML = `<div class="calendar-month-title">${monthName}</div><div class="calendar-list"></div>`;
+
+    const list = monthDiv.querySelector('.calendar-list');
+    items.forEach(i => {
+      const dd = new Date(i.date);
+      const dayStr = dd.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      const past = dd < TODAY;
+      const isToday = dd.toDateString() === TODAY.toDateString();
+      const color = SERIES_COLORS[i.series] || '#555';
+
+      const item = document.createElement('div');
+      item.className = 'calendar-item' + (past ? ' past' : '') + (isToday ? ' today' : '');
+      item.innerHTML = `
+        <div class="calendar-date">${dayStr}</div>
+        <div class="calendar-dot" style="background:${color}"></div>
+        <div class="calendar-title">${i.title}</div>
+        <div class="calendar-writer">${i.writer} / ${i.artist}</div>
+      `;
+      list.appendChild(item);
+    });
+
+    container.appendChild(monthDiv);
+  });
+}
+
+function renderSeriesGuide() {
+  const container = document.getElementById('seriesGuideContainer');
+  container.innerHTML = '';
+
+  const grid = document.createElement('div');
+  grid.className = 'info-grid';
+
+  SERIES_INFO.forEach(s => {
+    const color = SERIES_COLORS[s.name] || '#555';
+    const typeClass = s.type.includes('Limited') ? 'limited' : s.type === 'Special' ? 'special' : '';
+    const card = document.createElement('div');
+    card.className = 'info-card';
+    card.innerHTML = `
+      <div class="info-card-header">
+        <div class="info-card-color" style="background:${color}"></div>
+        <div class="info-card-title">${s.name}</div>
+        <div class="info-card-type ${typeClass}">${s.type}</div>
+      </div>
+      <div class="info-row"><span class="info-label">Writer</span><span class="info-value">${s.writer}</span></div>
+      <div class="info-row"><span class="info-label">Artist</span><span class="info-value">${s.artist}</span></div>
+      <div class="info-row"><span class="info-label">Colorist</span><span class="info-value">${s.colorist}</span></div>
+      <div class="info-row"><span class="info-label">Launch</span><span class="info-value">${s.start}</span></div>
+      <div class="info-description">${s.description}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  container.appendChild(grid);
+}
+
+function renderTrades() {
+  const container = document.getElementById('tradesContainer');
+  container.innerHTML = '';
+
+  const grid = document.createElement('div');
+  grid.className = 'tpb-grid';
+
+  if (TRADES.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">ð</div><p>No trades available.</p></div>';
+    return;
+  }
+
+  TRADES.forEach(t => {
+    const key = tradeKey(t);
+    const isOwned = !!ownedTrades[key];
+    const released = isReleased(t.date);
+    const d = new Date(t.date);
+    const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+    const card = document.createElement('div');
+    card.className = 'tpb-card' + (isOwned ? ' owned' : '');
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-pressed', isOwned ? 'true' : 'false');
+    card.setAttribute('aria-label', `Toggle: ${t.title}`);
+
+    card.innerHTML = `
+      <div class="issue-checkbox">${checkSvg}</div>
+      <div class="tpb-info">
+        <div class="tpb-title">${t.title}</div>
+        <div class="tpb-sub">${t.subtitle} Â· ${dateStr}</div>
+      </div>
+      <div class="issue-badge ${released ? 'badge-released' : 'badge-upcoming'}">${released ? 'Released' : 'Upcoming'}</div>
+    `;
+
+    const toggleOwned = () => {
+      if (ownedTrades[key]) delete ownedTrades[key];
+      else ownedTrades[key] = true;
+      saveTrades();
+      renderTrades();
+    };
+
+    card.addEventListener('click', toggleOwned);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleOwned();
+      }
+    });
+
+    grid.appendChild(card);
+  });
+
+  container.appendChild(grid);
+}
+
+let currentFilter = 'all';
+let currentSearch = '';
+let calendarShowAll = false;
+
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+    currentFilter = btn.dataset.filter;
+    renderCollection(currentFilter, currentSearch);
+  });
+});
+
+document.querySelectorAll('[data-calendar-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-calendar-filter]').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+    calendarShowAll = btn.dataset.calendarFilter === 'all';
+    renderCalendar(calendarShowAll);
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  currentSearch = e.target.value;
+  renderCollection(currentFilter, currentSearch);
+});
+
+renderStats();
+renderCollection('all', '');
+renderCalendar(false);
+renderSeriesGuide();
+renderTrades();
+</script>
+
+<!-- Export Feature -->
+<style>
+  .export-dropdown { position: relative; display: inline-block; }
+  .export-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-family: inherit; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+  .export-btn:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); }
+  .export-btn svg { width: 14px; height: 14px; }
+  .export-menu { display: none; position: absolute; right: 0; top: calc(100% + 4px); background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; min-width: 200px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.4); overflow: hidden; }
+  .export-menu.open { display: block; }
+  .export-menu-item { padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--text-primary); font-size: 0.85rem; transition: background 0.15s; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+  .export-menu-item:hover { background: var(--bg-card-hover); }
+  .export-menu-item svg { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
+  .export-menu-item span { display: flex; flex-direction: column; }
+  .export-menu-item .export-label { font-weight: 500; }
+  .export-menu-item .export-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+  .export-menu-divider { height: 1px; background: var(--border); margin: 2px 0; }
+</style>
+<script>
+(function() {
+  // --- Export Feature ---
+  function getVisibleCards() {
+    var cards = [];
+    document.querySelectorAll('.series-block').forEach(function(block) {
+      if (block.style.display === 'none') return;
+      var seriesTitle = block.querySelector('.series-title');
+      var seriesName = seriesTitle ? seriesTitle.textContent.trim() : 'Unknown';
+      block.querySelectorAll('.issue-card').forEach(function(card) {
+        if (card.style.display === 'none' || card.closest('.issues-grid').style.display === 'none') return;
+        var name = card.querySelector('.issue-name');
+        var date = card.querySelector('.issue-date');
+        var badge = card.querySelector('.issue-badge');
+        var owned = card.classList.contains('owned');
+        cards.push({
+          series: seriesName,
+          issue: name ? name.textContent.trim() : '',
+          date: date ? date.textContent.trim() : '',
+          status: badge ? badge.textContent.trim() : '',
+          owned: owned
+        });
+      });
+    });
+    return cards;
+  }
+
+  function getActiveFilter() {
+    var active = document.querySelector('.filter-btn.active');
+    return active ? active.textContent.trim() : 'All';
+  }
+
+  function exportCSV() {
+    var cards = getVisibleCards();
+    var filter = getActiveFilter();
+    var csv = 'Series,Issue,Release Date,Status,Owned\n';
+    cards.forEach(function(c) {
+      csv += '"' + c.series.replace(/"/g, '""') + '","' + c.issue.replace(/"/g, '""') + '","' + c.date.replace(/"/g, '""') + '","' + c.status + '","' + (c.owned ? 'Yes' : 'No') + '"\n';
+    });
+    var blob = new Blob([csv], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'absolute-universe-' + filter.toLowerCase() + '-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    closeExportMenu();
+  }
+
+  function exportJSON() {
+    var cards = getVisibleCards();
+    var filter = getActiveFilter();
+    var data = {
+      exported: new Date().toISOString(),
+      filter: filter,
+      totalIssues: cards.length,
+      ownedCount: cards.filter(function(c) { return c.owned; }).length,
+      issues: cards
+    };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'absolute-universe-' + filter.toLowerCase() + '-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    closeExportMenu();
+  }
+
+  function exportChecklist() {
+    var cards = getVisibleCards();
+    var filter = getActiveFilter();
+    var series = {};
+    cards.forEach(function(c) {
+      if (!series[c.series]) series[c.series] = [];
+      series[c.series].push(c);
+    });
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>DC Absolute Universe - Collection Checklist</title>';
+    html += '<style>@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap");';
+    html += '* { margin: 0; padding: 0; box-sizing: border-box; }';
+    html += 'body { font-family: "Source Sans 3", sans-serif; padding: 32px; max-width: 800px; margin: 0 auto; color: #1a1a1a; }';
+    html += 'h1 { font-size: 1.6rem; margin-bottom: 4px; }';
+    html += '.subtitle { color: #666; margin-bottom: 24px; font-size: 0.9rem; }';
+    html += '.series-group { margin-bottom: 24px; break-inside: avoid; }';
+    html += '.series-name { font-size: 1.1rem; font-weight: 700; border-bottom: 2px solid #333; padding-bottom: 4px; margin-bottom: 8px; }';
+    html += '.issue-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 0.85rem; }';
+    html += '.checkbox { width: 14px; height: 14px; border: 1.5px solid #999; border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }';
+    html += '.checkbox.checked { background: #22c55e; border-color: #22c55e; color: white; font-size: 10px; }';
+    html += '.issue-title { flex: 1; }';
+    html += '.issue-meta { color: #888; font-size: 0.8rem; }';
+    html += '.stats { background: #f5f5f5; padding: 12px 16px; border-radius: 6px; margin-bottom: 24px; display: flex; gap: 24px; font-size: 0.85rem; }';
+    html += '.stat-val { font-weight: 700; font-size: 1.1rem; }';
+    html += '@media print { body { padding: 16px; } .stats { background: #eee; } }';
+    html += '</style></head><body>';
+    html += '<h1>DC Absolute Universe Collection</h1>';
+    html += '<div class="subtitle">Filter: ' + filter + ' &bull; Exported ' + new Date().toLocaleDateString() + '</div>';
+    var owned = cards.filter(function(c) { return c.owned; }).length;
+    html += '<div class="stats"><div><div class="stat-val">' + cards.length + '</div>Total Issues</div>';
+    html += '<div><div class="stat-val">' + owned + '</div>Owned</div>';
+    html += '<div><div class="stat-val">' + (cards.length - owned) + '</div>Missing</div>';
+    html += '<div><div class="stat-val">' + Math.round(owned / cards.length * 100) + '%</div>Complete</div></div>';
+    Object.keys(series).forEach(function(s) {
+      html += '<div class="series-group"><div class="series-name">' + s + ' (' + series[s].filter(function(c){return c.owned;}).length + '/' + series[s].length + ')</div>';
+      series[s].forEach(function(c) {
+        html += '<div class="issue-row"><div class="checkbox' + (c.owned ? ' checked' : '') + '">' + (c.owned ? '&#10003;' : '') + '</div>';
+        html += '<div class="issue-title">' + c.issue + '</div>';
+        html += '<div class="issue-meta">' + c.date + '</div></div>';
+      });
+      html += '</div>';
+    });
+    html += '<script>window.onload=function(){window.print()}<\/script>';
+    html += '</body></html>';
+    var win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    closeExportMenu();
+  }
+
+  function closeExportMenu() {
+    var menu = document.getElementById('export-menu');
+    if (menu) menu.classList.remove('open');
+  }
+
+  // Inject Export button into filter bar
+  function injectExportButton() {
+    var filterBar = document.querySelector('.filter-bar');
+    if (!filterBar || document.getElementById('export-dropdown')) return;
+    
+    var dropdown = document.createElement('div');
+    dropdown.className = 'export-dropdown';
+    dropdown.id = 'export-dropdown';
+    dropdown.innerHTML = '<button class="export-btn" id="export-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>' +
+      '<div class="export-menu" id="export-menu">' +
+      '<button class="export-menu-item" id="export-csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span><span class="export-label">Export as CSV</span><span class="export-desc">Spreadsheet-compatible file</span></span></button>' +
+      '<button class="export-menu-item" id="export-json"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg><span><span class="export-label">Export as JSON</span><span class="export-desc">Structured data for backups</span></span></button>' +
+      '<div class="export-menu-divider"></div>' +
+      '<button class="export-menu-item" id="export-print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span><span class="export-label">Print Checklist</span><span class="export-desc">Shop-ready printable checklist</span></span></button>' +
+      '</div>';
+    
+    filterBar.appendChild(dropdown);
+
+    document.getElementById('export-toggle').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('export-menu').classList.toggle('open');
+    });
+    document.getElementById('export-csv').addEventListener('click', exportCSV);
+    document.getElementById('export-json').addEventListener('click', exportJSON);
+    document.getElementById('export-print').addEventListener('click', exportChecklist);
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#export-dropdown')) closeExportMenu();
+    });
+  }
+
+  injectExportButton();
+  setInterval(function() {
+    if (!document.getElementById('export-dropdown')) injectExportButton();
+  }, 500);
+})();
+</script>
+<!-- Comic Cover Background Images -->
+<style>
+  .issue-card { position: relative !important; overflow: hidden !important; z-index: 0 !important; }
+  .issue-card .card-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center top; opacity: 0.18; z-index: -1; transition: opacity 0.3s; pointer-events: none; }
+  .issue-card:hover .card-bg { opacity: 0.3; }
+  .issue-card.owned .card-bg { opacity: 0.22; }
+  .issue-card.owned:hover .card-bg { opacity: 0.35; }
+.issue-name a { color: inherit; text-decoration: none; } .issue-name a:hover { text-decoration: underline; color: #58a6ff; }
+</style>
+<script>
+(function() {
+  var coverMap = {
+    'DC All In Special': 'https://static.dc.com/2024-09/DC_ALLIN_SP_Cv1_00111_C1.jpg',
+    'Absolute Batman #1': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-1-max-1-per-customer-193132.jpg',
+    'Absolute Batman #2': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8081353.jpg',
+    'Absolute Batman #3': 'https://static.dc.com/2024-12/ABS_BM_Cv3_00311_DIGITAL.jpg',
+    'Absolute Batman #4': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-6-3rd-print-3164952.jpg',
+    'Absolute Batman #5': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-6-3rd-print-3164952.jpg',
+    'Absolute Batman #6': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-6-cover-c-simon-bisley-card-stock-variant-349680.jpg',
+    'Absolute Batman #7': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-7-cover-a-nick-dragotta-227921.jpg',
+    'Absolute Batman #8': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-7-3rd-print-4798692.jpg',
+    'Absolute Batman #9': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-7-3rd-print-4798692.jpg',
+    'Absolute Batman #10': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-7-3rd-print-4798692.jpg',
+    'Absolute Batman #11': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-7-3rd-print-4798692.jpg',
+    'Absolute Batman #12': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-7-3rd-print-4798692.jpg',
+    'Absolute Batman #13': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-13-cover-a-nick-dragotta-5254974.jpg',
+    'Absolute Batman #14': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-13-cover-a-nick-dragotta-5254974.jpg',
+    'Absolute Batman #15': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-13-cover-a-nick-dragotta-5254974.jpg',
+    'Absolute Batman #16': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-16-2nd-print-cover-a-nick-dragotta-2282436.jpg',
+    'Absolute Batman #17': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-18-cover-a-nick-dragotta-9394633.jpg',
+    'Absolute Batman #18': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-18-cover-a-nick-dragotta-9394633.jpg',
+    'Absolute Batman #19': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-18-cover-a-nick-dragotta-9394633.jpg',
+    'Absolute Batman #20': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-18-cover-a-nick-dragotta-9394633.jpg',
+    'Absolute Batman 2025 Annual #1': 'https://static.dc.com/2025-10/T2469000015001.jpg',
+    'Absolute Batman: Ark M Special #1': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7993695.jpg',
+    'Absolute Wonder Woman #1': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-wonder-woman-1-cover-c-jim-lee-card-stock-variant-one-copy-per-customer-365350.jpg',
+    'Absolute Wonder Woman #2': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6278246.jpg',
+    'Absolute Wonder Woman #3': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2965850.jpg',
+    'Absolute Wonder Woman #4': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2319654.jpg',
+    'Absolute Wonder Woman #5': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3348187.jpg',
+    'Absolute Wonder Woman #6': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-wonder-woman-6-cover-a-hayden-sherman-490818.jpg',
+    'Absolute Wonder Woman #7': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4846924.jpg',
+    'Absolute Wonder Woman #8': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2750287.jpg',
+    'Absolute Wonder Woman #9': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3559835.jpg',
+    'Absolute Wonder Woman #10': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3167576.jpg',
+    'Absolute Wonder Woman #11': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6904268.jpg',
+    'Absolute Wonder Woman #12': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-wonder-woman-12-cover-a-hayden-sherman-7476631.jpg',
+    'Absolute Wonder Woman #13': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6966871.jpg',
+    'Absolute Wonder Woman #14': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7801063.jpg',
+    'Absolute Wonder Woman #15': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7164499.jpg',
+    'Absolute Wonder Woman #16': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7126669.jpg',
+    'Absolute Wonder Woman #17': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8091930.jpg',
+    'Absolute Wonder Woman #18': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-wonder-woman-18-cover-a-hayden-sherman-2470468.jpg',
+    'Absolute Wonder Woman #19': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1701890.jpg',
+    'Absolute Superman #1': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7938850.jpg',
+    'Absolute Superman #2': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1356696.jpg',
+    'Absolute Superman #3': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3909135.jpg',
+    'Absolute Superman #4': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4509167.jpg',
+    'Absolute Superman #5': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3601635.jpg',
+    'Absolute Superman #6': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-superman-6-cover-a-rafa-sandoval-929990.jpg',
+    'Absolute Superman #7': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6840272.jpg',
+    'Absolute Superman #8': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4132139.jpg',
+    'Absolute Superman #9': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1662918.jpg',
+    'Absolute Superman #10': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7031658.jpg',
+    'Absolute Superman #11': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2583532.jpg',
+    'Absolute Superman #12': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-superman-12-cover-a-rafa-sandoval-7973885.jpg',
+    'Absolute Superman #13': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3106468.jpg',
+    'Absolute Superman #14': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8208323.jpg',
+    'Absolute Superman #15': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-6230146.jpg',
+    'Absolute Superman #16': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2567304.jpg',
+    'Absolute Superman #17': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7505264.jpg',
+    'Absolute Superman #18': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2985577.jpg',
+    'Absolute Flash #1': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-flash-1-cover-a-nick-robles-1-copy-per-customer-888803.jpg',
+    'Absolute Flash #2': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-flash-2-cover-a-nick-robles-874502.jpg',
+    'Absolute Flash #3': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1613026.jpg',
+    'Absolute Flash #4': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7234696.jpg',
+    'Absolute Flash #5': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8900255.jpg',
+    'Absolute Flash #6': 'https://static.dc.com/2025-08/AB_FLS_Cv6_00611_DIGITAL.jpg',
+    'Absolute Flash #7': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-flash-7-cover-a-nick-robles-1076932.jpg',
+    'Absolute Flash #8': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3834156.jpg',
+    'Absolute Flash #9': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2250466.jpg',
+    'Absolute Flash #10': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8744594.jpg',
+    'Absolute Flash #11': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8285365.jpg',
+    'Absolute Flash #12': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-5446399.jpg',
+    'Absolute Flash #13': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-flash-13-cover-a-nick-robles-8645147.jpg',
+    'Absolute Flash #14': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-2061139.jpg',
+    'Absolute Martian Manhunter #1': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-martian-manhunter-1-of-6-cover-a-javier-rodriguez-one-copy-per-customer-436868.jpg',
+    'Absolute Martian Manhunter #2': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-martian-manhunter-2-of-6-cover-a-javier-rodriguez-750206.jpg',
+    'Absolute Martian Manhunter #3': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4573663.jpg',
+    'Absolute Martian Manhunter #4': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4272772.jpg',
+    'Absolute Martian Manhunter #5': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4643183.jpg',
+    'Absolute Martian Manhunter #6': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7379797.jpg',
+    'Absolute Martian Manhunter #7': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3472304.jpg',
+    'Absolute Martian Manhunter #8': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1616741.jpg',
+    'Absolute Martian Manhunter #9': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8933371.jpg',
+    'Absolute Martian Manhunter #10': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-martian-manhunter-10-cover-a-javier-rodriguez-5111564.jpg',
+    'Absolute Martian Manhunter #11': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7595139.jpg',
+    'Absolute Martian Manhunter #12': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7124600.jpg',
+    'Absolute Green Lantern #1': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-green-lantern-1-cover-a-jahnoy-lindsay-661858.jpg',
+    'Absolute Green Lantern #2': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-green-lantern-2-cover-c-taurin-clarke-card-stock-variant-7355236.jpg',
+    'Absolute Green Lantern #3': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3629696.jpg',
+    'Absolute Green Lantern #4': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-5445219.jpg',
+    'Absolute Green Lantern #5': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-1569974.jpg',
+    'Absolute Green Lantern #6': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-3668202.jpg',
+    'Absolute Green Lantern #7': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-green-lantern-7-cover-a-jahnoy-lindsay-4449864.jpg',
+    'Absolute Green Lantern #8': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-5343448.jpg',
+    'Absolute Green Lantern #9': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-8476102.jpg',
+    'Absolute Green Lantern #10': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7884761.jpg',
+    'Absolute Green Lantern #11': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-7329570.jpg',
+    'Absolute Green Lantern #12': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-green-lantern-12-cover-a-jahnoy-lindsay-3751091.jpg',
+    'Absolute Green Lantern #13': 'https://s3.amazonaws.com/comicgeeks/comics/covers/medium-4835946.jpg',
+    'Absolute Green Arrow #1': 'https://static.dc.com/2026-02/Absolute%20Green%20Arrow%201%20Main%20Albuquerque%20Maiolo.jpg',
+    'Absolute Green Arrow #2': 'https://static.dc.com/2026-02/Absolute%20Green%20Arrow%201%20Main%20Albuquerque%20Maiolo.jpg',
+    'Absolute Green Arrow #3': 'https://static.dc.com/2026-02/Absolute%20Green%20Arrow%201%20Main%20Albuquerque%20Maiolo.jpg',
+    'Absolute Green Arrow #4': 'https://static.dc.com/2026-02/Absolute%20Green%20Arrow%201%20Main%20Albuquerque%20Maiolo.jpg',
+    'Absolute Green Arrow #5': 'https://static.dc.com/2026-02/Absolute%20Green%20Arrow%201%20Main%20Albuquerque%20Maiolo.jpg',
+    'Absolute Green Arrow #6': 'https://static.dc.com/2026-02/Absolute%20Green%20Arrow%201%20Main%20Albuquerque%20Maiolo.jpg',
+    'Absolute Catwoman #1': 'https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg',
+    'Absolute Catwoman #2': 'https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg',
+    'Absolute Catwoman #3': 'https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg',
+    'Absolute Catwoman #4': 'https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg',
+    'Absolute Evil #1': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-evil-1-one-shot-cover-a-giussepe-camuncoli-stefano-nesi-4517323.jpg'
+  };
+
+  function applyCoverBackgrounds() {
+    document.querySelectorAll('.issue-card').forEach(function(card) {
+      if (card.querySelector('.card-bg')) return;
+      var name = card.querySelector('.issue-name');
+      if (name) {
+        var url = coverMap[name.textContent.trim()];
+        if (url) {
+          var bg = document.createElement('div');
+          bg.className = 'card-bg';
+          bg.style.backgroundImage = 'url(' + url + ')';
+          card.insertBefore(bg, card.firstChild);
+        }
+      }
+    });
+  }
+
+  applyCoverBackgrounds();
+
+  setInterval(function() {
+    var cards = document.querySelectorAll('.issue-card');
+    for (var i = 0; i < cards.length; i++) {
+      if (!cards[i].querySelector('.card-bg')) {
+        applyCoverBackgrounds();
+        return;
+      }
+    }
+  }, 250);
+})()
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="auth-integration.js"></script>
+</body></html>

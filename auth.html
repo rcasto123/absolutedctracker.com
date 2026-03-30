@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Absolute Universe Collection Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0c10;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.auth-container{width:100%;max-width:420px;padding:2rem}
+.brand{text-align:center;margin-bottom:2rem}
+.brand-sub{font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;color:#666;margin-bottom:0.25rem}
+.brand-title{font-size:1.4rem;font-weight:700;letter-spacing:1px;color:#fff}
+.brand-title span{color:#3b82f6}
+.auth-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:2rem;backdrop-filter:blur(10px)}
+.auth-card h2{font-size:1.2rem;margin-bottom:0.4rem;color:#fff}
+.auth-card .subtitle{font-size:0.85rem;color:#888;margin-bottom:1.5rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:0.8rem;color:#aaa;margin-bottom:0.35rem}
+.form-group input{width:100%;padding:0.7rem 0.9rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.9rem;outline:none;transition:border-color 0.2s}
+.form-group input:focus{border-color:#3b82f6}
+.form-group input::placeholder{color:#555}
+.btn{display:block;width:100%;padding:0.75rem;border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:center}
+.btn-primary{background:#3b82f6;color:#fff}
+.btn-primary:hover{background:#2563eb}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.15);color:#ddd;margin-top:0.5rem}
+.btn-outline:hover{background:rgba(255,255,255,0.06)}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:0.5rem}
+.btn-apple{display:flex;align-items:center;justify-content:center;gap:0.5rem}
+.divider{display:flex;align-items:center;margin:1.25rem 0;gap:0.75rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1)}
+.divider span{font-size:0.75rem;color:#666;text-transform:uppercase;letter-spacing:1px}
+.auth-link{color:#3b82f6;cursor:pointer;text-decoration:none;font-size:0.85rem}
+.auth-link:hover{text-decoration:underline}
+.auth-footer{text-align:center;margin-top:1rem;font-size:0.85rem;color:#888}
+.forgot-link{display:block;text-align:right;margin-top:0.4rem}
+.error-msg{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;padding:0.6rem 0.8rem;border-radius:8px;font-size:0.8rem;margin-bottom:1rem;display:none}
+.success-msg{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;padding:0.6rem 0.8rem;border-radius:8px;font-size:0.8rem;margin-bottom:1rem;display:none}
+.back-link{display:inline-flex;align-items:center;gap:0.3rem;color:#888;font-size:0.85rem;text-decoration:none;margin-bottom:1.5rem}
+.back-link:hover{color:#fff}
+.password-toggle{position:relative}
+.password-toggle input{padding-right:2.5rem}
+.password-toggle button{position:absolute;right:0.6rem;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;cursor:pointer;font-size:0.8rem;padding:0.2rem}
+.password-toggle button:hover{color:#aaa}
+.loading-spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:0.4rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.icon-google{width:18px;height:18px}
+.icon-apple{font-size:1.1rem}
+@media(max-width:480px){.auth-container{padding:1rem}.auth-card{padding:1.25rem}}
+</style>
+</head>
+<body>
+
+<div class="auth-container">
+  <a href="index.html" class="back-link">&larr; Back to tracker</a>
+
+  <div class="brand">
+    <div class="brand-sub">Earth-Alpha</div>
+    <div class="brand-title">ABSOLUTE <span>UNIVERSE</span></div>
+  </div>
+
+  <!-- Sign In View -->
+  <div class="auth-card" id="signinView">
+    <h2>Welcome back</h2>
+    <p class="subtitle">Sign in to sync your collection across devices</p>
+    <div class="error-msg" id="signinError"></div>
+
+    <button class="btn btn-outline btn-google" onclick="signInWithGoogle()">
+      <svg class="icon-google" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+
+    <button class="btn btn-outline btn-apple" onclick="signInWithApple()">
+      <span class="icon-apple">&#63743;</span>
+      Continue with Apple
+    </button>
+
+    <div class="divider"><span>or</span></div>
+
+    <form onsubmit="emailSignIn(event)">
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="signinEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-toggle">
+          <input type="password" id="signinPassword" placeholder="Enter your password" required>
+          <button type="button" onclick="togglePassword('signinPassword',this)">Show</button>
+        </div>
+        <a class="auth-link forgot-link" onclick="showView('resetView')">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary" id="signinBtn">Sign In</button>
+    </form>
+
+    <p class="auth-footer">Don't have an account? <a class="auth-link" onclick="showView('signupView')">Create one</a></p>
+  </div>
+
+  <!-- Sign Up View -->
+  <div class="auth-card" id="signupView" style="display:none">
+    <h2>Create your account</h2>
+    <p class="subtitle">Track and sync your Absolute Universe collection</p>
+    <div class="error-msg" id="signupError"></div>
+
+    <button class="btn btn-outline btn-google" onclick="signInWithGoogle()">
+      <svg class="icon-google" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+
+    <button class="btn btn-outline btn-apple" onclick="signInWithApple()">
+      <span class="icon-apple">&#63743;</span>
+      Continue with Apple
+    </button>
+
+    <div class="divider"><span>or</span></div>
+
+    <form onsubmit="emailSignUp(event)">
+      <div class="form-group">
+        <label>Display name</label>
+        <input type="text" id="signupName" placeholder="Your name" required>
+      </div>
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="signupEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-toggle">
+          <input type="password" id="signupPassword" placeholder="At least 8 characters" minlength="8" required>
+          <button type="button" onclick="togglePassword('signupPassword',this)">Show</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" id="signupBtn">Create Account</button>
+    </form>
+
+    <p class="auth-footer">Already have an account? <a class="auth-link" onclick="showView('signinView')">Sign in</a></p>
+  </div>
+
+  <!-- Reset Password View -->
+  <div class="auth-card" id="resetView" style="display:none">
+    <h2>Reset your password</h2>
+    <p class="subtitle">We'll send a reset link to your email</p>
+    <div class="error-msg" id="resetError"></div>
+    <div class="success-msg" id="resetSuccess"></div>
+
+    <form onsubmit="resetPassword(event)">
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="resetEmail" placeholder="you@example.com" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="resetBtn">Send Reset Link</button>
+    </form>
+
+    <p class="auth-footer"><a class="auth-link" onclick="showView('signinView')">&larr; Back to sign in</a></p>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+// View management
+function showView(viewId) {
+  document.querySelectorAll('.auth-card').forEach(function(c) { c.style.display = 'none'; });
+  document.getElementById(viewId).style.display = 'block';
+  document.querySelectorAll('.error-msg,.success-msg').forEach(function(m) { m.style.display = 'none'; });
+}
+
+function showError(elementId, msg) {
+  var el = document.getElementById(elementId);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function showSuccess(elementId, msg) {
+  var el = document.getElementById(elementId);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function setLoading(btnId, loading) {
+  var btn = document.getElementById(btnId);
+  if (loading) {
+    btn.disabled = true;
+    btn.dataset.text = btn.textContent;
+    btn.innerHTML = '<span class="loading-spinner"></span> Please wait...';
+  } else {
+    btn.disabled = false;
+    btn.textContent = btn.dataset.text;
+  }
+}
+
+function togglePassword(inputId, btn) {
+  var input = document.getElementById(inputId);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = 'Hide'; }
+  else { input.type = 'password'; btn.textContent = 'Show'; }
+}
+
+// If already signed in, redirect to tracker
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+    window.location.href = redirect;
+  }
+});
+
+// Email Sign In
+async function emailSignIn(e) {
+  e.preventDefault();
+  setLoading('signinBtn', true);
+  var email = document.getElementById('signinEmail').value;
+  var password = document.getElementById('signinPassword').value;
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    // onAuthStateChanged will handle redirect
+  } catch(err) {
+    var msg = 'Sign in failed. Please try again.';
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      msg = 'Invalid email or password.';
+    } else if (err.code === 'auth/too-many-requests') {
+      msg = 'Too many attempts. Please try again later.';
+    }
+    showError('signinError', msg);
+    setLoading('signinBtn', false);
+  }
+}
+
+// Email Sign Up
+async function emailSignUp(e) {
+  e.preventDefault();
+  setLoading('signupBtn', true);
+  var name = document.getElementById('signupName').value;
+  var email = document.getElementById('signupEmail').value;
+  var password = document.getElementById('signupPassword').value;
+  try {
+    var cred = await auth.createUserWithEmailAndPassword(email, password);
+    await cred.user.updateProfile({ displayName: name });
+    // Create user doc in Firestore
+    var localOwned = localStorage.getItem('au_owned');
+    await db.collection('users').doc(cred.user.uid).set({
+      email: email,
+      displayName: name,
+      owned: localOwned ? JSON.parse(localOwned) : {},
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+      lastSync: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // onAuthStateChanged will handle redirect
+  } catch(err) {
+    var msg = 'Sign up failed. Please try again.';
+    if (err.code === 'auth/email-already-in-use') {
+      msg = 'An account with this email already exists.';
+    } else if (err.code === 'auth/weak-password') {
+      msg = 'Password must be at least 8 characters.';
+    }
+    showError('signupError', msg);
+    setLoading('signupBtn', false);
+  }
+}
+
+// Google Sign In
+async function signInWithGoogle() {
+  try {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    var result = await auth.signInWithPopup(provider);
+    // Create/update user doc
+    var user = result.user;
+    var localOwned = localStorage.getItem('au_owned');
+    var existingDoc = await db.collection('users').doc(user.uid).get();
+    if (!existingDoc.exists) {
+      await db.collection('users').doc(user.uid).set({
+        email: user.email,
+        displayName: user.displayName || '',
+        owned: localOwned ? JSON.parse(localOwned) : {},
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+        lastSync: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      await db.collection('users').doc(user.uid).update({
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch(err) {
+    if (err.code !== 'auth/popup-closed-by-user') {
+      showError('signinError', 'Google sign-in failed. Please try again.');
+    }
+  }
+}
+
+// Apple Sign In
+async function signInWithApple() {
+  try {
+    var provider = new firebase.auth.OAuthProvider('apple.com');
+    provider.addScope('email');
+    provider.addScope('name');
+    var result = await auth.signInWithPopup(provider);
+    var user = result.user;
+    var localOwned = localStorage.getItem('au_owned');
+    var existingDoc = await db.collection('users').doc(user.uid).get();
+    if (!existingDoc.exists) {
+      await db.collection('users').doc(user.uid).set({
+        email: user.email || '',
+        displayName: user.displayName || '',
+        owned: localOwned ? JSON.parse(localOwned) : {},
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+        lastSync: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      await db.collection('users').doc(user.uid).update({
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch(err) {
+    if (err.code !== 'auth/popup-closed-by-user') {
+      showError('signinError', 'Apple sign-in failed. Please try again.');
+    }
+  }
+}
+
+// Password Reset
+async function resetPassword(e) {
+  e.preventDefault();
+  setLoading('resetBtn', true);
+  var email = document.getElementById('resetEmail').value;
+  try {
+    await auth.sendPasswordResetEmail(email);
+    showSuccess('resetSuccess', 'Reset link sent! Check your inbox (and spam folder).');
+    document.getElementById('resetBtn').style.display = 'none';
+  } catch(err) {
+    var msg = 'Failed to send reset link.';
+    if (err.code === 'auth/user-not-found') {
+      // Don't reveal if email exists — show success anyway
+      showSuccess('resetSuccess', 'If that email is registered, a reset link has been sent.');
+    } else {
+      showError('resetError', msg);
+    }
+    setLoading('resetBtn', false);
+  }
+}
+</script>
+</body>
+</html>
