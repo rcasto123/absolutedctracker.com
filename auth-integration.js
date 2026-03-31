@@ -13,6 +13,23 @@
 // ============================================================
 
 (function() {
+  // ── State management ──
+  // Track initialization to prevent duplicate setup
+  var _initialized = false;
+  // Auth listener unsubscribe function
+  var _unsubscribeAuth = null;
+  // Preview guard listener references for cleanup
+  var _previewClickHandler = null;
+  var _previewKeydownHandler = null;
+  // Dropdown close listener reference
+  var _dropdownCloseHandler = null;
+  // Sync debounce timer
+  var _syncTimeout = null;
+  // Original Storage.prototype.setItem reference (for restore)
+  var _originalSetItem = Storage.prototype.setItem;
+  // Whether localStorage has been patched
+  var _storagePatched = false;
+
   // ── Preview mode: block owned-toggling for signed-out users ──
   // We intercept clicks on issue cards and show a sign-up prompt
   // instead of toggling ownership when the user isn't signed in.
@@ -76,10 +93,12 @@
   }
 
   // Intercept ownership clicks for signed-out users
-  // We add a capturing event listener that catches clicks on issue cards
-  // before the regular toggleOwned handler can fire.
+  // Uses named handler functions so they can be removed later if needed.
   function installPreviewGuard() {
-    document.addEventListener('click', function(e) {
+    // Guard against duplicate installation
+    if (_previewClickHandler) return;
+
+    _previewClickHandler = function(e) {
       // Only block when signed out
       if (auth.currentUser) return;
 
@@ -100,10 +119,9 @@
         showSignUpPrompt();
         return;
       }
-    }, true); // "true" = capturing phase, runs before the card's own click handler
+    };
 
-    // Also block keyboard toggles
-    document.addEventListener('keydown', function(e) {
+    _previewKeydownHandler = function(e) {
       if (auth.currentUser) return;
       if (e.key === 'Enter' || e.key === ' ') {
         var card = e.target.closest('.issue-card') || e.target.closest('.tpb-card');
@@ -113,11 +131,29 @@
           showSignUpPrompt();
         }
       }
-    }, true);
+    };
+
+    document.addEventListener('click', _previewClickHandler, true);
+    document.addEventListener('keydown', _previewKeydownHandler, true);
+  }
+
+  // Remove preview guard listeners (cleanup)
+  function removePreviewGuard() {
+    if (_previewClickHandler) {
+      document.removeEventListener('click', _previewClickHandler, true);
+      _previewClickHandler = null;
+    }
+    if (_previewKeydownHandler) {
+      document.removeEventListener('keydown', _previewKeydownHandler, true);
+      _previewKeydownHandler = null;
+    }
   }
 
   // Inject auth UI button into the page
   function injectAuthUI() {
+    // Guard against duplicate injection
+    if (document.getElementById('authUI')) return;
+
     // Create the user button container
     var container = document.createElement('div');
     container.id = 'authUI';
@@ -149,7 +185,10 @@
       e.stopPropagation();
       dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
     };
-    document.addEventListener('click', function() { dropdown.style.display = 'none'; });
+
+    // Close dropdown on outside click — use named function so it's not duplicated
+    _dropdownCloseHandler = function() { dropdown.style.display = 'none'; };
+    document.addEventListener('click', _dropdownCloseHandler);
 
     document.body.appendChild(container);
   }
@@ -229,16 +268,17 @@
     setTimeout(function() { badge.style.display = 'none'; }, 3000);
   }
 
-  // Override localStorage for au_owned to also sync to Firestore
-  var _originalSetItem = localStorage.setItem.bind(localStorage);
-  var _syncTimeout = null;
-
+  // Patch localStorage.setItem to also sync au_owned to Firestore.
+  // Uses a scoped wrapper instead of modifying Storage.prototype globally.
   function patchLocalStorage() {
-    var originalSetItem = Storage.prototype.setItem;
+    if (_storagePatched) return;
+    _storagePatched = true;
+
     Storage.prototype.setItem = function(key, value) {
-      originalSetItem.call(this, key, value);
+      // Call the original method
+      _originalSetItem.call(this, key, value);
+      // Sync au_owned to cloud when a user is signed in
       if (key === 'au_owned' && auth.currentUser) {
-        // Debounce sync to avoid hammering Firestore
         clearTimeout(_syncTimeout);
         _syncTimeout = setTimeout(function() {
           try {
@@ -250,6 +290,15 @@
         }, 1500);
       }
     };
+  }
+
+  // Restore original localStorage.setItem (cleanup)
+  function unpatchLocalStorage() {
+    if (_storagePatched) {
+      Storage.prototype.setItem = _originalSetItem;
+      _storagePatched = false;
+    }
+    clearTimeout(_syncTimeout);
   }
 
   // Load cloud data and merge with local on sign in
@@ -318,17 +367,40 @@
 
   // Initialize
   function init() {
+    // Guard against double initialization
+    if (_initialized) return;
+    _initialized = true;
+
     injectAuthUI();
     patchLocalStorage();
     installPreviewGuard();
 
-    auth.onAuthStateChanged(function(user) {
+    // Capture the unsubscribe function so we can clean up if needed
+    _unsubscribeAuth = auth.onAuthStateChanged(function(user) {
       updateAuthUI(user);
       if (user) {
         handleSignIn(user);
       }
     });
   }
+
+  // Expose cleanup for testing or SPA teardown
+  window._authCleanup = function() {
+    if (_unsubscribeAuth) {
+      _unsubscribeAuth();
+      _unsubscribeAuth = null;
+    }
+    removePreviewGuard();
+    unpatchLocalStorage();
+    if (_dropdownCloseHandler) {
+      document.removeEventListener('click', _dropdownCloseHandler);
+      _dropdownCloseHandler = null;
+    }
+    var authUI = document.getElementById('authUI');
+    if (authUI) authUI.remove();
+    removePreviewBanner();
+    _initialized = false;
+  };
 
   // Wait for DOM
   if (document.readyState === 'loading') {
