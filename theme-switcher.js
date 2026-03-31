@@ -205,7 +205,7 @@
     // Dropdown panel
     var panel = document.createElement('div');
     panel.id = 'themePanel';
-    panel.style.cssText = 'display:none;position:absolute;top:calc(100% + 8px);right:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:200px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+    panel.style.cssText = 'position:absolute;top:calc(100% + 8px);right:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:200px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease,visibility 0.2s;pointer-events:none;';
 
     // Scrollbar styling
     var scrollStyle = document.createElement('style');
@@ -243,11 +243,26 @@
     wrap.appendChild(panel);
 
     // Toggle panel
+    var panelOpen = false;
+    function togglePanel(open) {
+      panelOpen = typeof open === 'boolean' ? open : !panelOpen;
+      if (panelOpen) {
+        panel.style.opacity = '1';
+        panel.style.visibility = 'visible';
+        panel.style.transform = 'translateY(0)';
+        panel.style.pointerEvents = 'auto';
+      } else {
+        panel.style.opacity = '0';
+        panel.style.visibility = 'hidden';
+        panel.style.transform = 'translateY(-8px)';
+        panel.style.pointerEvents = 'none';
+      }
+    }
     btn.onclick = function (e) {
       e.stopPropagation();
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      togglePanel();
     };
-    document.addEventListener('click', function () { panel.style.display = 'none'; });
+    document.addEventListener('click', function () { togglePanel(false); });
 
     document.body.appendChild(wrap);
   }
