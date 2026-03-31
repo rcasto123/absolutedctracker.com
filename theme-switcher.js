@@ -1,7 +1,8 @@
 // ============================================================
 // Theme Switcher for Absolute Universe Collection Tracker
 // ============================================================
-// Adds a palette icon that lets users choose between color themes.
+// Adds a palette icon that lets users choose between color themes
+// inspired by the DC heroes featured in the Absolute Universe.
 // Selection is saved to localStorage and applied on every page load.
 // ============================================================
 
@@ -9,11 +10,17 @@
   var STORAGE_KEY = 'au_theme';
 
   // ── Theme definitions ──
-  // Each theme overrides CSS custom properties + adds body background
+  // Each theme is inspired by a hero's iconic color palette.
+  // vars: CSS custom property overrides
+  // bodyBg: background shorthand (solid or gradient)
+  // accent: highlight color used for the swatch dot border when active
+
   var themes = {
     default: {
       name: 'Original Dark',
+      group: 'general',
       swatch: '#0a0c10',
+      accent: '#3b82f6',
       vars: {
         '--bg-primary': '#0a0c10',
         '--bg-secondary': '#12151c',
@@ -23,43 +30,132 @@
       },
       bodyBg: '#0a0c10'
     },
-    navy: {
-      name: 'Deep Navy',
-      swatch: '#0f1628',
+
+    // ── Hero themes ──
+
+    batman: {
+      name: 'Batman',
+      group: 'heroes',
+      swatch: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+      accent: '#f5c518',
       vars: {
-        '--bg-primary': '#0f1628',
-        '--bg-secondary': '#162040',
-        '--bg-card': '#1a2548',
-        '--bg-card-hover': '#1f2d55',
-        '--border': '#2e3f6e'
+        '--bg-primary': '#0d0d1a',
+        '--bg-secondary': '#141428',
+        '--bg-card': '#1a1a30',
+        '--bg-card-hover': '#22223d',
+        '--border': '#2d2d4a'
       },
-      bodyBg: 'radial-gradient(ellipse at 20% 0%, #1a2a5e 0%, #0f1628 40%, #0a0e1a 100%)'
+      bodyBg: 'radial-gradient(ellipse at 50% -10%, rgba(245,197,24,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(30,30,60,0.8) 0%, transparent 60%), linear-gradient(180deg, #0d0d1a 0%, #080812 100%)'
     },
-    midnight: {
-      name: 'Midnight Glow',
-      swatch: '#111827',
+
+    superman: {
+      name: 'Superman',
+      group: 'heroes',
+      swatch: 'linear-gradient(135deg, #1a1040 0%, #0f1a3d 100%)',
+      accent: '#dc2626',
       vars: {
-        '--bg-primary': '#111827',
-        '--bg-secondary': '#1e2a4a',
-        '--bg-card': '#1c2744',
-        '--bg-card-hover': '#243052',
-        '--border': '#334872'
+        '--bg-primary': '#0c0e24',
+        '--bg-secondary': '#141838',
+        '--bg-card': '#181e42',
+        '--bg-card-hover': '#1e2550',
+        '--border': '#2a3568'
       },
-      bodyBg: 'radial-gradient(ellipse at 15% 5%, rgba(59,130,246,0.15) 0%, transparent 50%), radial-gradient(ellipse at 85% 20%, rgba(139,92,246,0.1) 0%, transparent 45%), radial-gradient(ellipse at 50% 80%, rgba(6,182,212,0.08) 0%, transparent 50%), linear-gradient(180deg, #111827 0%, #0c1220 100%)'
+      bodyBg: 'radial-gradient(ellipse at 30% 0%, rgba(220,38,38,0.08) 0%, transparent 40%), radial-gradient(ellipse at 70% 10%, rgba(37,99,235,0.12) 0%, transparent 45%), radial-gradient(ellipse at 50% 90%, rgba(220,38,38,0.04) 0%, transparent 40%), linear-gradient(180deg, #0c0e24 0%, #080a1a 100%)'
     },
-    warmslate: {
-      name: 'DC Warm',
-      swatch: '#141821',
+
+    wonderwoman: {
+      name: 'Wonder Woman',
+      group: 'heroes',
+      swatch: 'linear-gradient(135deg, #2a1228 0%, #1a0e20 100%)',
+      accent: '#d4a844',
       vars: {
-        '--bg-primary': '#141821',
-        '--bg-secondary': '#1c2030',
-        '--bg-card': '#1e2235',
-        '--bg-card-hover': '#252a40',
-        '--border': '#353b55'
+        '--bg-primary': '#120a18',
+        '--bg-secondary': '#1e1228',
+        '--bg-card': '#241630',
+        '--bg-card-hover': '#2e1c3c',
+        '--border': '#3e2850'
       },
-      bodyBg: 'radial-gradient(ellipse at 10% 0%, rgba(220,38,38,0.1) 0%, transparent 40%), radial-gradient(ellipse at 90% 10%, rgba(212,168,68,0.08) 0%, transparent 40%), radial-gradient(ellipse at 50% 60%, rgba(59,130,246,0.06) 0%, transparent 50%), linear-gradient(175deg, #1a1e2e 0%, #111420 40%, #0d1018 100%)'
+      bodyBg: 'radial-gradient(ellipse at 20% 5%, rgba(212,168,68,0.08) 0%, transparent 45%), radial-gradient(ellipse at 80% 15%, rgba(180,40,60,0.07) 0%, transparent 40%), radial-gradient(ellipse at 50% 70%, rgba(59,130,246,0.04) 0%, transparent 50%), linear-gradient(175deg, #160c1e 0%, #0e0814 50%, #0a0610 100%)'
+    },
+
+    flash: {
+      name: 'Flash',
+      group: 'heroes',
+      swatch: 'linear-gradient(135deg, #2a1008 0%, #1e0c06 100%)',
+      accent: '#ef4444',
+      vars: {
+        '--bg-primary': '#140a06',
+        '--bg-secondary': '#201008',
+        '--bg-card': '#28150c',
+        '--bg-card-hover': '#321a10',
+        '--border': '#4a2818'
+      },
+      bodyBg: 'radial-gradient(ellipse at 40% 0%, rgba(239,68,68,0.1) 0%, transparent 45%), radial-gradient(ellipse at 70% 30%, rgba(245,158,11,0.06) 0%, transparent 40%), radial-gradient(ellipse at 20% 80%, rgba(220,38,38,0.04) 0%, transparent 45%), linear-gradient(180deg, #140a06 0%, #0e0604 100%)'
+    },
+
+    greenlantern: {
+      name: 'Green Lantern',
+      group: 'heroes',
+      swatch: 'linear-gradient(135deg, #0a1a0e 0%, #0e2414 100%)',
+      accent: '#22c55e',
+      vars: {
+        '--bg-primary': '#080f0a',
+        '--bg-secondary': '#0e1a12',
+        '--bg-card': '#122218',
+        '--bg-card-hover': '#182a1e',
+        '--border': '#244032'
+      },
+      bodyBg: 'radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 60%, rgba(34,197,94,0.04) 0%, transparent 40%), radial-gradient(ellipse at 80% 40%, rgba(16,185,129,0.03) 0%, transparent 40%), linear-gradient(180deg, #080f0a 0%, #060a08 100%)'
+    },
+
+    martianmanhunter: {
+      name: 'Martian Manhunter',
+      group: 'heroes',
+      swatch: 'linear-gradient(135deg, #0a1820 0%, #0e2028 100%)',
+      accent: '#06b6d4',
+      vars: {
+        '--bg-primary': '#060e14',
+        '--bg-secondary': '#0c1820',
+        '--bg-card': '#10202c',
+        '--bg-card-hover': '#162836',
+        '--border': '#1e3a4a'
+      },
+      bodyBg: 'radial-gradient(ellipse at 50% 5%, rgba(6,182,212,0.1) 0%, transparent 50%), radial-gradient(ellipse at 15% 50%, rgba(220,38,38,0.05) 0%, transparent 35%), radial-gradient(ellipse at 85% 60%, rgba(34,197,94,0.04) 0%, transparent 40%), linear-gradient(180deg, #060e14 0%, #040a0e 100%)'
+    },
+
+    greenarrow: {
+      name: 'Green Arrow',
+      group: 'heroes',
+      swatch: 'linear-gradient(135deg, #101a0e 0%, #0a1408 100%)',
+      accent: '#65a30d',
+      vars: {
+        '--bg-primary': '#0a100a',
+        '--bg-secondary': '#121c12',
+        '--bg-card': '#182418',
+        '--bg-card-hover': '#1e2e1e',
+        '--border': '#2c4228'
+      },
+      bodyBg: 'radial-gradient(ellipse at 30% 0%, rgba(101,163,13,0.08) 0%, transparent 45%), radial-gradient(ellipse at 75% 30%, rgba(64,120,20,0.06) 0%, transparent 40%), linear-gradient(180deg, #0a100a 0%, #080c08 100%)'
+    },
+
+    catwoman: {
+      name: 'Catwoman',
+      group: 'heroes',
+      swatch: 'linear-gradient(135deg, #1a141e 0%, #140e18 100%)',
+      accent: '#a855f7',
+      vars: {
+        '--bg-primary': '#0e0a12',
+        '--bg-secondary': '#18121e',
+        '--bg-card': '#1e1828',
+        '--bg-card-hover': '#262032',
+        '--border': '#382e48'
+      },
+      bodyBg: 'radial-gradient(ellipse at 60% 0%, rgba(168,85,247,0.08) 0%, transparent 45%), radial-gradient(ellipse at 20% 40%, rgba(139,92,246,0.04) 0%, transparent 40%), radial-gradient(ellipse at 80% 70%, rgba(192,132,252,0.03) 0%, transparent 40%), linear-gradient(180deg, #0e0a12 0%, #0a080e 100%)'
     }
   };
+
+  // Theme display order
+  var themeOrder = ['default', 'batman', 'superman', 'wonderwoman', 'flash', 'greenlantern', 'martianmanhunter', 'greenarrow', 'catwoman'];
 
   // ── Apply a theme ──
   function applyTheme(id) {
@@ -78,7 +174,15 @@
     // Update active swatch in picker
     var swatches = document.querySelectorAll('.ts-swatch');
     for (var i = 0; i < swatches.length; i++) {
-      swatches[i].classList.toggle('ts-active', swatches[i].dataset.theme === id);
+      var isActive = swatches[i].dataset.theme === id;
+      swatches[i].classList.toggle('ts-active', isActive);
+      var dot = swatches[i].querySelector('.ts-dot');
+      var check = swatches[i].querySelector('.ts-check');
+      if (dot) dot.style.borderColor = isActive ? (themes[swatches[i].dataset.theme].accent || '#3b82f6') : 'rgba(255,255,255,0.15)';
+      if (check) {
+        check.style.display = isActive ? 'inline' : 'none';
+        check.style.color = t.accent || '#3b82f6';
+      }
     }
   }
 
@@ -101,67 +205,39 @@
     // Dropdown panel
     var panel = document.createElement('div');
     panel.id = 'themePanel';
-    panel.style.cssText = 'display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+    panel.style.cssText = 'display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:200px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
 
-    // Title
-    var title = document.createElement('div');
-    title.textContent = 'Theme';
-    title.style.cssText = 'font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:8px;font-weight:600;';
-    panel.appendChild(title);
+    // Scrollbar styling
+    var scrollStyle = document.createElement('style');
+    scrollStyle.textContent = '#themePanel::-webkit-scrollbar{width:4px}#themePanel::-webkit-scrollbar-track{background:transparent}#themePanel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px}';
+    document.head.appendChild(scrollStyle);
 
-    // Theme options
     var saved = null;
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
 
-    Object.keys(themes).forEach(function (id) {
-      var t = themes[id];
-      var row = document.createElement('button');
-      row.className = 'ts-swatch';
-      row.dataset.theme = id;
-      row.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:8px;border:none;background:none;cursor:pointer;border-radius:8px;transition:background 0.15s;';
-      row.onmouseenter = function () { row.style.background = 'rgba(255,255,255,0.06)'; };
-      row.onmouseleave = function () { row.style.background = 'none'; };
+    // Group: General
+    var genLabel = document.createElement('div');
+    genLabel.textContent = 'Theme';
+    genLabel.style.cssText = 'font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:6px;font-weight:600;';
+    panel.appendChild(genLabel);
 
-      // Color dot
-      var dot = document.createElement('div');
-      dot.style.cssText = 'width:24px;height:24px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,0.15);transition:border-color 0.2s;';
-      dot.style.background = t.swatch;
+    // Add default theme
+    addThemeRow(panel, 'default', saved);
 
-      // Label
-      var label = document.createElement('span');
-      label.textContent = t.name;
-      label.style.cssText = 'font-size:0.85rem;color:#cbd5e1;';
+    // Divider + Heroes label
+    var divider = document.createElement('div');
+    divider.style.cssText = 'height:1px;background:rgba(255,255,255,0.08);margin:8px 0;';
+    panel.appendChild(divider);
 
-      // Check mark
-      var check = document.createElement('span');
-      check.style.cssText = 'margin-left:auto;font-size:0.8rem;color:#3b82f6;display:none;';
-      check.textContent = '\u2713';
+    var heroLabel = document.createElement('div');
+    heroLabel.textContent = 'Hero Themes';
+    heroLabel.style.cssText = 'font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:6px;font-weight:600;';
+    panel.appendChild(heroLabel);
 
-      if (id === (saved || 'default')) {
-        dot.style.borderColor = '#3b82f6';
-        check.style.display = 'inline';
-        row.classList.add('ts-active');
-      }
-
-      row.appendChild(dot);
-      row.appendChild(label);
-      row.appendChild(check);
-      panel.appendChild(row);
-
-      row.onclick = function (e) {
-        e.stopPropagation();
-        applyTheme(id);
-        // Update all dots/checks
-        var allRows = panel.querySelectorAll('.ts-swatch');
-        for (var j = 0; j < allRows.length; j++) {
-          var d = allRows[j].querySelector('div');
-          var c = allRows[j].querySelector('span:last-child');
-          var isActive = allRows[j].dataset.theme === id;
-          d.style.borderColor = isActive ? '#3b82f6' : 'rgba(255,255,255,0.15)';
-          c.style.display = isActive ? 'inline' : 'none';
-        }
-      };
-    });
+    // Add hero themes
+    for (var i = 1; i < themeOrder.length; i++) {
+      addThemeRow(panel, themeOrder[i], saved);
+    }
 
     wrap.appendChild(panel);
     wrap.appendChild(btn);
@@ -176,9 +252,53 @@
     document.body.appendChild(wrap);
   }
 
+  function addThemeRow(panel, id, saved) {
+    var t = themes[id];
+    var row = document.createElement('button');
+    row.className = 'ts-swatch';
+    row.dataset.theme = id;
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border:none;background:none;cursor:pointer;border-radius:8px;transition:background 0.15s;';
+    row.onmouseenter = function () { row.style.background = 'rgba(255,255,255,0.06)'; };
+    row.onmouseleave = function () { row.style.background = 'none'; };
+
+    // Color dot (gradient-capable)
+    var dot = document.createElement('div');
+    dot.className = 'ts-dot';
+    dot.style.cssText = 'width:22px;height:22px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,0.15);transition:border-color 0.2s;';
+    dot.style.background = t.swatch;
+
+    // Label
+    var label = document.createElement('span');
+    label.textContent = t.name;
+    label.style.cssText = 'font-size:0.82rem;color:#cbd5e1;white-space:nowrap;';
+
+    // Check mark
+    var check = document.createElement('span');
+    check.className = 'ts-check';
+    check.style.cssText = 'margin-left:auto;font-size:0.8rem;display:none;';
+    check.style.color = t.accent || '#3b82f6';
+    check.textContent = '\u2713';
+
+    var isActive = id === (saved || 'default');
+    if (isActive) {
+      dot.style.borderColor = t.accent || '#3b82f6';
+      check.style.display = 'inline';
+      row.classList.add('ts-active');
+    }
+
+    row.appendChild(dot);
+    row.appendChild(label);
+    row.appendChild(check);
+    panel.appendChild(row);
+
+    row.onclick = function (e) {
+      e.stopPropagation();
+      applyTheme(id);
+    };
+  }
+
   // ── Init ──
   function init() {
-    // Apply saved theme immediately (before full render if possible)
     var saved = null;
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
     if (saved && themes[saved]) {
