@@ -191,7 +191,7 @@
     // Container — fixed bottom-left
     var wrap = document.createElement('div');
     wrap.id = 'themeSwitcher';
-    wrap.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:998;display:flex;align-items:center;gap:8px;';
+    wrap.style.cssText = 'position:fixed;top:1rem;right:4rem;z-index:998;display:flex;align-items:center;gap:8px;';
 
     // Toggle button (palette icon)
     var btn = document.createElement('button');
