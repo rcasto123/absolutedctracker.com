@@ -171,7 +171,7 @@
 <body>
 
 <div class="back-bar">
-  <a href="/projects/absolutetracker/">
+  <a href="/">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     Back to Collection Tracker
   </a>
@@ -1264,7 +1264,7 @@ function render() {
   var app = document.getElementById('app');
 
   if (!id || !ISSUES[id]) {
-    app.innerHTML = '<div class="not-found"><h1>Issue Not Found</h1><p>The issue you\'re looking for doesn\'t exist in our database.</p><a href="/projects/absolutetracker/" class="nav-btn">Back to Collection Tracker</a></div>';
+    app.innerHTML = '<div class="not-found"><h1>Issue Not Found</h1><p>The issue you\'re looking for doesn\'t exist in our database.</p><a href="/" class="nav-btn">Back to Collection Tracker</a></div>';
     return;
   }
 
