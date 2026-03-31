@@ -1406,10 +1406,10 @@ renderTrades();
     html += '<h1>DC Absolute Universe Collection</h1>';
     html += '<div class="subtitle">Filter: ' + filter + ' &bull; Exported ' + new Date().toLocaleDateString() + '</div>';
     var owned = cards.filter(function(c) { return c.owned; }).length;
-    html += '<div class="stats"><div><div class="stat-val">' + cards.length + '</div>Total Issues</div>';
-    html += '<div><div class="stat-val">' + owned + '</div>Owned</div>';
-    html += '<div><div class="stat-val">' + (cards.length - owned) + '</div>Missing</div>';
-    html += '<div><div class="stat-val">' + Math.round(owned / cards.length * 100) + '%</div>Complete</div></div>';
+    html += '<div class="stats"><div><div class="stat-val">' + cards.length + '</div><div>Total Issues</div></div>';
+    html += '<div><div class="stat-val">' + owned + '</div><div>Owned</div></div>';
+    html += '<div><div class="stat-val">' + (cards.length - owned) + '</div><div>Missing</div></div>';
+    html += '<div><div class="stat-val">' + Math.round(owned / cards.length * 100) + '%</div><div>Complete</div></div></div>';
     Object.keys(series).forEach(function(s) {
       html += '<div class="series-group"><div class="series-name">' + s + ' (' + series[s].filter(function(c){return c.owned;}).length + '/' + series[s].length + ')</div>';
       series[s].forEach(function(c) {
