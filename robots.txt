@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Allow: /issue.html
 Disallow: /admin.html
 Disallow: /sw.js
 

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <!-- Homepage / Collection Tracker -->
   <url>
@@ -8,11 +7,6 @@
     <lastmod>2026-03-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <image:image>
-      <image:loc>https://www.absolutedctracker.com/images/og-preview.png</image:loc>
-      <image:title>Absolute DC Universe Collection Tracker</image:title>
-      <image:caption>Track your DC Absolute Universe comic collection</image:caption>
-    </image:image>
   </url>
 
   <!-- Issue Detail Pages (dynamic, query-string driven) -->
@@ -21,14 +15,6 @@
     <lastmod>2026-03-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>
-
-  <!-- Authentication / Sign In -->
-  <url>
-    <loc>https://www.absolutedctracker.com/auth.html</loc>
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
   </url>
 
 </urlset>
