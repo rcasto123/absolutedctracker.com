@@ -629,6 +629,30 @@
   .arc-issue-date { color: var(--text-muted); font-size: 0.75rem; }
   @media(max-width:600px) { .arc-card { padding: 14px 16px; } .arc-issue-date { display: none; } }
 
+  /* -- Analytics Dashboard -- */
+  .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .analytics-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
+  .analytics-card h3 { font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 16px 0; }
+  .analytics-card.full-width { grid-column: 1 / -1; }
+  .donut-center { font-family: 'Oswald', sans-serif; }
+  .series-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .series-bar-label { width: 140px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+  .series-bar-track { flex: 1; height: 20px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; position: relative; }
+  .series-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; min-width: 2px; }
+  .series-bar-count { width: 50px; text-align: right; font-size: 0.8rem; color: var(--text-muted); flex-shrink: 0; }
+  .timeline-row { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding-top: 20px; }
+  .timeline-bar { flex: 1; min-width: 0; border-radius: 3px 3px 0 0; transition: height 0.5s ease; position: relative; cursor: default; }
+  .timeline-bar:hover { opacity: 0.8; }
+  .timeline-labels { display: flex; gap: 3px; margin-top: 4px; }
+  .timeline-labels span { flex: 1; text-align: center; font-size: 0.6rem; color: var(--text-muted); min-width: 0; overflow: hidden; }
+  .timeline-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 10; }
+  .timeline-bar:hover .timeline-tooltip { opacity: 1; }
+  .stat-big { text-align: center; }
+  .stat-big-number { font-family: 'Oswald', sans-serif; font-size: 2.5rem; font-weight: 700; }
+  .stat-big-label { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
+  .analytics-stats-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  @media(max-width:700px) { .analytics-grid { grid-template-columns: 1fr; } .series-bar-label { width: 100px; } }
+
   .whats-new {
     margin-top: 48px;
     border: 1px solid var(--border);
@@ -828,6 +852,7 @@
     <button class="nav-tab" data-tab="series" role="tab" aria-selected="false" aria-controls="tab-series">Series Guide</button>
     <button class="nav-tab" data-tab="trades" role="tab" aria-selected="false" aria-controls="tab-trades">Trade Paperbacks</button>
     <button class="nav-tab" data-tab="arcs" role="tab" aria-selected="false" aria-controls="tab-arcs">Reading Order</button>
+    <button class="nav-tab" data-tab="analytics" role="tab" aria-selected="false" aria-controls="tab-analytics">Analytics</button>
     <button class="nav-tab" data-tab="media" role="tab" aria-selected="false" aria-controls="tab-media">Media</button>
   </nav>
 
@@ -867,6 +892,10 @@
     <div id="arcsContainer"></div>
   </div>
 
+  <div class="tab-content" id="tab-analytics" role="tabpanel">
+    <div id="analyticsContainer"></div>
+  </div>
+
   <div class="tab-content" id="tab-media" role="tabpanel">
     <div class="media-section" style="margin-top:0;">
       <h2>Absolute Universe — Character Showcase</h2>
@@ -886,6 +915,11 @@
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
+      <div class="changelog-entry">
+        <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Collection analytics dashboard</div>
+        <div class="changelog-desc">New Analytics tab with donut chart for overall completion, per-series progress bars, and a monthly release timeline showing your acquisition rate.</div>
+      </div>
       <div class="changelog-entry">
         <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Story arcs &amp; reading order</div>
@@ -1279,6 +1313,7 @@ function renderCollection(filter, search) {
         renderCollection(currentFilter, currentSearch);
         renderStats();
         renderArcs();
+        renderAnalytics();
       };
 
       card.addEventListener('click', toggleOwned);
@@ -1487,6 +1522,107 @@ function renderArcs() {
   });
 }
 
+function renderAnalytics() {
+  const container = document.getElementById('analyticsContainer');
+  container.innerHTML = '';
+
+  const released = ALL_ISSUES.filter(i => isReleased(i.date));
+  const ownedCount = released.filter(i => owned[issueKey(i)]).length;
+  const totalReleased = released.length;
+  const pct = totalReleased > 0 ? Math.round((ownedCount / totalReleased) * 100) : 0;
+
+  // Build series stats
+  const seriesStats = {};
+  ALL_ISSUES.forEach(i => {
+    if (!isReleased(i.date)) return;
+    if (!seriesStats[i.series]) seriesStats[i.series] = { total: 0, owned: 0 };
+    seriesStats[i.series].total++;
+    if (owned[issueKey(i)]) seriesStats[i.series].owned++;
+  });
+
+  // Build monthly acquisition data
+  const months = {};
+  ALL_ISSUES.forEach(i => {
+    if (!isReleased(i.date)) return;
+    const d = new Date(i.date);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    if (!months[key]) months[key] = { total: 0, owned: 0 };
+    months[key].total++;
+    if (owned[issueKey(i)]) months[key].owned++;
+  });
+
+  const grid = document.createElement('div');
+  grid.className = 'analytics-grid';
+
+  // === Donut Chart Card ===
+  const donutCard = document.createElement('div');
+  donutCard.className = 'analytics-card';
+  const r = 70, stroke = 14, circ = 2 * Math.PI * r;
+  const dashOffset = circ - (pct / 100) * circ;
+  donutCard.innerHTML = `<h3>Collection Progress</h3>
+    <div style="display:flex;justify-content:center;">
+      <svg width="180" height="180" viewBox="0 0 180 180" role="img" aria-label="${pct}% collection complete">
+        <circle cx="90" cy="90" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${stroke}"/>
+        <circle cx="90" cy="90" r="${r}" fill="none" stroke="#22c55e" stroke-width="${stroke}" stroke-linecap="round"
+          stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}" transform="rotate(-90 90 90)" style="transition:stroke-dashoffset 0.8s ease;"/>
+        <text x="90" y="82" text-anchor="middle" fill="var(--text-primary)" class="donut-center" font-size="32" font-weight="700">${pct}%</text>
+        <text x="90" y="104" text-anchor="middle" fill="var(--text-muted)" font-size="12">${ownedCount} / ${totalReleased}</text>
+      </svg>
+    </div>
+    <div class="analytics-stats-row" style="margin-top:12px;">
+      <div class="stat-big"><div class="stat-big-number" style="color:#22c55e;">${ownedCount}</div><div class="stat-big-label">Owned</div></div>
+      <div class="stat-big"><div class="stat-big-number" style="color:#ef4444;">${totalReleased - ownedCount}</div><div class="stat-big-label">Missing</div></div>
+      <div class="stat-big"><div class="stat-big-number">${ALL_ISSUES.length}</div><div class="stat-big-label">Total Issues</div></div>
+    </div>`;
+  grid.appendChild(donutCard);
+
+  // === Series Breakdown Card ===
+  const seriesCard = document.createElement('div');
+  seriesCard.className = 'analytics-card';
+  let seriesHtml = '<h3>Series Breakdown</h3>';
+  Object.keys(seriesStats).sort((a,b) => {
+    const pa = seriesStats[a].total > 0 ? seriesStats[a].owned / seriesStats[a].total : 0;
+    const pb = seriesStats[b].total > 0 ? seriesStats[b].owned / seriesStats[b].total : 0;
+    return pb - pa;
+  }).forEach(s => {
+    const st = seriesStats[s];
+    const pctS = st.total > 0 ? Math.round((st.owned / st.total) * 100) : 0;
+    const color = SERIES_COLORS[s] || '#555';
+    seriesHtml += `<div class="series-bar-row">
+      <div class="series-bar-label" title="${s}">${s.replace('Absolute ','')}</div>
+      <div class="series-bar-track"><div class="series-bar-fill" style="width:${pctS}%;background:${color};"></div></div>
+      <div class="series-bar-count">${st.owned}/${st.total}</div>
+    </div>`;
+  });
+  seriesCard.innerHTML = seriesHtml;
+  grid.appendChild(seriesCard);
+
+  // === Timeline Card ===
+  const timeCard = document.createElement('div');
+  timeCard.className = 'analytics-card full-width';
+  const sortedMonths = Object.keys(months).sort();
+  const maxTotal = Math.max(...sortedMonths.map(k => months[k].total), 1);
+  let barsHtml = '';
+  let labelsHtml = '';
+  sortedMonths.forEach(k => {
+    const m = months[k];
+    const h = Math.round((m.total / maxTotal) * 100);
+    const oh = m.total > 0 ? Math.round((m.owned / m.total) * h) : 0;
+    const label = new Date(k + '-01').toLocaleDateString('en-US', {month:'short', year:'2-digit'});
+    barsHtml += `<div class="timeline-bar" style="height:${h}px;background:rgba(255,255,255,0.08);">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:${oh}px;background:#22c55e;border-radius:3px 3px 0 0;"></div>
+      <div class="timeline-tooltip">${label}: ${m.owned}/${m.total} owned</div>
+    </div>`;
+    labelsHtml += `<span>${label}</span>`;
+  });
+  timeCard.innerHTML = `<h3>Monthly Release Timeline</h3>
+    <div class="timeline-row">${barsHtml}</div>
+    <div class="timeline-labels">${labelsHtml}</div>`;
+  grid.appendChild(timeCard);
+
+  container.appendChild(grid);
+}
+
 let currentFilter = 'all';
 let currentSearch = '';
 let calendarShowAll = false;
@@ -1566,6 +1702,7 @@ renderCalendar(false);
 renderSeriesGuide();
 renderTrades();
 renderArcs();
+renderAnalytics();
 </script>
 
 <!-- Export Feature -->
