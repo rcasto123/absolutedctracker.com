@@ -281,8 +281,12 @@
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
         if (!panelOpen) togglePanel(true);
-        var swatches = panel.querySelectorAll('.ts-swatch');
-        if (swatches.length) swatches[e.key === 'ArrowDown' ? 0 : swatches.length - 1].focus();
+        // togglePanel focuses the active swatch; only override if
+        // no active swatch was focused (e.g. none is selected)
+        if (document.activeElement && !document.activeElement.classList.contains('ts-swatch')) {
+          var swatches = panel.querySelectorAll('.ts-swatch');
+          if (swatches.length) swatches[e.key === 'ArrowDown' ? 0 : swatches.length - 1].focus();
+        }
       } else if (e.key === 'Escape' && panelOpen) {
         e.preventDefault();
         togglePanel(false);
