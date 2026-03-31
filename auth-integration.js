@@ -201,6 +201,10 @@
       // Only block when signed out
       if (auth.currentUser) return;
 
+      // Allow clicks on links inside cards (e.g. issue title → issue detail page)
+      var link = e.target.closest('a[href]');
+      if (link) return;
+
       // Check if the click is on an issue card or inside one
       var card = e.target.closest('.issue-card');
       if (card) {
@@ -223,6 +227,10 @@
     _previewKeydownHandler = function(e) {
       if (auth.currentUser) return;
       if (e.key === 'Enter' || e.key === ' ') {
+        // Allow keyboard activation of links inside cards
+        var link = e.target.closest('a[href]');
+        if (link) return;
+
         var card = e.target.closest('.issue-card') || e.target.closest('.tpb-card');
         if (card) {
           e.stopImmediatePropagation();
