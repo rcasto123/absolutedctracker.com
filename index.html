@@ -645,7 +645,7 @@
   .timeline-bar:hover { opacity: 0.8; }
   .timeline-labels { display: flex; gap: 3px; margin-top: 4px; }
   .timeline-labels span { flex: 1; text-align: center; font-size: 0.6rem; color: var(--text-muted); min-width: 0; overflow: hidden; }
-  .timeline-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 10; }
+  .timeline-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font-size: 0.75rem; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 10; }
   .timeline-bar:hover .timeline-tooltip { opacity: 1; }
   .stat-big { text-align: center; }
   .stat-big-number { font-family: 'Oswald', sans-serif; font-size: 2.5rem; font-weight: 700; }
@@ -1565,8 +1565,8 @@ function renderAnalytics() {
         <circle cx="90" cy="90" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${stroke}"/>
         <circle cx="90" cy="90" r="${r}" fill="none" stroke="#22c55e" stroke-width="${stroke}" stroke-linecap="round"
           stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}" transform="rotate(-90 90 90)" style="transition:stroke-dashoffset 0.8s ease;"/>
-        <text x="90" y="82" text-anchor="middle" fill="var(--text-primary)" class="donut-center" font-size="32" font-weight="700">${pct}%</text>
-        <text x="90" y="104" text-anchor="middle" fill="var(--text-muted)" font-size="12">${ownedCount} / ${totalReleased}</text>
+        <text aria-hidden="true" x="90" y="82" text-anchor="middle" fill="var(--text-primary)" class="donut-center" font-size="32" font-weight="700">${pct}%</text>
+        <text aria-hidden="true" x="90" y="104" text-anchor="middle" fill="var(--text-muted)" font-size="12">${ownedCount} / ${totalReleased}</text>
       </svg>
     </div>
     <div class="analytics-stats-row" style="margin-top:12px;">
