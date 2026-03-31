@@ -1858,14 +1858,22 @@ renderTrades();
       return;
     }
     var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AbsoluteDCTracker//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:DC Absolute Universe Releases'];
+    function icsEscape(str) {
+      return str.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    }
+    function nextDay(dateStr) {
+      var d = new Date(dateStr);
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().slice(0,10).replace(/-/g, '');
+    }
     issues.forEach(function(i) {
       var d = i.date.replace(/-/g, '');
       var uid = d + '-' + i.title.replace(/[^a-zA-Z0-9]/g, '') + '@absolutedctracker.com';
       lines.push('BEGIN:VEVENT');
       lines.push('DTSTART;VALUE=DATE:' + d);
-      lines.push('DTEND;VALUE=DATE:' + d);
-      lines.push('SUMMARY:' + i.title + ' releases');
-      lines.push('DESCRIPTION:' + i.series + ' ' + i.issue + ' by ' + i.writer + ' / ' + i.artist);
+      lines.push('DTEND;VALUE=DATE:' + nextDay(i.date));
+      lines.push('SUMMARY:' + icsEscape(i.title + ' releases'));
+      lines.push('DESCRIPTION:' + icsEscape(i.series + ' ' + i.issue + ' by ' + i.writer + ' / ' + i.artist));
       lines.push('URL:https://www.absolutedctracker.com');
       lines.push('UID:' + uid);
       lines.push('END:VEVENT');
@@ -1885,7 +1893,7 @@ renderTrades();
     try { return JSON.parse(localStorage.getItem('au_notify_prefs') || '{}'); } catch(e) { return {}; }
   }
   function saveNotifyPrefs(prefs) {
-    localStorage.setItem('au_notify_prefs', JSON.stringify(prefs));
+    try { localStorage.setItem('au_notify_prefs', JSON.stringify(prefs)); } catch(e) { /* private browsing */ }
   }
 
   function showNotifyModal() {
@@ -1937,6 +1945,15 @@ renderTrades();
 
     overlay.addEventListener('click', function(e) {
       if (e.target === overlay) closeNotifyModal();
+    });
+    document.addEventListener('keydown', function handler(e) {
+      if (e.key === 'Escape') { closeNotifyModal(); document.removeEventListener('keydown', handler); }
+      if (e.key === 'Tab') {
+        var focusable = modal.querySelectorAll('input, button, [tabindex]');
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     });
     document.getElementById('notifyCancel').addEventListener('click', closeNotifyModal);
     document.getElementById('notifySave').addEventListener('click', function() {
@@ -1991,7 +2008,8 @@ renderTrades();
   function checkTodayReleases() {
     var prefs = getNotifyPrefs();
     if (!prefs.enabled || !('Notification' in window) || Notification.permission !== 'granted') return;
-    var today = new Date().toISOString().slice(0, 10);
+    var now = new Date();
+    var today = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
     var lastNotified = localStorage.getItem('au_last_notify_date');
     if (lastNotified === today) return;
 
@@ -2006,7 +2024,7 @@ renderTrades();
           icon: 'https://www.absolutedctracker.com/favicon.ico',
           tag: 'au-release-' + today
         });
-        localStorage.setItem('au_last_notify_date', today);
+        try { localStorage.setItem('au_last_notify_date', today); } catch(e) {}
       }
     }
   }
