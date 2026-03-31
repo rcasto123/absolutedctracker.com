@@ -382,6 +382,14 @@
     };
     document.addEventListener('click', _dropdownCloseHandler);
 
+    // Add focus styles for keyboard navigation on menu items
+    if (!document.getElementById('authDropdownStyles')) {
+      var style = document.createElement('style');
+      style.id = 'authDropdownStyles';
+      style.textContent = '#authDropdown [role="menuitem"]:focus{outline:2px solid #3b82f6;outline-offset:-2px;background:rgba(255,255,255,0.08) !important;}';
+      document.head.appendChild(style);
+    }
+
     document.body.appendChild(container);
   }
 
