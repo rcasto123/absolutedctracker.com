@@ -201,20 +201,19 @@
       // Only block when signed out
       if (auth.currentUser) return;
 
-      // Allow clicks on links inside cards (e.g. issue title → issue detail page)
-      var link = e.target.closest('a[href]');
-      if (link) return;
-
-      // Check if the click is on an issue card or inside one
+      // Issue cards: navigate to the issue detail page instead of toggling ownership
       var card = e.target.closest('.issue-card');
       if (card) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-        showSignUpPrompt();
-        return;
+        var link = card.querySelector('a[href]');
+        if (link) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          window.location.href = link.href;
+          return;
+        }
       }
 
-      // Also block TPB cards
+      // TPB cards: no detail page, so show sign-up prompt
       var tpbCard = e.target.closest('.tpb-card');
       if (tpbCard) {
         e.stopImmediatePropagation();
@@ -227,12 +226,21 @@
     _previewKeydownHandler = function(e) {
       if (auth.currentUser) return;
       if (e.key === 'Enter' || e.key === ' ') {
-        // Allow keyboard activation of links inside cards
-        var link = e.target.closest('a[href]');
-        if (link) return;
-
-        var card = e.target.closest('.issue-card') || e.target.closest('.tpb-card');
+        // Issue cards: navigate to issue detail page
+        var card = e.target.closest('.issue-card');
         if (card) {
+          var link = card.querySelector('a[href]');
+          if (link) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            window.location.href = link.href;
+            return;
+          }
+        }
+
+        // TPB cards: show sign-up prompt
+        var tpbCard = e.target.closest('.tpb-card');
+        if (tpbCard) {
           e.stopImmediatePropagation();
           e.preventDefault();
           showSignUpPrompt();
