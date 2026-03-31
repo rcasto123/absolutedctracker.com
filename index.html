@@ -2,7 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
+<meta name="description" content="Track your DC Absolute Universe comic book collection. Mark issues as owned, sync across devices, and never miss a release.">
+<meta property="og:title" content="DC Absolute Universe Collection Tracker">
+<meta property="og:description" content="Track your DC Absolute Universe comic book collection. Mark issues as owned, sync across devices, and never miss a release.">
+<meta property="og:url" content="https://www.absolutedctracker.com/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DC Absolute Universe Collection Tracker">
+<meta name="twitter:description" content="Track your DC Absolute Universe comic book collection. Mark issues as owned, sync across devices.">
+<link rel="canonical" href="https://www.absolutedctracker.com/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com">
 <title>DC Absolute Universe â Collection Tracker</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;600;700&display=swap');
@@ -40,7 +52,7 @@
   .hero {
     position: relative;
     height: 70vh;
-    min-height: 500px;
+    min-height: clamp(300px, 70vh, 500px);
     overflow: hidden;
     display: flex;
     align-items: flex-end;
@@ -161,7 +173,8 @@
   }
 
   .nav-tab {
-    padding: 12px 24px;
+    padding: 16px 24px;
+    min-height: 44px;
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
@@ -602,6 +615,7 @@
     .hero-content { padding: 0 20px 32px; }
     .stats-bar { padding: 16px 20px; gap: 24px; }
     .main-wrap { padding: 0 20px; }
+    .nav-tab { padding: 14px 16px; font-size: 13px; min-height: 44px; }
     .issue-grid { grid-template-columns: 1fr; }
     .info-grid { grid-template-columns: 1fr; }
     .tpb-grid { grid-template-columns: 1fr; }
@@ -613,13 +627,41 @@
     .nav-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .media-section { padding: 20px; }
   }
-</style>
+
+  @media (max-width: 480px) {
+    .hero { height: 40vh; min-height: 250px; }
+    .nav-tab { padding: 14px 12px; font-size: 12px; letter-spacing: 1px; }
+    .stat-number { font-size: 28px; }
+    .stat-label { font-size: 10px; letter-spacing: 1.5px; }
+    .issue-card { padding: 8px; }
+    .series-title { font-size: 13px; }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .issue-grid { grid-template-columns: repeat(2, 1fr); }
+    .tpb-grid { grid-template-columns: repeat(2, 1fr); }
+  }</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "DC Absolute Universe Collection Tracker",
+  "description": "Track your DC Absolute Universe comic book collection. Mark issues as owned, sync across devices, and never miss a release.",
+  "url": "https://www.absolutedctracker.com",
+  "applicationCategory": "Utility",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
 </head>
 <body>
 
 <!-- ââ Hero ââ -->
 <section class="hero" role="banner">
-  <video class="hero-video" autoplay muted loop playsinline aria-label="DC Absolute Universe background animation">
+  <video class="hero-video" autoplay muted loop playsinline preload="metadata" aria-label="DC Absolute Universe background animation">
     <source src="dc_absolute_universe_bg.mp4" type="video/mp4">
   </video>
   <div class="hero-overlay"></div>
@@ -674,7 +716,7 @@
       <button class="filter-btn" data-filter="upcoming" aria-pressed="false">Upcoming</button>
       <input class="search-input" type="text" id="searchInput" placeholder="Search issues..." aria-label="Search issues by title, writer, or artist">
     </div>
-    <div id="collectionContainer"></div>
+    <div id="collectionContainer" aria-live="polite"></div>
   </div>
 
   <!-- âââ CALENDAR TAB âââ -->
@@ -1345,7 +1387,22 @@ renderTrades();
     html += '.stats { background: #f5f5f5; padding: 12px 16px; border-radius: 6px; margin-bottom: 24px; display: flex; gap: 24px; font-size: 0.85rem; }';
     html += '.stat-val { font-weight: 700; font-size: 1.1rem; }';
     html += '@media print { body { padding: 16px; } .stats { background: #eee; } }';
-    html += '</style></head><body>';
+    html += '</style><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "DC Absolute Universe Collection Tracker",
+  "description": "Track your DC Absolute Universe comic book collection. Mark issues as owned, sync across devices, and never miss a release.",
+  "url": "https://www.absolutedctracker.com",
+  "applicationCategory": "Utility",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+</head><body>';
     html += '<h1>DC Absolute Universe Collection</h1>';
     html += '<div class="subtitle">Filter: ' + filter + ' &bull; Exported ' + new Date().toLocaleDateString() + '</div>';
     var owned = cards.filter(function(c) { return c.owned; }).length;
@@ -1553,20 +1610,28 @@ renderTrades();
 
   applyCoverBackgrounds();
 
-  setInterval(function() {
-    var cards = document.querySelectorAll('.issue-card');
-    for (var i = 0; i < cards.length; i++) {
-      if (!cards[i].querySelector('.card-bg')) {
-        applyCoverBackgrounds();
-        return;
+  // Use MutationObserver instead of polling setInterval
+  var _bgObserver = new MutationObserver(function(mutations) {
+    for (var i = 0; i < mutations.length; i++) {
+      if (mutations[i].addedNodes.length) {
+        var needsBg = false;
+        var cards = document.querySelectorAll('.issue-card');
+        for (var j = 0; j < cards.length; j++) {
+          if (!cards[j].querySelector('.card-bg')) { needsBg = true; break; }
+        }
+        if (needsBg) applyCoverBackgrounds();
+        break;
       }
     }
-  }, 250);
+  });
+  _bgObserver.observe(document.body, { childList: true, subtree: true });
+  // Initial application
+  applyCoverBackgrounds();
 })()
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="auth-integration.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js" defer></script>
+<script src="auth-integration.js" defer></script>
 </body></html>
