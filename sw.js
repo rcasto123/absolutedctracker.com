@@ -64,6 +64,19 @@ self.addEventListener('activate', function(event) {
   );
 });
 
+// Helper: trim a cache to a max number of entries (FIFO)
+function trimCache(cacheName, maxItems) {
+  caches.open(cacheName).then(function(cache) {
+    cache.keys().then(function(keys) {
+      if (keys.length > maxItems) {
+        cache.delete(keys[0]).then(function() {
+          if (keys.length - 1 > maxItems) trimCache(cacheName, maxItems);
+        });
+      }
+    });
+  });
+}
+
 // Fetch: network-first for navigation/scripts, cache-first for images
 self.addEventListener('fetch', function(event) {
   var url = event.request.url;
@@ -117,6 +130,8 @@ self.addEventListener('fetch', function(event) {
             var responseClone = response.clone();
             caches.open(CACHE_NAME).then(function(cache) {
               cache.put(event.request, responseClone);
+              // Keep image cache from growing unbounded
+              trimCache(CACHE_NAME, 200);
             });
           }
           return response;
