@@ -169,7 +169,7 @@
     document.body.style.background = t.bodyBg;
 
     // Persist
-    try { localStorage.setItem(STORAGE_KEY, id); } catch (e) {}
+    try { localStorage.setItem(STORAGE_KEY, id); } catch (e) { console.warn('[theme] Could not save theme preference:', e.message); }
 
     // Update active swatch in picker
     var swatches = document.querySelectorAll('.ts-swatch');
@@ -213,7 +213,7 @@
     document.head.appendChild(scrollStyle);
 
     var saved = null;
-    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { console.warn('[theme] Could not read theme preference:', e.message); }
 
     // Group: General
     var genLabel = document.createElement('div');
@@ -315,9 +315,17 @@
   // ── Init ──
   function init() {
     var saved = null;
-    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
-    if (saved && themes[saved]) {
-      applyTheme(saved);
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { console.warn('[theme] Could not read theme preference:', e.message); }
+
+    if (saved) {
+      if (themes[saved]) {
+        applyTheme(saved);
+      } else {
+        // Stale theme ID — clean it up and fall back to default
+        console.warn('[theme] Stored theme "' + saved + '" no longer exists, resetting to default');
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        applyTheme('default');
+      }
     }
     createPicker();
   }

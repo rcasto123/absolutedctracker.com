@@ -23,8 +23,10 @@
   var _previewKeydownHandler = null;
   // Dropdown close listener reference
   var _dropdownCloseHandler = null;
-  // Sync debounce timer
+  // Sync debounce timer + adaptive delay
   var _syncTimeout = null;
+  var _syncDelay = 1500; // ms — adjusted dynamically based on connection
+  var _lastSyncDuration = null;
   // Original Storage.prototype.setItem reference (for restore)
   var _originalSetItem = Storage.prototype.setItem;
   // Whether localStorage has been patched
@@ -33,14 +35,53 @@
   var _modalEscapeHandler = null;
   var _previousFocusElement = null;
 
+  // ── Safe wrappers for external dependencies ──
+  // These functions are defined in firebase-config.js. If that script
+  // fails to load (network error, ad-blocker, etc.) we fall back to
+  // safe no-ops so auth-integration doesn't throw.
+
+  function _syncOwnedToCloud(owned) {
+    if (typeof syncOwnedToCloud === 'function') return syncOwnedToCloud(owned);
+    console.warn('[auth] syncOwnedToCloud is not available — firebase-config.js may not have loaded');
+    return Promise.resolve();
+  }
+
+  function _loadOwnedFromCloud() {
+    if (typeof loadOwnedFromCloud === 'function') return loadOwnedFromCloud();
+    console.warn('[auth] loadOwnedFromCloud is not available — firebase-config.js may not have loaded');
+    return Promise.resolve(null);
+  }
+
+  function _mergeOwned(local, cloud) {
+    if (typeof mergeOwned === 'function') return mergeOwned(local, cloud);
+    console.warn('[auth] mergeOwned is not available — firebase-config.js may not have loaded');
+    // Fallback: simple union merge
+    var merged = {};
+    var keys = Object.keys(Object.assign({}, local, cloud));
+    keys.forEach(function(k) {
+      if ((local && local[k]) || (cloud && cloud[k])) merged[k] = true;
+    });
+    return merged;
+  }
+
+  function _isCurrentUserAdmin() {
+    if (typeof isCurrentUserAdmin === 'function') return isCurrentUserAdmin();
+    console.warn('[auth] isCurrentUserAdmin is not available — firebase-config.js may not have loaded');
+    return Promise.resolve(false);
+  }
+
   // ── Preview mode: block owned-toggling for signed-out users ──
   // We intercept clicks on issue cards and show a sign-up prompt
   // instead of toggling ownership when the user isn't signed in.
 
   function injectPreviewBanner() {
-    // Check if banner has been dismissed in this session
-    if (sessionStorage.getItem('previewBannerDismissed')) {
-      return;
+    // Check if banner has been dismissed — persistent (localStorage) or session
+    try {
+      if (localStorage.getItem('previewBannerDismissed') || sessionStorage.getItem('previewBannerDismissed')) {
+        return;
+      }
+    } catch(e) {
+      // Private browsing may block storage — fall through and show banner
     }
 
     var banner = document.createElement('div');
@@ -58,11 +99,16 @@
 
     document.body.appendChild(banner);
 
-    // Close button handler
+    // Close button handler — persist dismiss so it doesn't come back
     document.getElementById('previewBannerClose').onclick = function(e) {
       e.preventDefault();
       e.stopPropagation();
-      sessionStorage.setItem('previewBannerDismissed', 'true');
+      try {
+        localStorage.setItem('previewBannerDismissed', 'true');
+      } catch(ignore) {
+        // Fallback for private browsing
+        try { sessionStorage.setItem('previewBannerDismissed', 'true'); } catch(ignore2) {}
+      }
       removePreviewBanner();
     };
 
@@ -273,7 +319,7 @@
       menuHTML += '<button onclick="window._authSyncNow()" style="display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#ddd;font-size:0.85rem;cursor:pointer;border-radius:6px" onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'none\'">Sync collection now</button>';
 
       // Admin link
-      isCurrentUserAdmin().then(function(isAdmin) {
+      _isCurrentUserAdmin().then(function(isAdmin) {
         if (isAdmin) {
           var adminBtn = document.createElement('button');
           adminBtn.textContent = 'Admin Dashboard';
@@ -307,9 +353,16 @@
   }
 
   function escapeHtml(str) {
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    if (str == null) return '';
+    var s = String(str);
+    // Belt-and-suspenders: manual replacement is faster and doesn't
+    // rely on DOM behaviour that varies across engines.
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   // Show sync status
@@ -333,14 +386,23 @@
       // Sync au_owned to cloud when a user is signed in
       if (key === 'au_owned' && auth.currentUser) {
         clearTimeout(_syncTimeout);
+        // Use adaptive delay: if previous sync was slow, wait longer
+        var delay = _lastSyncDuration ? Math.max(1000, Math.min(_lastSyncDuration * 2, 5000)) : _syncDelay;
         _syncTimeout = setTimeout(function() {
           try {
             var owned = JSON.parse(value);
-            syncOwnedToCloud(owned).then(function() {
+            var start = Date.now();
+            _syncOwnedToCloud(owned).then(function() {
+              _lastSyncDuration = Date.now() - start;
               showSyncStatus('Synced');
+            }).catch(function(e) {
+              console.warn('[auth] Cloud sync failed:', e);
+              showSyncStatus('Sync failed');
             });
-          } catch(e) {}
-        }, 1500);
+          } catch(e) {
+            console.warn('[auth] Failed to parse au_owned for sync:', e);
+          }
+        }, delay);
       }
     };
   }
@@ -358,21 +420,21 @@
   async function handleSignIn(user) {
     showSyncStatus('Syncing...');
     try {
-      var cloudOwned = await loadOwnedFromCloud();
+      var cloudOwned = await _loadOwnedFromCloud();
       var localRaw = localStorage.getItem('au_owned');
       var localOwned = localRaw ? JSON.parse(localRaw) : {};
 
       if (cloudOwned) {
         // Merge local + cloud (union)
-        var merged = mergeOwned(localOwned, cloudOwned);
+        var merged = _mergeOwned(localOwned, cloudOwned);
         localStorage.setItem('au_owned', JSON.stringify(merged));
         // Push merged back to cloud
-        await syncOwnedToCloud(merged);
+        await _syncOwnedToCloud(merged);
         showSyncStatus('Synced');
       } else {
         // No cloud data — push local to cloud
         if (Object.keys(localOwned).length > 0) {
-          await syncOwnedToCloud(localOwned);
+          await _syncOwnedToCloud(localOwned);
         }
         showSyncStatus('Synced');
       }
@@ -384,7 +446,7 @@
 
       // Reload the page to reflect synced data
       // Only reload if there were changes
-      if (cloudOwned && JSON.stringify(localOwned) !== JSON.stringify(mergeOwned(localOwned, cloudOwned))) {
+      if (cloudOwned && JSON.stringify(localOwned) !== JSON.stringify(_mergeOwned(localOwned, cloudOwned))) {
         location.reload();
       }
     } catch(e) {
@@ -400,10 +462,10 @@
     try {
       var localRaw = localStorage.getItem('au_owned');
       var localOwned = localRaw ? JSON.parse(localRaw) : {};
-      var cloudOwned = await loadOwnedFromCloud();
-      var merged = mergeOwned(localOwned, cloudOwned);
+      var cloudOwned = await _loadOwnedFromCloud();
+      var merged = _mergeOwned(localOwned, cloudOwned || {});
       localStorage.setItem('au_owned', JSON.stringify(merged));
-      await syncOwnedToCloud(merged);
+      await _syncOwnedToCloud(merged);
       showSyncStatus('Synced');
       location.reload();
     } catch(e) {
