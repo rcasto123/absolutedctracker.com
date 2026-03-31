@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
+Allow: /issue.html
 Disallow: /admin.html
+Disallow: /sw.js
 
 Sitemap: https://www.absolutedctracker.com/sitemap.xml
