@@ -176,6 +176,7 @@
     for (var i = 0; i < swatches.length; i++) {
       var isActive = swatches[i].dataset.theme === id;
       swatches[i].classList.toggle('ts-active', isActive);
+      swatches[i].setAttribute('aria-selected', isActive ? 'true' : 'false');
       var dot = swatches[i].querySelector('.ts-dot');
       var check = swatches[i].querySelector('.ts-check');
       if (dot) dot.style.borderColor = isActive ? (themes[swatches[i].dataset.theme].accent || '#3b82f6') : 'rgba(255,255,255,0.15)';
@@ -197,6 +198,9 @@
     var btn = document.createElement('button');
     btn.id = 'themeToggleBtn';
     btn.setAttribute('aria-label', 'Change color theme');
+    btn.setAttribute('aria-haspopup', 'listbox');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'themePanel');
     btn.style.cssText = 'width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;color:#aaa;';
     btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10c0 .9-.1 1.8-.4 2.6-.5 1.5-1.8 2.4-3.3 2.4h-2c-1.1 0-2 .9-2 2 0 .5.2 1 .5 1.3.3.4.5.8.5 1.3 0 1.1-.9 2.4-3.3 2.4z"/></svg>';
     btn.onmouseenter = function () { btn.style.background = 'rgba(255,255,255,0.14)'; btn.style.color = '#fff'; };
@@ -205,6 +209,9 @@
     // Dropdown panel
     var panel = document.createElement('div');
     panel.id = 'themePanel';
+    panel.setAttribute('role', 'listbox');
+    panel.setAttribute('aria-label', 'Color themes');
+    panel.setAttribute('tabindex', '-1');
     panel.style.cssText = 'position:absolute;top:calc(100% + 8px);right:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:200px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease,visibility 0.2s;pointer-events:none;';
 
     // Scrollbar styling
@@ -218,6 +225,7 @@
     // Group: General
     var genLabel = document.createElement('div');
     genLabel.textContent = 'Theme';
+    genLabel.setAttribute('role', 'presentation');
     genLabel.style.cssText = 'font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:6px;font-weight:600;';
     panel.appendChild(genLabel);
 
@@ -226,11 +234,13 @@
 
     // Divider + Heroes label
     var divider = document.createElement('div');
+    divider.setAttribute('role', 'presentation');
     divider.style.cssText = 'height:1px;background:rgba(255,255,255,0.08);margin:8px 0;';
     panel.appendChild(divider);
 
     var heroLabel = document.createElement('div');
     heroLabel.textContent = 'Hero Themes';
+    heroLabel.setAttribute('role', 'presentation');
     heroLabel.style.cssText = 'font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:6px;font-weight:600;';
     panel.appendChild(heroLabel);
 
@@ -246,11 +256,15 @@
     var panelOpen = false;
     function togglePanel(open) {
       panelOpen = typeof open === 'boolean' ? open : !panelOpen;
+      btn.setAttribute('aria-expanded', String(panelOpen));
       if (panelOpen) {
         panel.style.opacity = '1';
         panel.style.visibility = 'visible';
         panel.style.transform = 'translateY(0)';
         panel.style.pointerEvents = 'auto';
+        // Focus the active swatch so arrow keys work immediately
+        var active = panel.querySelector('.ts-active');
+        if (active) active.focus();
       } else {
         panel.style.opacity = '0';
         panel.style.visibility = 'hidden';
@@ -262,6 +276,43 @@
       e.stopPropagation();
       togglePanel();
     };
+    // Keyboard support on toggle button
+    btn.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!panelOpen) togglePanel(true);
+        var swatches = panel.querySelectorAll('.ts-swatch');
+        if (swatches.length) swatches[e.key === 'ArrowDown' ? 0 : swatches.length - 1].focus();
+      } else if (e.key === 'Escape' && panelOpen) {
+        e.preventDefault();
+        togglePanel(false);
+        btn.focus();
+      }
+    });
+    // Arrow key navigation within the panel
+    panel.addEventListener('keydown', function (e) {
+      var swatches = Array.prototype.slice.call(panel.querySelectorAll('.ts-swatch'));
+      var idx = swatches.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        var next = idx < swatches.length - 1 ? idx + 1 : 0;
+        swatches[next].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        var prev = idx > 0 ? idx - 1 : swatches.length - 1;
+        swatches[prev].focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        swatches[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        swatches[swatches.length - 1].focus();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        togglePanel(false);
+        btn.focus();
+      }
+    });
     document.addEventListener('click', function () { togglePanel(false); });
 
     document.body.appendChild(wrap);
@@ -272,6 +323,9 @@
     var row = document.createElement('button');
     row.className = 'ts-swatch';
     row.dataset.theme = id;
+    row.setAttribute('role', 'option');
+    row.setAttribute('aria-label', t.name + ' theme');
+    row.setAttribute('aria-selected', id === (saved || 'default') ? 'true' : 'false');
     row.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border:none;background:none;cursor:pointer;border-radius:8px;transition:background 0.15s;';
     row.onmouseenter = function () { row.style.background = 'rgba(255,255,255,0.06)'; };
     row.onmouseleave = function () { row.style.background = 'none'; };
