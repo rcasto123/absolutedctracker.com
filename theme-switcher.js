@@ -191,7 +191,7 @@
     // Container — fixed bottom-left
     var wrap = document.createElement('div');
     wrap.id = 'themeSwitcher';
-    wrap.style.cssText = 'position:fixed;bottom:1rem;left:1rem;z-index:998;';
+    wrap.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:998;display:flex;align-items:center;gap:8px;';
 
     // Toggle button (palette icon)
     var btn = document.createElement('button');
@@ -205,7 +205,7 @@
     // Dropdown panel
     var panel = document.createElement('div');
     panel.id = 'themePanel';
-    panel.style.cssText = 'display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:200px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+    panel.style.cssText = 'display:none;position:absolute;top:calc(100% + 8px);right:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:200px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
 
     // Scrollbar styling
     var scrollStyle = document.createElement('style');
@@ -239,8 +239,8 @@
       addThemeRow(panel, themeOrder[i], saved);
     }
 
-    wrap.appendChild(panel);
     wrap.appendChild(btn);
+    wrap.appendChild(panel);
 
     // Toggle panel
     btn.onclick = function (e) {
