@@ -292,17 +292,94 @@
     // Dropdown menu
     var dropdown = document.createElement('div');
     dropdown.id = 'authDropdown';
+    dropdown.setAttribute('role', 'menu');
+    dropdown.setAttribute('aria-label', 'Account menu');
     dropdown.style.cssText = 'display:none;position:absolute;top:calc(100% + 0.5rem);right:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:10px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,0.5);overflow:hidden;';
     container.appendChild(dropdown);
 
-    // Toggle dropdown
+    // ARIA attributes for the toggle button
+    btn.setAttribute('aria-haspopup', 'menu');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'authDropdown');
+    btn.setAttribute('aria-label', 'Account menu');
+
+    // Helper: get all focusable menu items in the dropdown
+    function getMenuItems() {
+      return Array.prototype.slice.call(dropdown.querySelectorAll('[role="menuitem"]'));
+    }
+
+    // Helper: open/close the dropdown with focus management
+    function toggleDropdown(open) {
+      if (open) {
+        dropdown.style.display = 'block';
+        btn.setAttribute('aria-expanded', 'true');
+        // Focus first menu item when opening
+        var items = getMenuItems();
+        if (items.length) items[0].focus();
+      } else {
+        dropdown.style.display = 'none';
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    // Toggle dropdown on click
     btn.onclick = function(e) {
       e.stopPropagation();
-      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+      var isOpen = dropdown.style.display !== 'none';
+      toggleDropdown(!isOpen);
     };
 
+    // Keyboard navigation on the toggle button
+    btn.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        if (dropdown.style.display === 'none') {
+          e.preventDefault();
+          toggleDropdown(true);
+        }
+      } else if (e.key === 'Escape') {
+        if (dropdown.style.display !== 'none') {
+          e.preventDefault();
+          toggleDropdown(false);
+          btn.focus();
+        }
+      }
+    });
+
+    // Keyboard navigation within the dropdown menu
+    dropdown.addEventListener('keydown', function(e) {
+      var items = getMenuItems();
+      var idx = items.indexOf(document.activeElement);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        var next = idx < items.length - 1 ? idx + 1 : 0;
+        items[next].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        var prev = idx > 0 ? idx - 1 : items.length - 1;
+        items[prev].focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        if (items.length) items[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        if (items.length) items[items.length - 1].focus();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        toggleDropdown(false);
+        btn.focus();
+      } else if (e.key === 'Tab') {
+        // Close dropdown when tabbing out
+        toggleDropdown(false);
+      }
+    });
+
     // Close dropdown on outside click — use named function so it's not duplicated
-    _dropdownCloseHandler = function() { dropdown.style.display = 'none'; };
+    _dropdownCloseHandler = function(e) {
+      if (dropdown.style.display !== 'none' && !container.contains(e.target)) {
+        toggleDropdown(false);
+      }
+    };
     document.addEventListener('click', _dropdownCloseHandler);
 
     document.body.appendChild(container);
@@ -332,13 +409,15 @@
       menuHTML += '<div style="font-size:0.75rem;color:#888;margin-top:0.15rem">' + escapeHtml(email) + '</div>';
       menuHTML += '</div>';
       menuHTML += '<div style="padding:0.4rem">';
-      menuHTML += '<button onclick="window._authSyncNow()" style="display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#ddd;font-size:0.85rem;cursor:pointer;border-radius:6px" onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'none\'">Sync collection now</button>';
+      menuHTML += '<button role="menuitem" tabindex="-1" onclick="window._authSyncNow()" style="display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#ddd;font-size:0.85rem;cursor:pointer;border-radius:6px" onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'none\'">Sync collection now</button>';
 
       // Admin link
       _isCurrentUserAdmin().then(function(isAdmin) {
         if (isAdmin) {
           var adminBtn = document.createElement('button');
           adminBtn.textContent = 'Admin Dashboard';
+          adminBtn.setAttribute('role', 'menuitem');
+          adminBtn.setAttribute('tabindex', '-1');
           adminBtn.onclick = function() { window.location.href = 'admin.html'; };
           adminBtn.style.cssText = 'display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#f59e0b;font-size:0.85rem;cursor:pointer;border-radius:6px';
           adminBtn.onmouseenter = function() { this.style.background = 'rgba(255,255,255,0.06)'; };
@@ -350,7 +429,7 @@
 
       menuHTML += '</div>';
       menuHTML += '<div style="border-top:1px solid rgba(255,255,255,0.08);padding:0.4rem">';
-      menuHTML += '<button onclick="window._authSignOut()" style="display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#f87171;font-size:0.85rem;cursor:pointer;border-radius:6px" onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'none\'">Sign out</button>';
+      menuHTML += '<button role="menuitem" tabindex="-1" onclick="window._authSignOut()" style="display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#f87171;font-size:0.85rem;cursor:pointer;border-radius:6px" onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'none\'">Sign out</button>';
       menuHTML += '</div>';
       dropdown.innerHTML = menuHTML;
 
@@ -361,7 +440,7 @@
       btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
       btn.style.color = '#aaa';
       btn.style.background = 'rgba(255,255,255,0.08)';
-      dropdown.innerHTML = '<div style="padding:1rem;text-align:center"><div style="font-size:0.85rem;color:#aaa;margin-bottom:0.75rem">Sign in to sync your collection across devices</div><a href="auth.html" style="display:block;padding:0.6rem;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600">Sign In / Sign Up</a></div>';
+      dropdown.innerHTML = '<div style="padding:1rem;text-align:center"><div style="font-size:0.85rem;color:#aaa;margin-bottom:0.75rem">Sign in to sync your collection across devices</div><a href="auth.html" role="menuitem" tabindex="-1" style="display:block;padding:0.6rem;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600">Sign In / Sign Up</a></div>';
 
       // Show preview banner when signed out
       injectPreviewBanner();
