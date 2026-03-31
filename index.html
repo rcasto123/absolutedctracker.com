@@ -606,6 +606,95 @@
   }
 
   /* ââ Footer ââ */
+  /* -- What's New -- */
+  .whats-new {
+    margin-top: 48px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    overflow: hidden;
+  }
+  .whats-new-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .whats-new-toggle:hover { background: rgba(255,255,255,0.03); }
+  .whats-new-toggle svg {
+    transition: transform 0.2s;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .whats-new-toggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+  .whats-new-badge {
+    display: inline-block;
+    background: var(--accent-blue);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .whats-new-body {
+    display: none;
+    padding: 0 20px 20px;
+  }
+  .whats-new-body.open { display: block; }
+  .changelog-entry {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .changelog-entry:last-child { border-bottom: none; }
+  .changelog-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .changelog-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .changelog-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .changelog-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .changelog-tag.feature { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .changelog-tag.fix { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .changelog-tag.improve { background: rgba(59,130,246,0.15); color: #3b82f6; }
+
   footer {
     margin-top: 64px;
     padding: 32px 0;
@@ -759,6 +848,46 @@
           <source src="dc_absolute_universe_bg.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
+      </div>
+    </div>
+  </div>
+
+  <!-- What's New -->
+  <div class="whats-new" id="whatsNew">
+    <button class="whats-new-toggle" id="whatsNewToggle" aria-expanded="false" aria-controls="whatsNewBody">
+      <span>What's New <span class="whats-new-badge">Updated</span></span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
+      <div class="changelog-entry">
+        <div class="changelog-date">March 31, 2026</div>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Keyboard navigation for menus</div>
+        <div class="changelog-desc">Use arrow keys to navigate the theme picker and account menu. Full ARIA support for screen readers.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-date">March 31, 2026</div>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Responsive theme picker</div>
+        <div class="changelog-desc">Theme picker now moves to the bottom-left on mobile for easier thumb access, with the panel opening upward.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-date">March 30, 2026</div>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Hero color themes</div>
+        <div class="changelog-desc">Choose from 8 hero-inspired color themes — Batman, Superman, Wonder Woman, Flash, Green Lantern, Martian Manhunter, Green Arrow, and Catwoman.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-date">March 30, 2026</div>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Preview mode for visitors</div>
+        <div class="changelog-desc">Browse the full collection and view issue details without an account. Sign up when you're ready to start tracking.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-date">March 29, 2026</div>
+        <div class="changelog-title"><span class="changelog-tag fix">Fix</span> Navigation and link fixes</div>
+        <div class="changelog-desc">Fixed the "Back to Collection Tracker" link on issue pages and improved card click behavior in preview mode.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-date">March 29, 2026</div>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Cloud sync &amp; accounts</div>
+        <div class="changelog-desc">Sign in to sync your collection across devices. Your owned issues are automatically backed up to the cloud.</div>
       </div>
     </div>
   </div>
@@ -1657,4 +1786,30 @@ renderTrades();
 <script src="firebase-config.js" defer></script>
 <script src="auth-integration.js?v=3" defer></script>
 <script src="theme-switcher.js?v=7" defer></script>
+<script>
+// What's New toggle
+(function() {
+  var toggle = document.getElementById('whatsNewToggle');
+  var body = document.getElementById('whatsNewBody');
+  if (!toggle || !body) return;
+  toggle.addEventListener('click', function() {
+    var open = body.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+  // Check if user has seen the latest changelog — hide badge if so
+  try {
+    var lastSeen = localStorage.getItem('changelog_seen');
+    var latestDate = '2026-03-31';
+    if (lastSeen === latestDate) {
+      var badge = toggle.querySelector('.whats-new-badge');
+      if (badge) badge.style.display = 'none';
+    }
+    toggle.addEventListener('click', function() {
+      try { localStorage.setItem('changelog_seen', latestDate); } catch(e) {}
+      var badge = toggle.querySelector('.whats-new-badge');
+      if (badge) badge.style.display = 'none';
+    }, { once: true });
+  } catch(e) {}
+})();
+</script>
 </body></html>
