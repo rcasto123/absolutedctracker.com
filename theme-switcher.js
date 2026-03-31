@@ -214,10 +214,24 @@
     panel.setAttribute('tabindex', '-1');
     panel.style.cssText = 'position:absolute;top:calc(100% + 8px);right:0;background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:200px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease,visibility 0.2s;pointer-events:none;';
 
-    // Scrollbar styling
-    var scrollStyle = document.createElement('style');
-    scrollStyle.textContent = '#themePanel::-webkit-scrollbar{width:4px}#themePanel::-webkit-scrollbar-track{background:transparent}#themePanel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px}';
-    document.head.appendChild(scrollStyle);
+    // Scrollbar styling + responsive positioning
+    var switcherStyle = document.createElement('style');
+    switcherStyle.textContent = ''
+      + '#themePanel::-webkit-scrollbar{width:4px}'
+      + '#themePanel::-webkit-scrollbar-track{background:transparent}'
+      + '#themePanel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px}'
+      // Mobile: move to bottom-left, panel opens upward
+      + '@media(max-width:600px){'
+      +   '#themeSwitcher{top:auto !important;right:auto !important;bottom:1rem !important;left:1rem !important;}'
+      +   '#themePanel{top:auto !important;bottom:calc(100% + 8px) !important;right:auto !important;left:0 !important;'
+      +     'transform:translateY(8px) !important;max-height:50vh !important;}'
+      +   '#themePanel.ts-open{transform:translateY(0) !important;}'
+      + '}'
+      // Tablets / narrow desktops: keep top-right but ensure panel doesn't overflow
+      + '@media(min-width:601px) and (max-width:900px){'
+      +   '#themePanel{min-width:180px;}'
+      + '}';
+    document.head.appendChild(switcherStyle);
 
     var saved = null;
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { console.warn('[theme] Could not read theme preference:', e.message); }
@@ -262,6 +276,7 @@
         panel.style.visibility = 'visible';
         panel.style.transform = 'translateY(0)';
         panel.style.pointerEvents = 'auto';
+        panel.classList.add('ts-open');
         // Focus the active swatch so arrow keys work immediately
         var active = panel.querySelector('.ts-active');
         if (active) active.focus();
@@ -270,6 +285,7 @@
         panel.style.visibility = 'hidden';
         panel.style.transform = 'translateY(-8px)';
         panel.style.pointerEvents = 'none';
+        panel.classList.remove('ts-open');
       }
     }
     btn.onclick = function (e) {
