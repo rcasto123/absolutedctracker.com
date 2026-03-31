@@ -29,22 +29,43 @@
   var _originalSetItem = Storage.prototype.setItem;
   // Whether localStorage has been patched
   var _storagePatched = false;
+  // Focus trap references
+  var _modalEscapeHandler = null;
+  var _previousFocusElement = null;
 
   // ── Preview mode: block owned-toggling for signed-out users ──
   // We intercept clicks on issue cards and show a sign-up prompt
   // instead of toggling ownership when the user isn't signed in.
 
   function injectPreviewBanner() {
+    // Check if banner has been dismissed in this session
+    if (sessionStorage.getItem('previewBannerDismissed')) {
+      return;
+    }
+
     var banner = document.createElement('div');
     banner.id = 'previewBanner';
-    banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:1000;background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-top:2px solid #3b82f6;padding:0.9rem 1.2rem;display:flex;align-items:center;justify-content:center;gap:1rem;box-shadow:0 -4px 24px rgba(0,0,0,0.5);';
+    banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:1000;background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-top:2px solid #3b82f6;padding:0.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;box-shadow:0 -4px 24px rgba(0,0,0,0.5);';
     banner.innerHTML = ''
-      + '<div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;justify-content:center">'
+      + '<div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;justify-content:center;flex:1">'
       + '  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
       + '  <span style="color:#cbd5e1;font-size:0.9rem"><strong style="color:#fff">Preview Mode</strong> — Create a free account to track your collection and sync across devices</span>'
-      + '  <a href="auth.html" style="background:#3b82f6;color:#fff;padding:0.5rem 1.2rem;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600;white-space:nowrap;transition:background 0.2s" onmouseenter="this.style.background=\'#2563eb\'" onmouseleave="this.style.background=\'#3b82f6\'">Sign Up Free</a>'
-      + '</div>';
+      + '  <a href="auth.html" style="background:#3b82f6;color:#fff;padding:0.5rem 1.2rem;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600;white-space:nowrap;transition:background 0.2s;flex-shrink:0" onmouseenter="this.style.background=\'#2563eb\'" onmouseleave="this.style.background=\'#3b82f6\'">Sign Up Free</a>'
+      + '</div>'
+      + '<button id="previewBannerClose" style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:0.25rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color 0.2s" onmouseenter="this.style.color=\'#cbd5e1\'" onmouseleave="this.style.color=\'#94a3b8\'" title="Dismiss banner">'
+      + '  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+      + '</button>';
+
     document.body.appendChild(banner);
+
+    // Close button handler
+    document.getElementById('previewBannerClose').onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      sessionStorage.setItem('previewBannerDismissed', 'true');
+      removePreviewBanner();
+    };
+
     // Add bottom padding so banner doesn't cover content
     document.body.style.paddingBottom = '70px';
   }
@@ -60,12 +81,15 @@
     // Don't show if one is already open
     if (document.getElementById('signUpPromptOverlay')) return;
 
+    // Store the currently focused element for focus restoration
+    _previousFocusElement = document.activeElement;
+
     var overlay = document.createElement('div');
     overlay.id = 'signUpPromptOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);animation:fadeIn 0.2s ease';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);animation:fadeIn 0.2s ease;will-change:transform,opacity;';
 
     var modal = document.createElement('div');
-    modal.style.cssText = 'background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:2rem;max-width:380px;width:90%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,0.5);animation:slideUp 0.25s ease';
+    modal.style.cssText = 'background:#1a1d24;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:2rem;max-width:380px;width:90%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,0.5);animation:slideUp 0.25s ease;max-height:90vh;overflow-y:auto;will-change:transform,opacity;';
 
     modal.innerHTML = ''
       + '<div style="width:56px;height:56px;background:rgba(59,130,246,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">'
@@ -73,15 +97,38 @@
       + '</div>'
       + '<h3 style="color:#fff;font-size:1.15rem;margin:0 0 0.5rem;font-weight:700">Create an Account to Track</h3>'
       + '<p style="color:#94a3b8;font-size:0.88rem;margin:0 0 1.5rem;line-height:1.5">Sign up for free to mark issues as owned, sync your collection across devices, and never miss a release.</p>'
-      + '<a href="auth.html" style="display:block;padding:0.7rem;background:#3b82f6;color:#fff;border-radius:10px;text-decoration:none;font-size:0.95rem;font-weight:600;margin-bottom:0.6rem;transition:background 0.2s" onmouseenter="this.style.background=\'#2563eb\'" onmouseleave="this.style.background=\'#3b82f6\'">Sign Up / Sign In</a>'
+      + '<a href="auth.html" id="signUpPromptLink" style="display:block;padding:0.7rem;background:#3b82f6;color:#fff;border-radius:10px;text-decoration:none;font-size:0.95rem;font-weight:600;margin-bottom:0.6rem;transition:background 0.2s" onmouseenter="this.style.background=\'#2563eb\'" onmouseleave="this.style.background=\'#3b82f6\'">Sign Up / Sign In</a>'
       + '<button id="signUpPromptClose" style="background:none;border:none;color:#64748b;font-size:0.85rem;cursor:pointer;padding:0.4rem;transition:color 0.2s" onmouseenter="this.style.color=\'#94a3b8\'" onmouseleave="this.style.color=\'#64748b\'">Continue browsing</button>';
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
     // Close handlers
-    document.getElementById('signUpPromptClose').onclick = function() { overlay.remove(); };
-    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    var closeOverlay = function() {
+      overlay.remove();
+      // Restore focus to previous element
+      if (_previousFocusElement && typeof _previousFocusElement.focus === 'function') {
+        _previousFocusElement.focus();
+      }
+      _previousFocusElement = null;
+      // Remove escape listener
+      if (_modalEscapeHandler) {
+        document.removeEventListener('keydown', _modalEscapeHandler);
+        _modalEscapeHandler = null;
+      }
+    };
+
+    document.getElementById('signUpPromptClose').onclick = closeOverlay;
+    overlay.onclick = function(e) { if (e.target === overlay) closeOverlay(); };
+
+    // Escape key to close modal
+    _modalEscapeHandler = function(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeOverlay();
+      }
+    };
+    document.addEventListener('keydown', _modalEscapeHandler);
 
     // Add animation styles if not present
     if (!document.getElementById('previewAnimStyles')) {
@@ -89,6 +136,12 @@
       style.id = 'previewAnimStyles';
       style.textContent = '@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}';
       document.head.appendChild(style);
+    }
+
+    // Set focus to the Sign Up link (first interactive element)
+    var signUpLink = document.getElementById('signUpPromptLink');
+    if (signUpLink) {
+      signUpLink.focus();
     }
   }
 
@@ -396,9 +449,14 @@
       document.removeEventListener('click', _dropdownCloseHandler);
       _dropdownCloseHandler = null;
     }
+    if (_modalEscapeHandler) {
+      document.removeEventListener('keydown', _modalEscapeHandler);
+      _modalEscapeHandler = null;
+    }
     var authUI = document.getElementById('authUI');
     if (authUI) authUI.remove();
     removePreviewBanner();
+    _previousFocusElement = null;
     _initialized = false;
   };
 
