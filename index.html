@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com">
-<title>DC Absolute Universe â Collection Tracker</title>
+<title>DC Absolute Universe — Collection Tracker</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;600;700&display=swap');
 
@@ -27,7 +27,7 @@
     --border: #2a2f3e;
     --text-primary: #e8eaf0;
     --text-secondary: #8b92a8;
-    --text-muted: #5a6178;
+    --text-muted: #6b7394;
     --accent-blue: #1a7aff;
     --accent-red: #dc2626;
     --accent-gold: #d4a844;
@@ -39,6 +39,15 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* Global focus-visible styles for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
 
   body {
     font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
@@ -196,8 +205,8 @@
   }
 
   /* ââ Tab Content ââ */
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+  .tab-content { display: none; opacity: 0; transition: opacity 0.2s ease; }
+  .tab-content.active { display: block; opacity: 1; }
 
   /* ââ Filter Bar ââ */
   .filter-bar {
@@ -602,8 +611,8 @@
     padding: 32px 0;
     border-top: 1px solid var(--border);
     text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
+    font-size: 13px;
+    color: var(--text-secondary);
   }
 
   footer a { color: var(--accent-blue); text-decoration: none; }
@@ -631,10 +640,13 @@
   @media (max-width: 480px) {
     .hero { height: 40vh; min-height: 250px; }
     .nav-tab { padding: 14px 12px; font-size: 12px; letter-spacing: 1px; }
+    .stats-bar { flex-wrap: wrap; justify-content: center; gap: 16px 32px; padding: 16px; }
     .stat-number { font-size: 28px; }
     .stat-label { font-size: 10px; letter-spacing: 1.5px; }
     .issue-card { padding: 8px; }
     .series-title { font-size: 13px; }
+    .issue-badge { font-size: 9px; padding: 2px 6px; }
+    #themeSwitcher { top: 0.5rem !important; right: 3rem !important; }
   }
 
   @media (min-width: 769px) and (max-width: 1024px) {
@@ -668,7 +680,7 @@
   <div class="hero-content">
     <div class="hero-badge">EARTH-ALPHA</div>
     <h1>ABSOLUTE <span>UNIVERSE</span></h1>
-    <p class="hero-sub">Track your collection. Never miss a release. Every issue, every series â all in one place.</p>
+    <p class="hero-sub">Track your collection. Never miss a release. Every issue, every series — all in one place.</p>
   </div>
 </section>
 
@@ -741,7 +753,7 @@
   <!-- âââ MEDIA TAB âââ -->
   <div class="tab-content" id="tab-media" role="tabpanel">
     <div class="media-section" style="margin-top:0;">
-      <h2>Absolute Universe â Character Showcase</h2>
+      <h2>Absolute Universe — Character Showcase</h2>
       <div class="video-container">
         <video controls preload="metadata" aria-label="DC Absolute Universe character showcase video">
           <source src="dc_absolute_universe_bg.mp4" type="video/mp4">
@@ -754,13 +766,13 @@
   <footer>
     Data sourced from <a href="https://dc.fandom.com/wiki/Absolute_Universe" target="_blank" rel="noopener">DC Fandom Wiki</a>
     &amp; <a href="https://en.wikipedia.org/wiki/Absolute_Universe" target="_blank" rel="noopener">Wikipedia</a>.
-    Release dates may shift â check your local comic shop. &copy; 2026
+    Release dates may shift — check your local comic shop. &copy; 2026
   </footer>
 </div>
 
 <script>
 // ââââââââââââââââââââââââââââââââââââââââ
-//  DATA â DC Absolute Universe Comics
+//  DATA — DC Absolute Universe Comics
 // ââââââââââââââââââââââââââââââââââââââââ
 
 const TODAY = new Date('2026-03-29');
@@ -853,18 +865,18 @@ const ALL_ISSUES = [
   { series:'Absolute Flash', issue:'#12', title:'Absolute Flash #12', date:'2026-02-18', writer:'Jeff Lemire', artist:'Nick Robles' },
   { series:'Absolute Flash', issue:'#13', title:'Absolute Flash #13', date:'2026-03-18', writer:'Jeff Lemire', artist:'Nick Robles' },
   { series:'Absolute Flash', issue:'#14', title:'Absolute Flash #14', date:'2026-04-15', writer:'Jeff Lemire', artist:'Nick Robles' },
-  { series:'Absolute Martian Manhunter', issue:'#1', title:'Absolute Martian Manhunter #1', date:'2025-03-26', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#2', title:'Absolute Martian Manhunter #2', date:'2025-04-23', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#3', title:'Absolute Martian Manhunter #3', date:'2025-05-28', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#4', title:'Absolute Martian Manhunter #4', date:'2025-06-25', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#5', title:'Absolute Martian Manhunter #5', date:'2025-07-23', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#6', title:'Absolute Martian Manhunter #6', date:'2025-08-27', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#7', title:'Absolute Martian Manhunter #7', date:'2025-09-24', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#8', title:'Absolute Martian Manhunter #8', date:'2025-10-22', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#9', title:'Absolute Martian Manhunter #9', date:'2025-11-26', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#10', title:'Absolute Martian Manhunter #10', date:'2025-12-24', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#11', title:'Absolute Martian Manhunter #11', date:'2026-01-28', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
-  { series:'Absolute Martian Manhunter', issue:'#12', title:'Absolute Martian Manhunter #12', date:'2026-05-27', writer:'Deniz Camp', artist:'Javier RodrÃ­guez' },
+  { series:'Absolute Martian Manhunter', issue:'#1', title:'Absolute Martian Manhunter #1', date:'2025-03-26', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#2', title:'Absolute Martian Manhunter #2', date:'2025-04-23', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#3', title:'Absolute Martian Manhunter #3', date:'2025-05-28', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#4', title:'Absolute Martian Manhunter #4', date:'2025-06-25', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#5', title:'Absolute Martian Manhunter #5', date:'2025-07-23', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#6', title:'Absolute Martian Manhunter #6', date:'2025-08-27', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#7', title:'Absolute Martian Manhunter #7', date:'2025-09-24', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#8', title:'Absolute Martian Manhunter #8', date:'2025-10-22', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#9', title:'Absolute Martian Manhunter #9', date:'2025-11-26', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#10', title:'Absolute Martian Manhunter #10', date:'2025-12-24', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#11', title:'Absolute Martian Manhunter #11', date:'2026-01-28', writer:'Deniz Camp', artist:'Javier Rodríguez' },
+  { series:'Absolute Martian Manhunter', issue:'#12', title:'Absolute Martian Manhunter #12', date:'2026-05-27', writer:'Deniz Camp', artist:'Javier Rodríguez' },
   { series:'Absolute Green Lantern', issue:'#1', title:'Absolute Green Lantern #1', date:'2025-04-02', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
   { series:'Absolute Green Lantern', issue:'#2', title:'Absolute Green Lantern #2', date:'2025-05-07', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
   { series:'Absolute Green Lantern', issue:'#3', title:'Absolute Green Lantern #3', date:'2025-06-04', writer:'Al Ewing', artist:'Jahnoy Lindsay' },
@@ -892,16 +904,16 @@ const ALL_ISSUES = [
 ];
 
 const TRADES = [
-  { title:'Absolute Batman Vol. 1', subtitle:'Collects #1â6', date:'2025-07-15', series:'Absolute Batman' },
-  { title:'Absolute Wonder Woman Vol. 1: The Last Amazon', subtitle:'Collects #1â7', date:'2025-08-12', series:'Absolute Wonder Woman' },
-  { title:'Absolute Superman Vol. 1: Last Dust of Krypton', subtitle:'Collects #1â6', date:'2025-08-19', series:'Absolute Superman' },
-  { title:'Absolute Green Lantern Vol. 1: Without Fear', subtitle:'Collects #1â6', date:'2025-12-09', series:'Absolute Green Lantern' },
-  { title:'Absolute Flash Vol. 1: Of Two Worlds', subtitle:'Collects #1â6', date:'2025-12-23', series:'Absolute Flash' },
-  { title:'Absolute Batman Vol. 2', subtitle:'Collects #7â12', date:'2026-02-06', series:'Absolute Batman' },
-  { title:'Absolute Wonder Woman Vol. 2', subtitle:'Collects #8â14', date:'2026-02-17', series:'Absolute Wonder Woman' },
-  { title:'Absolute Superman Vol. 2', subtitle:'Collects #7â12', date:'2026-03-03', series:'Absolute Superman' },
-  { title:'Absolute Green Lantern Vol. 2', subtitle:'Collects #7â12', date:'2026-06-09', series:'Absolute Green Lantern' },
-  { title:'Absolute Flash Vol. 2', subtitle:'Collects #7â12', date:'2026-06-23', series:'Absolute Flash' },
+  { title:'Absolute Batman Vol. 1', subtitle:'Collects #1–6', date:'2025-07-15', series:'Absolute Batman' },
+  { title:'Absolute Wonder Woman Vol. 1: The Last Amazon', subtitle:'Collects #1–7', date:'2025-08-12', series:'Absolute Wonder Woman' },
+  { title:'Absolute Superman Vol. 1: Last Dust of Krypton', subtitle:'Collects #1–6', date:'2025-08-19', series:'Absolute Superman' },
+  { title:'Absolute Green Lantern Vol. 1: Without Fear', subtitle:'Collects #1–6', date:'2025-12-09', series:'Absolute Green Lantern' },
+  { title:'Absolute Flash Vol. 1: Of Two Worlds', subtitle:'Collects #1–6', date:'2025-12-23', series:'Absolute Flash' },
+  { title:'Absolute Batman Vol. 2', subtitle:'Collects #7–12', date:'2026-02-06', series:'Absolute Batman' },
+  { title:'Absolute Wonder Woman Vol. 2', subtitle:'Collects #8–14', date:'2026-02-17', series:'Absolute Wonder Woman' },
+  { title:'Absolute Superman Vol. 2', subtitle:'Collects #7–12', date:'2026-03-03', series:'Absolute Superman' },
+  { title:'Absolute Green Lantern Vol. 2', subtitle:'Collects #7–12', date:'2026-06-09', series:'Absolute Green Lantern' },
+  { title:'Absolute Flash Vol. 2', subtitle:'Collects #7–12', date:'2026-06-23', series:'Absolute Flash' },
 ];
 
 const SERIES_INFO = [
@@ -909,7 +921,7 @@ const SERIES_INFO = [
   { name:'Absolute Wonder Woman', writer:'Kelly Thompson', artist:'Hayden Sherman', colorist:'Jordie Bellaire', start:'Oct 2024', type:'Ongoing', description:'Diana was raised in Hell by Circe and the Greek gods. She fights her way to become a warrior unlike any version before. Won Best New Series at the 2025 Eisner Awards.' },
   { name:'Absolute Superman', writer:'Jason Aaron', artist:'Rafa Sandoval', colorist:'Ulises Arreola', start:'Nov 2024', type:'Ongoing', description:'Kal-El grew up on Krypton and arrived as an adult, living as undocumented. His companion is an AI called Sol. He must define heroism without the Kents.' },
   { name:'Absolute Flash', writer:'Jeff Lemire', artist:'Nick Robles', colorist:'Adriano Lucas', start:'Mar 2025', type:'Ongoing', description:'Wally West carries guilt for Barry Allen\'s death. He travels with a mutant Grodd, redefining the speedster legacy.' },
-  { name:'Absolute Martian Manhunter', writer:'Deniz Camp', artist:'Javier RodrÃ­guez', colorist:'Javier RodrÃ­guez', start:'Mar 2025', type:'Limited (12)', description:'J\'onn J\'onzz is reimagined as a detective whose mind is invaded by an alien consciousness. Exploring identity and otherness.' },
+  { name:'Absolute Martian Manhunter', writer:'Deniz Camp', artist:'Javier Rodríguez', colorist:'Javier Rodríguez', start:'Mar 2025', type:'Limited (12)', description:'J\'onn J\'onzz is reimagined as a detective whose mind is invaded by an alien consciousness. Exploring identity and otherness.' },
   { name:'Absolute Green Lantern', writer:'Al Ewing', artist:'Jahnoy Lindsay', colorist:'Jahnoy Lindsay', start:'Apr 2025', type:'Ongoing', description:'The spectrum reduced to 4 colors. Sojourner Mullein navigates a universe with different rules of willpower and fear.' },
   { name:'Absolute Green Arrow', writer:'Pornsak Pichetshote', artist:'Rafael Albuquerque', colorist:'TBA', start:'Dec 2025', type:'Limited (6)', description:'A 6-issue limited series with a new take on Oliver Queen for Earth-Alpha.' },
   { name:'Absolute Catwoman', writer:'Scott Snyder & Che Grayson', artist:'Bengal', colorist:'Bengal', start:'Mar 2026', type:'Limited', description:'Selina Kyle enters Earth-Alpha with art by acclaimed Bengal.' },
@@ -1045,7 +1057,7 @@ function renderCollection(filter, search) {
       card.setAttribute('aria-label', `Toggle: ${issue.title}`);
 
       const badgeClass = released ? 'badge-released' : 'badge-upcoming';
-      const badgeText = released ? 'Released' : 'Upcoming';
+      const badgeText = released ? '✓ Released' : '◇ Upcoming';
       const d = new Date(issue.date);
       const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
 
@@ -1053,7 +1065,7 @@ function renderCollection(filter, search) {
         <div class="issue-checkbox">${checkSvg}</div>
         <div class="issue-info">
           <div class="issue-name"><a href="issue.html?id=${makeSlug(issue.title)}" onclick="event.stopPropagation()">${issue.title}</a></div>
-          <div class="issue-date">${dateStr} Â· ${issue.writer}</div>
+          <div class="issue-date">${dateStr} · ${issue.writer}</div>
         </div>
         <div class="issue-badge ${badgeClass}">${badgeText}</div>
       `;
@@ -1197,7 +1209,7 @@ function renderTrades() {
       <div class="issue-checkbox">${checkSvg}</div>
       <div class="tpb-info">
         <div class="tpb-title">${t.title}</div>
-        <div class="tpb-sub">${t.subtitle} Â· ${dateStr}</div>
+        <div class="tpb-sub">${t.subtitle} · ${dateStr}</div>
       </div>
       <div class="issue-badge ${released ? 'badge-released' : 'badge-upcoming'}">${released ? 'Released' : 'Upcoming'}</div>
     `;
@@ -1227,16 +1239,41 @@ let currentFilter = 'all';
 let currentSearch = '';
 let calendarShowAll = false;
 
-document.querySelectorAll('.nav-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.nav-tab').forEach(t => {
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-    });
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    tab.setAttribute('aria-selected', 'true');
-    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+// Tab switching with keyboard navigation (arrow keys)
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+    t.setAttribute('tabindex', '-1');
+  });
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  tab.setAttribute('aria-selected', 'true');
+  tab.setAttribute('tabindex', '0');
+  document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  tab.focus();
+}
+
+const allTabs = Array.from(document.querySelectorAll('.nav-tab'));
+allTabs.forEach((tab, idx) => {
+  if (idx > 0) tab.setAttribute('tabindex', '-1');
+  tab.addEventListener('click', () => switchTab(tab));
+  tab.addEventListener('keydown', (e) => {
+    let target = null;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      target = allTabs[(idx + 1) % allTabs.length];
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      target = allTabs[(idx - 1 + allTabs.length) % allTabs.length];
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      target = allTabs[0];
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      target = allTabs[allTabs.length - 1];
+    }
+    if (target) switchTab(target);
   });
 });
 
