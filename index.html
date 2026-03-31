@@ -1387,22 +1387,7 @@ renderTrades();
     html += '.stats { background: #f5f5f5; padding: 12px 16px; border-radius: 6px; margin-bottom: 24px; display: flex; gap: 24px; font-size: 0.85rem; }';
     html += '.stat-val { font-weight: 700; font-size: 1.1rem; }';
     html += '@media print { body { padding: 16px; } .stats { background: #eee; } }';
-    html += '</style><script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "DC Absolute Universe Collection Tracker",
-  "description": "Track your DC Absolute Universe comic book collection. Mark issues as owned, sync across devices, and never miss a release.",
-  "url": "https://www.absolutedctracker.com",
-  "applicationCategory": "Utility",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  }
-}
-</script>
-</head><body>';
+    html += '</style></head><body>';
     html += '<h1>DC Absolute Universe Collection</h1>';
     html += '<div class="subtitle">Filter: ' + filter + ' &bull; Exported ' + new Date().toLocaleDateString() + '</div>';
     var owned = cards.filter(function(c) { return c.owned; }).length;
