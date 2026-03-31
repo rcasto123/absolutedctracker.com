@@ -856,36 +856,36 @@
   <div class="whats-new" id="whatsNew">
     <button class="whats-new-toggle" id="whatsNewToggle" aria-expanded="false" aria-controls="whatsNewBody">
       <span>What's New <span class="whats-new-badge">Updated</span></span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
       <div class="changelog-entry">
-        <div class="changelog-date">March 31, 2026</div>
+        <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Keyboard navigation for menus</div>
         <div class="changelog-desc">Use arrow keys to navigate the theme picker and account menu. Full ARIA support for screen readers.</div>
       </div>
       <div class="changelog-entry">
-        <div class="changelog-date">March 31, 2026</div>
+        <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
         <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Responsive theme picker</div>
         <div class="changelog-desc">Theme picker now moves to the bottom-left on mobile for easier thumb access, with the panel opening upward.</div>
       </div>
       <div class="changelog-entry">
-        <div class="changelog-date">March 30, 2026</div>
+        <time datetime="2026-03-30" class="changelog-date">March 30, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Hero color themes</div>
         <div class="changelog-desc">Choose from 8 hero-inspired color themes — Batman, Superman, Wonder Woman, Flash, Green Lantern, Martian Manhunter, Green Arrow, and Catwoman.</div>
       </div>
       <div class="changelog-entry">
-        <div class="changelog-date">March 30, 2026</div>
+        <time datetime="2026-03-30" class="changelog-date">March 30, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Preview mode for visitors</div>
         <div class="changelog-desc">Browse the full collection and view issue details without an account. Sign up when you're ready to start tracking.</div>
       </div>
       <div class="changelog-entry">
-        <div class="changelog-date">March 29, 2026</div>
+        <time datetime="2026-03-29" class="changelog-date">March 29, 2026</time>
         <div class="changelog-title"><span class="changelog-tag fix">Fix</span> Navigation and link fixes</div>
         <div class="changelog-desc">Fixed the "Back to Collection Tracker" link on issue pages and improved card click behavior in preview mode.</div>
       </div>
       <div class="changelog-entry">
-        <div class="changelog-date">March 29, 2026</div>
+        <time datetime="2026-03-29" class="changelog-date">March 29, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Cloud sync &amp; accounts</div>
         <div class="changelog-desc">Sign in to sync your collection across devices. Your owned issues are automatically backed up to the cloud.</div>
       </div>
@@ -1799,7 +1799,9 @@ renderTrades();
   // Check if user has seen the latest changelog — hide badge if so
   try {
     var lastSeen = localStorage.getItem('changelog_seen');
-    var latestDate = '2026-03-31';
+    // Extract latest date from first changelog entry so we don't need to hardcode it
+    var firstDateEl = document.querySelector('#whatsNewBody .changelog-date');
+    var latestDate = firstDateEl ? firstDateEl.textContent.trim() : '';
     if (lastSeen === latestDate) {
       var badge = toggle.querySelector('.whats-new-badge');
       if (badge) badge.style.display = 'none';
