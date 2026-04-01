@@ -653,6 +653,26 @@
   .analytics-stats-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
   @media(max-width:700px) { .analytics-grid { grid-template-columns: 1fr; } .series-bar-label { width: 100px; } }
 
+  /* -- Achievements -- */
+  .achievements-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; }
+  .achievements-summary .trophy-icon { font-size: 2rem; line-height: 1; }
+  .achievements-summary .trophy-stat { font-family: 'Oswald', sans-serif; font-size: 1.6rem; font-weight: 700; }
+  .achievements-summary .trophy-label { font-size: 0.8rem; color: var(--text-secondary); }
+  .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .badge-card { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; transition: all 0.2s; }
+  .badge-card.unlocked { border-color: var(--accent-gold, #facc15); box-shadow: 0 0 12px rgba(250,204,21,0.1); }
+  .badge-card.locked { opacity: 0.45; }
+  .badge-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+  .badge-card.unlocked .badge-icon { background: rgba(250,204,21,0.12); }
+  .badge-card.locked .badge-icon { background: rgba(255,255,255,0.05); filter: grayscale(1); }
+  .badge-info { flex: 1; min-width: 0; }
+  .badge-name { font-family: 'Oswald', sans-serif; font-size: 0.95rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+  .badge-desc { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; }
+  .badge-progress { margin-top: 6px; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .badge-progress-fill { height: 100%; border-radius: 2px; background: var(--accent-gold, #facc15); transition: width 0.3s; }
+  .badge-card.unlocked .badge-check { color: #22c55e; flex-shrink: 0; }
+  @media(max-width:600px) { .badges-grid { grid-template-columns: 1fr; } }
+
   .whats-new {
     margin-top: 48px;
     border: 1px solid var(--border);
@@ -853,6 +873,7 @@
     <button class="nav-tab" data-tab="trades" role="tab" aria-selected="false" aria-controls="tab-trades">Trade Paperbacks</button>
     <button class="nav-tab" data-tab="arcs" role="tab" aria-selected="false" aria-controls="tab-arcs">Reading Order</button>
     <button class="nav-tab" data-tab="analytics" role="tab" aria-selected="false" aria-controls="tab-analytics">Analytics</button>
+    <button class="nav-tab" data-tab="achievements" role="tab" aria-selected="false" aria-controls="tab-achievements">Achievements</button>
     <button class="nav-tab" data-tab="media" role="tab" aria-selected="false" aria-controls="tab-media">Media</button>
   </nav>
 
@@ -896,6 +917,10 @@
     <div id="analyticsContainer"></div>
   </div>
 
+  <div class="tab-content" id="tab-achievements" role="tabpanel">
+    <div id="achievementsContainer"></div>
+  </div>
+
   <div class="tab-content" id="tab-media" role="tabpanel">
     <div class="media-section" style="margin-top:0;">
       <h2>Absolute Universe — Character Showcase</h2>
@@ -915,6 +940,11 @@
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
+      <div class="changelog-entry">
+        <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Collector achievements &amp; badges</div>
+        <div class="changelog-desc">New Achievements tab with 15 unlockable badges for collection milestones — from your first issue to completing every series. Progress bars track how close you are to each badge.</div>
+      </div>
       <div class="changelog-entry">
         <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Profile card &amp; privacy mode</div>
@@ -1319,6 +1349,7 @@ function renderCollection(filter, search) {
         renderStats();
         renderArcs();
         renderAnalytics();
+        renderAchievements();
       };
 
       card.addEventListener('click', toggleOwned);
@@ -1527,6 +1558,82 @@ function renderArcs() {
   });
 }
 
+function renderAchievements() {
+  const container = document.getElementById('achievementsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const released = ALL_ISSUES.filter(i => isReleased(i.date));
+  const ownedCount = released.filter(i => owned[issueKey(i)]).length;
+  const totalReleased = released.length;
+  const pct = totalReleased > 0 ? Math.round((ownedCount / totalReleased) * 100) : 0;
+
+  // Per-series stats
+  const seriesStats = {};
+  released.forEach(i => {
+    if (!seriesStats[i.series]) seriesStats[i.series] = { total: 0, owned: 0 };
+    seriesStats[i.series].total++;
+    if (owned[issueKey(i)]) seriesStats[i.series].owned++;
+  });
+  const completedSeries = Object.values(seriesStats).filter(s => s.total > 0 && s.owned === s.total).length;
+  const totalSeries = Object.keys(seriesStats).length;
+
+  // First issue date
+  const ownedIssues = released.filter(i => owned[issueKey(i)]);
+  const distinctMonths = new Set(ownedIssues.map(i => i.date.slice(0, 7))).size;
+
+  const BADGES = [
+    { id: 'first_issue', icon: '\u2B50', name: 'First Issue', desc: 'Add your first issue to the collection', check: () => ownedCount >= 1, progress: () => Math.min(ownedCount, 1), max: 1 },
+    { id: 'getting_started', icon: '\uD83D\uDCDA', name: 'Getting Started', desc: 'Collect 5 issues', check: () => ownedCount >= 5, progress: () => Math.min(ownedCount, 5), max: 5 },
+    { id: 'dedicated', icon: '\uD83D\uDD25', name: 'Dedicated Reader', desc: 'Collect 10 issues', check: () => ownedCount >= 10, progress: () => Math.min(ownedCount, 10), max: 10 },
+    { id: 'serious', icon: '\uD83D\uDCAA', name: 'Serious Collector', desc: 'Collect 25 issues', check: () => ownedCount >= 25, progress: () => Math.min(ownedCount, 25), max: 25 },
+    { id: 'power', icon: '\u26A1', name: 'Power Collector', desc: 'Collect 50 issues', check: () => ownedCount >= 50, progress: () => Math.min(ownedCount, 50), max: 50 },
+    { id: 'quarter', icon: '\uD83C\uDF19', name: 'Quarter Way', desc: 'Reach 25% completion', check: () => pct >= 25, progress: () => Math.min(pct, 25), max: 25 },
+    { id: 'half', icon: '\u2600\uFE0F', name: 'Halfway There', desc: 'Reach 50% completion', check: () => pct >= 50, progress: () => Math.min(pct, 50), max: 50 },
+    { id: 'three_quarter', icon: '\uD83C\uDF1F', name: 'Almost Complete', desc: 'Reach 75% completion', check: () => pct >= 75, progress: () => Math.min(pct, 75), max: 75 },
+    { id: 'completionist', icon: '\uD83C\uDFC6', name: 'Completionist', desc: 'Collect every released issue', check: () => pct === 100 && totalReleased > 0, progress: () => Math.min(pct, 100), max: 100 },
+    { id: 'series_one', icon: '\uD83C\uDFAF', name: 'Series Complete', desc: 'Complete an entire series', check: () => completedSeries >= 1, progress: () => Math.min(completedSeries, 1), max: 1 },
+    { id: 'series_three', icon: '\uD83C\uDF96\uFE0F', name: 'Multi-Series Master', desc: 'Complete 3 different series', check: () => completedSeries >= 3, progress: () => Math.min(completedSeries, 3), max: 3 },
+    { id: 'all_series', icon: '\uD83D\uDC51', name: 'Universe Master', desc: 'Complete every series', check: () => completedSeries === totalSeries && totalSeries > 0, progress: () => completedSeries, max: totalSeries },
+    { id: 'diverse', icon: '\uD83C\uDF0D', name: 'Diverse Taste', desc: 'Own at least one issue from every series', check: () => Object.values(seriesStats).every(s => s.owned > 0) && totalSeries > 0, progress: () => Object.values(seriesStats).filter(s => s.owned > 0).length, max: totalSeries },
+    { id: 'monthly', icon: '\uD83D\uDCC5', name: 'Dedicated Subscriber', desc: 'Own issues from 3 different months', check: () => distinctMonths >= 3, progress: () => Math.min(distinctMonths, 3), max: 3 },
+    { id: 'veteran', icon: '\uD83C\uDF93', name: 'Veteran Collector', desc: 'Own issues from 6 different months', check: () => distinctMonths >= 6, progress: () => Math.min(distinctMonths, 6), max: 6 },
+  ];
+
+  const unlockedCount = BADGES.filter(b => b.check()).length;
+
+  // Summary
+  let html = '<div class="achievements-summary">';
+  html += '<div class="trophy-icon">\uD83C\uDFC6</div>';
+  html += '<div><div class="trophy-stat">' + unlockedCount + ' / ' + BADGES.length + '</div>';
+  html += '<div class="trophy-label">Achievements Unlocked</div></div>';
+  html += '</div>';
+
+  // Badges grid
+  html += '<div class="badges-grid">';
+  BADGES.forEach(b => {
+    const unlocked = b.check();
+    const prog = b.progress();
+    const progPct = b.max > 0 ? Math.round((prog / b.max) * 100) : 0;
+    html += '<div class="badge-card ' + (unlocked ? 'unlocked' : 'locked') + '">';
+    html += '<div class="badge-icon">' + b.icon + '</div>';
+    html += '<div class="badge-info">';
+    html += '<div class="badge-name">' + b.name + '</div>';
+    html += '<div class="badge-desc">' + b.desc + '</div>';
+    if (!unlocked) {
+      html += '<div class="badge-progress"><div class="badge-progress-fill" style="width:' + progPct + '%"></div></div>';
+    }
+    html += '</div>';
+    if (unlocked) {
+      html += '<svg class="badge-check" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
 function renderAnalytics() {
   const container = document.getElementById('analyticsContainer');
   container.innerHTML = '';
@@ -1708,6 +1815,7 @@ renderSeriesGuide();
 renderTrades();
 renderArcs();
 renderAnalytics();
+renderAchievements();
 </script>
 
 <!-- Export Feature -->
