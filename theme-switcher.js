@@ -151,40 +151,151 @@
         '--border': '#382e48'
       },
       bodyBg: 'radial-gradient(ellipse at 60% 0%, rgba(168,85,247,0.08) 0%, transparent 45%), radial-gradient(ellipse at 20% 40%, rgba(139,92,246,0.04) 0%, transparent 40%), radial-gradient(ellipse at 80% 70%, rgba(192,132,252,0.03) 0%, transparent 40%), linear-gradient(180deg, #0e0a12 0%, #0a080e 100%)'
+    },
+
+    // ── Light themes ──
+
+    light: {
+      name: 'Clean Light',
+      group: 'light',
+      light: true,
+      swatch: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      accent: '#2563eb',
+      vars: {
+        '--bg-primary': '#f1f5f9',
+        '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff',
+        '--bg-card-hover': '#f8fafc',
+        '--border': '#e2e8f0',
+        '--text-primary': '#1e293b',
+        '--text-secondary': '#475569',
+        '--text-muted': '#94a3b8',
+        '--owned-bg': 'rgba(34, 197, 94, 0.1)',
+        '--owned-border': 'rgba(34, 197, 94, 0.35)'
+      },
+      bodyBg: 'linear-gradient(180deg, #f1f5f9 0%, #e8ecf1 100%)'
+    },
+
+    lightWarm: {
+      name: 'Warm Light',
+      group: 'light',
+      light: true,
+      swatch: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+      accent: '#d97706',
+      vars: {
+        '--bg-primary': '#fefdf6',
+        '--bg-secondary': '#fffef5',
+        '--bg-card': '#fffef5',
+        '--bg-card-hover': '#fefce8',
+        '--border': '#fde68a',
+        '--text-primary': '#292524',
+        '--text-secondary': '#57534e',
+        '--text-muted': '#a8a29e',
+        '--owned-bg': 'rgba(34, 197, 94, 0.1)',
+        '--owned-border': 'rgba(34, 197, 94, 0.35)'
+      },
+      bodyBg: 'linear-gradient(180deg, #fefdf6 0%, #fef9e7 100%)'
+    },
+
+    lightHero: {
+      name: 'DC Blue Light',
+      group: 'light',
+      light: true,
+      swatch: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+      accent: '#0476F2',
+      vars: {
+        '--bg-primary': '#f0f6ff',
+        '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff',
+        '--bg-card-hover': '#f0f6ff',
+        '--border': '#bfdbfe',
+        '--text-primary': '#1e3a5f',
+        '--text-secondary': '#3b6b9a',
+        '--text-muted': '#93b4d4',
+        '--owned-bg': 'rgba(34, 197, 94, 0.1)',
+        '--owned-border': 'rgba(34, 197, 94, 0.35)'
+      },
+      bodyBg: 'radial-gradient(ellipse at 50% 0%, rgba(4,118,242,0.06) 0%, transparent 50%), linear-gradient(180deg, #f0f6ff 0%, #e6effc 100%)'
     }
   };
 
   // Theme display order
-  var themeOrder = ['default', 'batman', 'superman', 'wonderwoman', 'flash', 'greenlantern', 'martianmanhunter', 'greenarrow', 'catwoman'];
+  var themeOrder = ['default', 'batman', 'superman', 'wonderwoman', 'flash', 'greenlantern', 'martianmanhunter', 'greenarrow', 'catwoman', 'light', 'lightWarm', 'lightHero'];
+
+  // Track current theme for light/dark toggle
+  var currentThemeId = 'default';
+  var LIGHT_KEY = 'au_last_light';
+  var DARK_KEY = 'au_last_dark';
 
   // ── Apply a theme ──
   function applyTheme(id) {
     var t = themes[id];
     if (!t) t = themes['default'];
+    currentThemeId = id;
 
     var root = document.documentElement;
+    var isLight = !!t.light;
+
+    // Reset text vars if switching mode (dark themes don't set text vars, so restore defaults)
+    if (!isLight) {
+      root.style.setProperty('--text-primary', '#e8eaf0');
+      root.style.setProperty('--text-secondary', '#8b92a8');
+      root.style.setProperty('--text-muted', '#6b7394');
+      root.style.setProperty('--owned-bg', 'rgba(34, 197, 94, 0.08)');
+      root.style.setProperty('--owned-border', 'rgba(34, 197, 94, 0.3)');
+    }
+
     Object.keys(t.vars).forEach(function (k) {
       root.style.setProperty(k, t.vars[k]);
     });
     document.body.style.background = t.bodyBg;
 
+    // Toggle light-mode class for CSS overrides
+    document.documentElement.classList.toggle('light-mode', isLight);
+
+    // Remember last light and dark theme separately for the quick toggle
+    try {
+      if (isLight) { localStorage.setItem(LIGHT_KEY, id); }
+      else { localStorage.setItem(DARK_KEY, id); }
+    } catch (e) {}
+
     // Persist
     try { localStorage.setItem(STORAGE_KEY, id); } catch (e) { console.warn('[theme] Could not save theme preference:', e.message); }
 
+    // Update the sun/moon toggle icon
+    var toggleIcon = document.getElementById('lightDarkToggleIcon');
+    if (toggleIcon) {
+      toggleIcon.innerHTML = isLight
+        ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    }
+
     // Update active swatch in picker
     var swatches = document.querySelectorAll('.ts-swatch');
+    var dotBorderInactive = isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
     for (var i = 0; i < swatches.length; i++) {
       var isActive = swatches[i].dataset.theme === id;
       swatches[i].classList.toggle('ts-active', isActive);
       swatches[i].setAttribute('aria-selected', isActive ? 'true' : 'false');
       var dot = swatches[i].querySelector('.ts-dot');
       var check = swatches[i].querySelector('.ts-check');
-      if (dot) dot.style.borderColor = isActive ? (themes[swatches[i].dataset.theme].accent || '#3b82f6') : 'rgba(255,255,255,0.15)';
+      if (dot) dot.style.borderColor = isActive ? (themes[swatches[i].dataset.theme].accent || '#3b82f6') : dotBorderInactive;
       if (check) {
         check.style.display = isActive ? 'inline' : 'none';
         check.style.color = t.accent || '#3b82f6';
       }
     }
+
+    // Update theme panel styling for light/dark
+    var panel = document.getElementById('themePanel');
+    if (panel) {
+      panel.style.background = isLight ? '#ffffff' : '#1a1d24';
+      panel.style.borderColor = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+      panel.style.boxShadow = isLight ? '0 8px 32px rgba(0,0,0,0.12)' : '0 8px 32px rgba(0,0,0,0.5)';
+    }
+    // Update panel labels
+    var labels = document.querySelectorAll('.ts-swatch span:not(.ts-check):not(.ts-dot)');
+    labels.forEach(function(l) { l.style.color = isLight ? '#334155' : '#cbd5e1'; });
   }
 
   // ── Build the picker UI ──
@@ -261,11 +372,59 @@
     heroLabel.style.cssText = 'font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:6px;font-weight:600;';
     panel.appendChild(heroLabel);
 
-    // Add hero themes
-    for (var i = 1; i < themeOrder.length; i++) {
-      addThemeRow(panel, themeOrder[i], saved);
+    // Add hero themes (dark only)
+    var heroThemes = ['batman', 'superman', 'wonderwoman', 'flash', 'greenlantern', 'martianmanhunter', 'greenarrow', 'catwoman'];
+    for (var i = 0; i < heroThemes.length; i++) {
+      addThemeRow(panel, heroThemes[i], saved);
     }
 
+    // Divider + Light label
+    var divider2 = document.createElement('div');
+    divider2.setAttribute('role', 'presentation');
+    divider2.style.cssText = 'height:1px;background:rgba(255,255,255,0.08);margin:8px 0;';
+    panel.appendChild(divider2);
+
+    var lightLabel = document.createElement('div');
+    lightLabel.textContent = 'Light Themes';
+    lightLabel.setAttribute('role', 'presentation');
+    lightLabel.style.cssText = 'font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:6px;font-weight:600;';
+    panel.appendChild(lightLabel);
+
+    var lightThemes = ['light', 'lightWarm', 'lightHero'];
+    for (var j = 0; j < lightThemes.length; j++) {
+      addThemeRow(panel, lightThemes[j], saved);
+    }
+
+    // ── Sun/Moon quick toggle button ──
+    var ldBtn = document.createElement('button');
+    ldBtn.id = 'lightDarkToggle';
+    ldBtn.setAttribute('aria-label', 'Toggle light/dark mode');
+    ldBtn.style.cssText = 'width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;color:#aaa;';
+    var isCurrentLight = themes[saved || 'default'] && themes[saved || 'default'].light;
+    ldBtn.innerHTML = '<svg id="lightDarkToggleIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+      + (isCurrentLight
+        ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>')
+      + '</svg>';
+    ldBtn.onmouseenter = function () { ldBtn.style.background = 'rgba(255,255,255,0.14)'; ldBtn.style.color = '#fff'; };
+    ldBtn.onmouseleave = function () { ldBtn.style.background = 'rgba(255,255,255,0.08)'; ldBtn.style.color = '#aaa'; };
+    ldBtn.onclick = function (e) {
+      e.stopPropagation();
+      var current = themes[currentThemeId];
+      if (current && current.light) {
+        // Switch to last dark theme
+        var lastDark = 'default';
+        try { lastDark = localStorage.getItem(DARK_KEY) || 'default'; } catch (e) {}
+        applyTheme(lastDark);
+      } else {
+        // Switch to last light theme
+        var lastLight = 'light';
+        try { lastLight = localStorage.getItem(LIGHT_KEY) || 'light'; } catch (e) {}
+        applyTheme(lastLight);
+      }
+    };
+
+    wrap.appendChild(ldBtn);
     wrap.appendChild(btn);
     wrap.appendChild(panel);
 

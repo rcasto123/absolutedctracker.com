@@ -982,7 +982,102 @@
   @media (min-width: 769px) and (max-width: 1024px) {
     .issue-grid { grid-template-columns: repeat(2, 1fr); }
     .tpb-grid { grid-template-columns: repeat(2, 1fr); }
-  }</style>
+  }
+
+  /* ── Light Mode Overrides ── */
+  .light-mode .hero-overlay {
+    background: linear-gradient(180deg,
+      rgba(241,245,249,0.2) 0%,
+      rgba(241,245,249,0.5) 50%,
+      rgba(241,245,249,0.92) 85%,
+      rgba(241,245,249,1) 100%);
+  }
+  .light-mode .hero h1 { color: #1e293b; }
+  .light-mode .hero-badge { color: #fff; }
+  .light-mode .stats-bar { box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .light-mode .stat-number { color: #1e293b; }
+  .light-mode .issue-card {
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .light-mode .issue-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .light-mode .issue-card.owned {
+    background: rgba(34, 197, 94, 0.06);
+    border-color: rgba(34, 197, 94, 0.25);
+  }
+  .light-mode .series-header {
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .light-mode .series-header:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 0 8px color-mix(in srgb, var(--accent-color) 15%, transparent);
+  }
+  .light-mode .series-header::after {
+    opacity: 0.05;
+  }
+  .light-mode .series-count {
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    color: color-mix(in srgb, var(--accent-color) 80%, #000);
+  }
+  .light-mode .filter-btn {
+    color: #475569;
+    border-color: #e2e8f0;
+  }
+  .light-mode .filter-btn:hover { background: #f1f5f9; }
+  .light-mode .filter-btn.active {
+    background: var(--accent-blue);
+    color: #fff;
+    border-color: var(--accent-blue);
+  }
+  .light-mode .search-input {
+    background: #fff;
+    border-color: #e2e8f0;
+    color: #1e293b;
+  }
+  .light-mode .search-input::placeholder { color: #94a3b8; }
+  .light-mode footer { color: #64748b; }
+  .light-mode footer a { color: #475569; }
+  .light-mode .mobile-bottom-nav {
+    background: #ffffff;
+    border-top-color: #e2e8f0;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+  }
+  .light-mode .mobile-bottom-nav .bnav-btn { color: #94a3b8; }
+  .light-mode .mobile-bottom-nav .bnav-btn.active { color: var(--accent-blue); }
+  .light-mode .more-menu-overlay { background: rgba(0,0,0,0.2); }
+  .light-mode .more-menu {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.1);
+  }
+  .light-mode .more-menu-item { color: #334155; }
+  .light-mode .more-menu-item:hover { background: #f8fafc; }
+  .light-mode .badge-card { border-color: #e2e8f0; }
+  .light-mode .badge-card.locked { opacity: 0.6; }
+  .light-mode .tpb-card, .light-mode .arc-card, .light-mode .calendar-item, .light-mode .info-card {
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .light-mode .changelog-overlay { background: rgba(0,0,0,0.2); }
+  .light-mode .changelog-modal {
+    background: #ffffff;
+    border-color: #e2e8f0;
+  }
+  .light-mode #themeSwitcher button {
+    border-color: rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.04);
+    color: #64748b;
+  }
+  .light-mode #themeSwitcher button:hover {
+    background: rgba(0,0,0,0.08);
+    color: #1e293b;
+  }
+  .light-mode .series-chevron { stroke: #64748b; }
+  .light-mode .progress-bar { background: #e2e8f0; }
+  </style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
