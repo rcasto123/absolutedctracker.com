@@ -6,7 +6,7 @@
 // their collection.
 // ============================================================
 
-var CACHE_NAME = 'au-tracker-v1';
+var CACHE_NAME = 'au-tracker-v2';
 
 // App shell — files to pre-cache on install
 var APP_SHELL = [
@@ -119,9 +119,14 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // For images: cache-first (cover images don't change often)
+  // For images: cache-first for same-origin only.
+  // Cross-origin images (cover art from CDNs) are left to the browser
+  // so they use img-src CSP instead of connect-src, avoiding CSP blocks.
   if (event.request.destination === 'image' ||
       /\.(jpg|jpeg|png|gif|svg|webp)(\?|$)/i.test(url)) {
+    // Skip cross-origin image requests — let the browser load them directly
+    if (url.indexOf(self.location.origin) !== 0) return;
+
     event.respondWith(
       caches.match(event.request).then(function(cached) {
         if (cached) return cached;
@@ -138,7 +143,7 @@ self.addEventListener('fetch', function(event) {
         }).catch(function() {
           // Return a transparent 1x1 pixel as fallback for images
           return new Response(
-            'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+            atob('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'),
             { headers: { 'Content-Type': 'image/gif' } }
           );
         });
