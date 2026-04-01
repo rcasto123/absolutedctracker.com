@@ -1155,6 +1155,7 @@
       <button class="filter-btn" data-filter="missing" aria-pressed="false">Missing</button>
       <button class="filter-btn" data-filter="upcoming" aria-pressed="false">Upcoming</button>
       <input class="search-input" type="text" id="searchInput" placeholder="Search issues..." aria-label="Search issues by title, writer, or artist">
+      <button class="filter-btn" id="markAllOwned" style="margin-left:auto;border-color:var(--accent-green);color:var(--accent-green);" title="Mark all released issues as owned">Mark All Owned</button>
     </div>
     <div id="collectionContainer" aria-live="polite"></div>
   </div>
@@ -1696,7 +1697,7 @@ function renderCollection(filter, search) {
 
       card.addEventListener('click', toggleOwned);
       card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'o' || e.key === 'O') {
           e.preventDefault();
           toggleOwned();
         }
@@ -1901,7 +1902,7 @@ function renderTrades() {
 
     card.addEventListener('click', toggleOwned);
     card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'o' || e.key === 'O') {
         e.preventDefault();
         toggleOwned();
       }
@@ -2246,6 +2247,34 @@ document.querySelectorAll('[data-filter]').forEach(btn => {
     currentFilter = btn.dataset.filter;
     renderCollection(currentFilter, currentSearch);
   });
+});
+
+// Mark All Released as Owned
+document.getElementById('markAllOwned').addEventListener('click', () => {
+  const released = ALL_ISSUES.filter(i => isReleased(i.date));
+  const unowned = released.filter(i => !owned[issueKey(i)]);
+  if (unowned.length === 0) {
+    // All already owned — offer to unmark all instead
+    if (confirm('You already own all ' + released.length + ' released issues! Do you want to unmark them all?')) {
+      released.forEach(i => { delete owned[issueKey(i)]; });
+      saveOwned();
+      renderCollection(currentFilter, currentSearch);
+      renderStats();
+      renderArcs();
+      renderAnalytics();
+      renderAchievements();
+    }
+    return;
+  }
+  if (confirm('Mark all ' + unowned.length + ' released issues as owned? (' + released.length + ' total released)')) {
+    released.forEach(i => { owned[issueKey(i)] = true; });
+    saveOwned();
+    renderCollection(currentFilter, currentSearch);
+    renderStats();
+    renderArcs();
+    renderAnalytics();
+    renderAchievements();
+  }
 });
 
 document.querySelectorAll('[data-calendar-filter]').forEach(btn => {
