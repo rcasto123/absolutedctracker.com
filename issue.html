@@ -156,11 +156,19 @@
 
     .variant-section{margin-top:2rem}
     .variant-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-top:1rem}
-    .variant-card{border-radius:8px;overflow:hidden;background:rgba(255,255,255,0.05);transition:transform 0.2s,box-shadow 0.2s;cursor:pointer}
+    .variant-card{border-radius:8px;overflow:hidden;background:rgba(255,255,255,0.05);transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;cursor:pointer;border:2px solid transparent;position:relative}
     .variant-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+    .variant-card.v-owned{border-color:#22c55e;box-shadow:0 0 0 1px #22c55e,0 4px 16px rgba(34,197,94,0.15)}
     .variant-card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block}
     .variant-card .variant-name{padding:0.5rem;font-size:0.7rem;color:#aaa;line-height:1.3;text-align:center}
+    .variant-card.v-owned .variant-name{color:#e4e4e7}
     .variant-count{color:#888;font-size:0.9rem;margin-left:0.5rem}
+    .variant-owned-count{color:#22c55e;font-weight:600}
+    .variant-checkbox{position:absolute;top:6px;left:6px;z-index:3;width:30px;height:30px;border-radius:6px;border:2px solid rgba(255,255,255,0.5);background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+    .variant-checkbox:hover{border-color:#22c55e;background:rgba(0,0,0,0.7)}
+    .variant-checkbox.v-checked{background:#22c55e;border-color:#22c55e;box-shadow:0 2px 10px rgba(34,197,94,0.4)}
+    .variant-checkbox svg{width:16px;height:16px;color:#fff;opacity:0;transition:opacity 0.15s}
+    .variant-checkbox.v-checked svg{opacity:1}
     .variant-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:1000;justify-content:center;align-items:center;padding:2rem}
     .variant-modal.active{display:flex}
     .variant-modal img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px}
@@ -1349,6 +1357,27 @@ window.addEventListener('popstate', render);
   (function() {
     var slug = new URLSearchParams(window.location.search).get("id");
     if (!slug) return;
+
+    // Derive the ownership key (series|issueNum) from the current issue
+    var _issueKey = null;
+    if (typeof ISSUES !== 'undefined' && ISSUES[slug]) {
+      _issueKey = ISSUES[slug].series + "|" + ISSUES[slug].issueNum;
+    }
+
+    var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+    function updateVariantCount(sec, vs) {
+      var owned = (typeof countOwnedVariants === 'function' && _issueKey) ? countOwnedVariants(_issueKey) : 0;
+      var countEl = sec.querySelector('.variant-count');
+      if (countEl) {
+        if (owned > 0) {
+          countEl.innerHTML = '(<span class="variant-owned-count">' + owned + '</span> / ' + vs.length + ' owned)';
+        } else {
+          countEl.textContent = '(' + vs.length + ')';
+        }
+      }
+    }
+
     fetch("variants.json").then(function(r){return r.json()}).then(function(allVariants){
       var vs = allVariants[slug];
       if (!vs || vs.length === 0) return;
@@ -1362,14 +1391,26 @@ window.addEventListener('popstate', render);
       for (var i = 0; i < vs.length; i++) {
         var d = i >= n ? " style=display:none data-xv=1" : "";
         var sn = vs[i].name.split("#").pop() || vs[i].name;
-        h += "<div class=variant-card" + d + "><img src=" + vs[i].url + " loading=lazy onerror=this.parentElement.style.display=String.fromCharCode(110,111,110,101)><div class=variant-name>" + sn + "</div></div>";
+        var isOwned = (typeof isVariantOwned === 'function' && _issueKey) ? isVariantOwned(_issueKey, String(i)) : false;
+        var ownedClass = isOwned ? ' v-owned' : '';
+        var checkedClass = isOwned ? ' v-checked' : '';
+        h += '<div class="variant-card' + ownedClass + '" data-vidx="' + i + '"' + d + '>';
+        h += '<div class="variant-checkbox' + checkedClass + '" data-vidx="' + i + '">' + checkSvg + '</div>';
+        h += '<img src="' + vs[i].url + '" loading=lazy onerror="this.parentElement.style.display=\'none\'">';
+        h += '<div class="variant-name">' + sn + '</div></div>';
       }
       h += "</div>";
       if (vs.length > n) h += "<div style=text-align:center;margin-top:0.75rem><button class=show-more-variants id=showMoreBtn>Show All " + vs.length + " Variants</button></div>";
       sec.innerHTML = h;
       mainContent.appendChild(sec);
+
+      // Update owned count in header
+      updateVariantCount(sec, vs);
+
       var btn = document.getElementById("showMoreBtn");
       if (btn) btn.onclick = function() { document.querySelectorAll("[data-xv]").forEach(function(el){el.style.display=""}); btn.parentElement.remove(); };
+
+      // Modal for full-size view
       var modal = document.createElement("div");
       modal.className = "variant-modal";
       modal.id = "variantModal";
@@ -1383,15 +1424,41 @@ window.addEventListener('popstate', render);
       modal.appendChild(mi);
       modal.onclick = function(e){ if(e.target===modal) modal.classList.remove("active"); };
       document.body.appendChild(modal);
-      sec.onclick = function(e){ var c=e.target.closest(".variant-card"); if(c){var img=c.querySelector("img"); if(img){mi.src=img.src; modal.classList.add("active");}} };
+
+      // Click handler: checkbox toggles ownership, image opens modal
+      sec.onclick = function(e) {
+        // Checkbox click — toggle variant ownership
+        var checkbox = e.target.closest('.variant-checkbox');
+        if (checkbox && _issueKey && typeof toggleVariantOwned === 'function') {
+          e.stopPropagation();
+          var idx = checkbox.dataset.vidx;
+          toggleVariantOwned(_issueKey, idx);
+          var isNowOwned = isVariantOwned(_issueKey, idx);
+          checkbox.classList.toggle('v-checked', isNowOwned);
+          var card = checkbox.closest('.variant-card');
+          if (card) card.classList.toggle('v-owned', isNowOwned);
+          updateVariantCount(sec, vs);
+          // Trigger cloud sync via localStorage write
+          if (typeof setOwnedVariants === 'function') {
+            setOwnedVariants(getOwnedVariants());
+          }
+          return;
+        }
+        // Image click — open modal
+        var c = e.target.closest('.variant-card');
+        if (c) {
+          var img = c.querySelector('img');
+          if (img) { mi.src = img.src; modal.classList.add('active'); }
+        }
+      };
     }).catch(function(){});
   })();
   </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="auth-integration.js?v=3"></script>
+<script src="firebase-config.js?v=2"></script>
+<script src="auth-integration.js?v=4"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

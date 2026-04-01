@@ -62,8 +62,10 @@ The site is a polished single-page app (~2900 lines in index.html) with 8 main t
 ### 11. Dark/Light Mode
 **Effort:** Medium | **Impact:** Medium
 
-### 12. Variant Cover Gallery on Cards
-**Effort:** Medium | **Impact:** Medium
+### 12. Variant Cover Ownership Tracking ✅ IN PROGRESS
+**Effort:** Medium–Large | **Impact:** High
+**What:** Let users mark individual variant covers as owned. Show variant progress badges on collection cards (e.g., "Variants: 2/5"). Add checkbox overlays to variant gallery on issue detail page. Sync variant ownership to Firebase alongside regular issue ownership.
+**Phases:** (1) Data model & sync, (2) Issue page UI, (3) Collection card badges, (4) Testing
 
 ### 13. Better Mobile Bottom Nav
 **Effort:** Medium | **Impact:** High

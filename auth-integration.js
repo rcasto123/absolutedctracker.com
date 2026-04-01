@@ -487,15 +487,14 @@
       // Call the original method
       _originalSetItem.call(this, key, value);
       // Sync au_owned to cloud when a user is signed in
-      if (key === 'au_owned' && auth.currentUser) {
+      if ((key === 'au_owned' || key === 'au_owned_variants') && auth.currentUser) {
         clearTimeout(_syncTimeout);
         // Use adaptive delay: if previous sync was slow, wait longer
         var delay = _lastSyncDuration ? Math.max(1000, Math.min(_lastSyncDuration * 2, 5000)) : _syncDelay;
         _syncTimeout = setTimeout(function() {
           try {
-            var owned = JSON.parse(value);
             var start = Date.now();
-            _syncOwnedToCloud(owned).then(function() {
+            _syncOwnedToCloud().then(function() {
               _lastSyncDuration = Date.now() - start;
               showSyncStatus('Synced');
             }).catch(function(e) {
@@ -503,7 +502,7 @@
               showSyncStatus('Sync failed');
             });
           } catch(e) {
-            console.warn('[auth] Failed to parse au_owned for sync:', e);
+            console.warn('[auth] Failed to sync:', e);
           }
         }, delay);
       }
@@ -523,21 +522,40 @@
   async function handleSignIn(user) {
     showSyncStatus('Syncing...');
     try {
-      var cloudOwned = await _loadOwnedFromCloud();
+      var cloudData = await _loadOwnedFromCloud();
       var localRaw = localStorage.getItem('au_owned');
       var localOwned = localRaw ? JSON.parse(localRaw) : {};
+      var localVariants = (typeof getOwnedVariants === 'function') ? getOwnedVariants() : {};
 
-      if (cloudOwned) {
+      if (cloudData) {
+        // Support both old format (flat object) and new format ({ owned, ownedVariants })
+        var cloudOwned = cloudData.owned || cloudData;
+        var cloudVariants = cloudData.ownedVariants || {};
+
         // Merge local + cloud (union)
-        var merged = _mergeOwned(localOwned, cloudOwned);
-        localStorage.setItem('au_owned', JSON.stringify(merged));
+        var merged = _mergeOwned(
+          { owned: localOwned, ownedVariants: localVariants },
+          { owned: cloudOwned, ownedVariants: cloudVariants }
+        );
+        var mergedOwned = merged.owned || merged;
+        var mergedVariants = merged.ownedVariants || {};
+
+        localStorage.setItem('au_owned', JSON.stringify(mergedOwned));
+        if (typeof setOwnedVariants === 'function') setOwnedVariants(mergedVariants);
+
         // Push merged back to cloud
-        await _syncOwnedToCloud(merged);
+        await _syncOwnedToCloud();
         showSyncStatus('Synced');
+
+        // Reload if there were changes
+        if (JSON.stringify(localOwned) !== JSON.stringify(mergedOwned) ||
+            JSON.stringify(localVariants) !== JSON.stringify(mergedVariants)) {
+          location.reload();
+        }
       } else {
         // No cloud data — push local to cloud
-        if (Object.keys(localOwned).length > 0) {
-          await _syncOwnedToCloud(localOwned);
+        if (Object.keys(localOwned).length > 0 || Object.keys(localVariants).length > 0) {
+          await _syncOwnedToCloud();
         }
         showSyncStatus('Synced');
       }
@@ -546,12 +564,6 @@
       await db.collection('users').doc(user.uid).update({
         lastLogin: firebase.firestore.FieldValue.serverTimestamp()
       });
-
-      // Reload the page to reflect synced data
-      // Only reload if there were changes
-      if (cloudOwned && JSON.stringify(localOwned) !== JSON.stringify(_mergeOwned(localOwned, cloudOwned))) {
-        location.reload();
-      }
     } catch(e) {
       console.error('Sync error:', e);
       showSyncStatus('Sync failed');
@@ -565,10 +577,19 @@
     try {
       var localRaw = localStorage.getItem('au_owned');
       var localOwned = localRaw ? JSON.parse(localRaw) : {};
-      var cloudOwned = await _loadOwnedFromCloud();
-      var merged = _mergeOwned(localOwned, cloudOwned || {});
-      localStorage.setItem('au_owned', JSON.stringify(merged));
-      await _syncOwnedToCloud(merged);
+      var localVariants = (typeof getOwnedVariants === 'function') ? getOwnedVariants() : {};
+      var cloudData = await _loadOwnedFromCloud();
+      var cloudOwned = cloudData ? (cloudData.owned || cloudData) : {};
+      var cloudVariants = cloudData ? (cloudData.ownedVariants || {}) : {};
+      var merged = _mergeOwned(
+        { owned: localOwned, ownedVariants: localVariants },
+        { owned: cloudOwned, ownedVariants: cloudVariants }
+      );
+      var mergedOwned = merged.owned || merged;
+      var mergedVariants = merged.ownedVariants || {};
+      localStorage.setItem('au_owned', JSON.stringify(mergedOwned));
+      if (typeof setOwnedVariants === 'function') setOwnedVariants(mergedVariants);
+      await _syncOwnedToCloud();
       showSyncStatus('Synced');
       location.reload();
     } catch(e) {

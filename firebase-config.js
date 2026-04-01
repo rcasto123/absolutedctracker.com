@@ -41,14 +41,53 @@
       .catch(function () { return false; });
   };
 
+  /* ── Variant ownership localStorage helpers ── */
+  var VARIANT_KEY = "au_owned_variants";
+
+  window.getOwnedVariants = function () {
+    try {
+      var raw = localStorage.getItem(VARIANT_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  };
+
+  window.setOwnedVariants = function (obj) {
+    try { localStorage.setItem(VARIANT_KEY, JSON.stringify(obj)); } catch (e) {}
+  };
+
+  window.toggleVariantOwned = function (issueKey, variantId) {
+    var all = getOwnedVariants();
+    if (!all[issueKey]) all[issueKey] = {};
+    if (all[issueKey][variantId]) {
+      delete all[issueKey][variantId];
+      if (Object.keys(all[issueKey]).length === 0) delete all[issueKey];
+    } else {
+      all[issueKey][variantId] = true;
+    }
+    setOwnedVariants(all);
+    return all;
+  };
+
+  window.isVariantOwned = function (issueKey, variantId) {
+    var all = getOwnedVariants();
+    return !!(all[issueKey] && all[issueKey][variantId]);
+  };
+
+  window.countOwnedVariants = function (issueKey) {
+    var all = getOwnedVariants();
+    return all[issueKey] ? Object.keys(all[issueKey]).length : 0;
+  };
+
   /* ── Firestore sync helpers ── */
   window.syncOwnedToCloud = function () {
     var user = auth.currentUser;
     if (!user) return Promise.resolve();
     var raw = localStorage.getItem("au_owned");
     var owned = raw ? JSON.parse(raw) : {};
+    var ownedVariants = getOwnedVariants();
     return db.collection("users").doc(user.uid).set({
       owned: owned,
+      ownedVariants: ownedVariants,
       email: user.email || "",
       displayName: user.displayName || "",
       photoURL: user.photoURL || "",
@@ -61,16 +100,38 @@
     if (!user) return Promise.resolve(null);
     return db.collection("users").doc(user.uid).get().then(function (snap) {
       if (!snap.exists) return null;
-      return snap.data().owned || {};
+      return {
+        owned: snap.data().owned || {},
+        ownedVariants: snap.data().ownedVariants || {}
+      };
     });
   };
 
   window.mergeOwned = function (local, cloud) {
+    // Merge regular issue ownership (union)
+    var localOwned = local.owned || local;
+    var cloudOwned = cloud.owned || cloud;
     var merged = {};
-    var keys = Object.keys(Object.assign({}, local, cloud));
+    var keys = Object.keys(Object.assign({}, localOwned, cloudOwned));
     keys.forEach(function (k) {
-      if ((local && local[k]) || (cloud && cloud[k])) merged[k] = true;
+      if ((localOwned && localOwned[k]) || (cloudOwned && cloudOwned[k])) merged[k] = true;
     });
-    return merged;
+
+    // Merge variant ownership (union)
+    var localVars = local.ownedVariants || {};
+    var cloudVars = cloud.ownedVariants || {};
+    var mergedVariants = {};
+    var varKeys = Object.keys(Object.assign({}, localVars, cloudVars));
+    varKeys.forEach(function (issueKey) {
+      mergedVariants[issueKey] = {};
+      var lv = localVars[issueKey] || {};
+      var cv = cloudVars[issueKey] || {};
+      var indices = Object.keys(Object.assign({}, lv, cv));
+      indices.forEach(function (idx) {
+        if ((lv && lv[idx]) || (cv && cv[idx])) mergedVariants[issueKey][idx] = true;
+      });
+    });
+
+    return { owned: merged, ownedVariants: mergedVariants };
   };
 })();

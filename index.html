@@ -446,6 +446,8 @@
   }
 
   .badge-released { background: rgba(34,197,94,0.12); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
+  .variant-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 3px; white-space: nowrap; background: rgba(212,168,68,0.12); color: #d4a844; border: 1px solid rgba(212,168,68,0.25); flex-shrink: 0; }
+  .variant-badge .vb-owned { color: var(--accent-green); font-weight: 700; }
   .badge-upcoming { background: rgba(212,168,68,0.12); color: var(--accent-gold); border: 1px solid rgba(212,168,68,0.3); }
   .badge-announced { background: rgba(139,92,246,0.12); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
 
@@ -1573,6 +1575,14 @@ try {
 function saveOwned() { try { localStorage.setItem('au_owned', JSON.stringify(owned)); } catch(e){} }
 function saveTrades() { try { localStorage.setItem('au_trades', JSON.stringify(ownedTrades)); } catch(e){} }
 
+// Variant cover data cache — loaded once from variants.json
+let _variantData = {};
+fetch('variants.json').then(r => r.json()).then(d => {
+  _variantData = d;
+  // Re-render collection to show variant badges now that data is loaded
+  if (typeof renderCollection === 'function') renderCollection(currentFilter, currentSearch);
+}).catch(() => {});
+
 function issueKey(issue) { return issue.series + '|' + issue.issue; }
 function makeSlug(name) { return name.toLowerCase().replace(/[:#]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''); }
 
@@ -1681,12 +1691,22 @@ function renderCollection(filter, search) {
       const d = new Date(issue.date);
       const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
 
+      // Check for variant covers
+      const slug = makeSlug(issue.title);
+      const variants = _variantData[slug];
+      const variantCount = variants ? variants.length : 0;
+      const variantOwnedCount = (variantCount > 0 && typeof countOwnedVariants === 'function') ? countOwnedVariants(key) : 0;
+      const variantBadgeHTML = variantCount > 0
+        ? `<span class="variant-badge">${variantOwnedCount > 0 ? '<span class="vb-owned">' + variantOwnedCount + '</span>/' : ''}${variantCount} variants</span>`
+        : '';
+
       card.innerHTML = `
         <div class="issue-checkbox">${checkSvg}</div>
         <div class="issue-info">
-          <div class="issue-name"><a href="issue.html?id=${makeSlug(issue.title)}" onclick="event.stopPropagation()">${issue.title}</a></div>
+          <div class="issue-name"><a href="issue.html?id=${slug}" onclick="event.stopPropagation()">${issue.title}</a></div>
           <div class="issue-date">${dateStr} · ${issue.writer}</div>
         </div>
+        ${variantBadgeHTML}
         <div class="issue-badge ${badgeClass}">${badgeText}</div>
       `;
 
@@ -3410,8 +3430,8 @@ renderAchievements();
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js" defer></script>
-<script src="auth-integration.js?v=3" defer></script>
+<script src="firebase-config.js?v=2" defer></script>
+<script src="auth-integration.js?v=4" defer></script>
 <script src="theme-switcher.js?v=8" defer></script>
 <script>
 // What's New toggle
