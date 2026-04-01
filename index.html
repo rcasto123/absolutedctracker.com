@@ -1911,6 +1911,7 @@ renderAnalytics();
   .privacy-switch input:checked + .slider { background: rgba(34,197,94,0.35); }
   .privacy-switch input:checked + .slider::after { transform: translateX(16px); background: #22c55e; }
   .privacy-switch input:focus-visible + .slider { outline: 2px solid #3b82f6; outline-offset: 2px; }
+  @media(max-width:768px){ .privacy-toggle-wrap { margin-left: 0; margin-top: 4px; } }
 </style>
 <script>
 (function() {
@@ -1990,6 +1991,11 @@ renderAnalytics();
     }, 2000);
   }
 
+  function escapeHtml(text) {
+    var map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+  }
+
   function generateProfileCard() {
     var s = getShareStats();
     // Build per-series data
@@ -2045,19 +2051,22 @@ renderAnalytics();
     html += '</svg></div>';
 
     html += '<div class="stats">';
-    html += '<div class="stat"><div class="stat-num green">' + s.owned + '</div><div class="stat-label">Owned</div></div>';
-    html += '<div class="stat"><div class="stat-num red">' + (parseInt(s.released) - parseInt(s.owned)) + '</div><div class="stat-label">Missing</div></div>';
-    html += '<div class="stat"><div class="stat-num blue">' + s.series + '</div><div class="stat-label">Series</div></div>';
+    var ownedNum = parseInt(s.owned) || 0;
+    var releasedNum = parseInt(s.released) || 0;
+    html += '<div class="stat"><div class="stat-num green">' + ownedNum + '</div><div class="stat-label">Owned</div></div>';
+    html += '<div class="stat"><div class="stat-num red">' + (releasedNum - ownedNum) + '</div><div class="stat-label">Missing</div></div>';
+    html += '<div class="stat"><div class="stat-num blue">' + (parseInt(s.series) || 0) + '</div><div class="stat-label">Series</div></div>';
     html += '</div>';
 
     html += '<div class="series-list">';
     Object.keys(seriesData).forEach(function(name) {
       var sd = seriesData[name];
       var p = sd.total > 0 ? Math.round((sd.owned / sd.total) * 100) : 0;
-      var c = colors[name] || '#555';
+      var rawC = colors[name] || '#555';
+      var c = /^#[0-9A-Fa-f]{3,6}$/.test(rawC) ? rawC : '#555';
       html += '<div class="series-row">';
       html += '<div class="series-dot" style="background:' + c + '"></div>';
-      html += '<div class="series-name">' + name + '</div>';
+      html += '<div class="series-name">' + escapeHtml(name) + '</div>';
       html += '<div class="series-bar"><div class="series-fill" style="width:' + p + '%;background:' + c + ';"></div></div>';
       html += '<div class="series-count">' + sd.owned + '/' + sd.total + '</div>';
       html += '</div>';
@@ -2068,6 +2077,7 @@ renderAnalytics();
     html += '</div></body></html>';
 
     var win = window.open('', '_blank');
+    if (!win) { showToast('Popup blocked — please allow popups for this site'); return; }
     win.document.write(html);
     win.document.close();
     closeShareMenu();
@@ -2176,10 +2186,14 @@ renderAnalytics();
     var wrap = document.createElement('div');
     wrap.className = 'privacy-toggle-wrap';
     wrap.id = 'privacy-toggle-wrap';
-    wrap.innerHTML = '<label for="privacyToggle"><span class="privacy-switch"><input type="checkbox" id="privacyToggle"' + (isPrivacyMode() ? ' checked' : '') + '><span class="slider"></span></span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Privacy Mode</label>';
+    var privOn = isPrivacyMode();
+    wrap.innerHTML = '<label for="privacyToggle"><span class="privacy-switch"><input type="checkbox" id="privacyToggle" role="switch" aria-checked="' + privOn + '" aria-label="Toggle privacy mode"' + (privOn ? ' checked' : '') + '><span class="slider"></span></span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Privacy Mode</label>';
     filterBar.appendChild(wrap);
     document.getElementById('privacyToggle').addEventListener('change', function() {
-      try { localStorage.setItem('privacy_mode', this.checked ? 'true' : 'false'); } catch(e) {}
+      this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
+      try { localStorage.setItem('privacy_mode', this.checked ? 'true' : 'false'); } catch(e) {
+        console.warn('Privacy Mode: localStorage unavailable. Setting will not persist.');
+      }
       injectShareButton();
     });
   }
