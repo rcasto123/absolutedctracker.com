@@ -258,7 +258,17 @@
     margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.15s;
   }
+  .series-header:hover { opacity: 0.85; }
+  .series-chevron { width: 18px; height: 18px; flex-shrink: 0; transition: transform 0.25s ease; color: var(--text-muted); }
+  .series-header.collapsed .series-chevron { transform: rotate(-90deg); }
+  .series-header.collapsed + .issue-grid { display: none; }
+  .accordion-controls { display: flex; gap: 8px; margin-bottom: 12px; }
+  .accordion-ctrl-btn { background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-family: inherit; transition: all 0.15s; }
+  .accordion-ctrl-btn:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); color: var(--text-primary); }
 
   .series-color {
     width: 4px;
@@ -943,6 +953,11 @@
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
       <div class="changelog-entry">
         <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Series accordions</div>
+        <div class="changelog-desc">Click any series header to collapse or expand its issue cards. Expand All and Collapse All buttons at the top for quick navigation. Your accordion state is remembered between visits.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Collector achievements &amp; badges</div>
         <div class="changelog-desc">New Achievements tab with 15 unlockable badges for collection milestones — from your first issue to completing every series. Progress bars track how close you are to each badge.</div>
       </div>
@@ -1275,11 +1290,25 @@ function renderStats() {
   document.getElementById('statSeries').textContent = series.size;
 }
 
+function getAccordionState() {
+  try { return JSON.parse(localStorage.getItem('accordion_state') || '{}'); } catch(e) { return {}; }
+}
+function saveAccordionState(state) {
+  try { localStorage.setItem('accordion_state', JSON.stringify(state)); } catch(e) {}
+}
+
 function renderCollection(filter, search) {
   const container = document.getElementById('collectionContainer');
   container.innerHTML = '';
   const seriesNames = getSeriesNames();
   let hasContent = false;
+  const accState = getAccordionState();
+
+  // Expand/Collapse all controls
+  const controls = document.createElement('div');
+  controls.className = 'accordion-controls';
+  controls.innerHTML = '<button class="accordion-ctrl-btn" id="expandAll">Expand All</button><button class="accordion-ctrl-btn" id="collapseAll">Collapse All</button>';
+  container.appendChild(controls);
 
   seriesNames.forEach(sName => {
     let issues = ALL_ISSUES.filter(i => i.series === sName);
@@ -1302,9 +1331,11 @@ function renderCollection(filter, search) {
     const ownedInSeries = allInSeries.filter(i => owned[issueKey(i)]).length;
     const pct = allInSeries.length > 0 ? Math.round((ownedInSeries / allInSeries.length) * 100) : 0;
     const color = SERIES_COLORS[sName] || '#555';
+    const isCollapsed = accState[sName] === true;
 
     block.innerHTML = `
-      <div class="series-header">
+      <div class="series-header${isCollapsed ? ' collapsed' : ''}" role="button" tabindex="0" aria-expanded="${!isCollapsed}" aria-controls="grid-${sName.replace(/\s+/g, '-')}">
+        <svg class="series-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         <div class="series-color" style="background:${color}"></div>
         <div class="series-title">${sName}</div>
         <div class="series-progress">
@@ -1313,7 +1344,7 @@ function renderCollection(filter, search) {
         </div>
         <div class="series-meta"><strong>${issues.length}</strong> issues shown</div>
       </div>
-      <div class="issue-grid"></div>
+      <div class="issue-grid" id="grid-${sName.replace(/\s+/g, '-')}"${isCollapsed ? ' style="display:none"' : ''}></div>
     `;
 
     const grid = block.querySelector('.issue-grid');
@@ -1364,14 +1395,58 @@ function renderCollection(filter, search) {
       grid.appendChild(card);
     });
 
+    // Accordion toggle handler
+    const header = block.querySelector('.series-header');
+    header.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      const grd = block.querySelector('.issue-grid');
+      const collapsed = header.classList.toggle('collapsed');
+      header.setAttribute('aria-expanded', !collapsed);
+      grd.style.display = collapsed ? 'none' : '';
+      const st = getAccordionState();
+      st[sName] = collapsed;
+      saveAccordionState(st);
+    });
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        header.click();
+      }
+    });
+
     container.appendChild(block);
   });
 
   if (!hasContent) {
     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">ð­</div><p>No issues match your filters.</p></div>';
+  } else {
+    // Expand / Collapse All handlers
+    document.getElementById('expandAll').addEventListener('click', () => {
+      const st = {};
+      container.querySelectorAll('.series-header').forEach(h => {
+        h.classList.remove('collapsed');
+        h.setAttribute('aria-expanded', 'true');
+        const g = h.nextElementSibling;
+        if (g) g.style.display = '';
+        const name = h.querySelector('.series-title').textContent;
+        st[name] = false;
+      });
+      saveAccordionState(st);
+    });
+    document.getElementById('collapseAll').addEventListener('click', () => {
+      const st = {};
+      container.querySelectorAll('.series-header').forEach(h => {
+        h.classList.add('collapsed');
+        h.setAttribute('aria-expanded', 'false');
+        const g = h.nextElementSibling;
+        if (g) g.style.display = 'none';
+        const name = h.querySelector('.series-title').textContent;
+        st[name] = true;
+      });
+      saveAccordionState(st);
+    });
   }
 }
-
 function renderCalendar(showAll) {
   const container = document.getElementById('calendarContainer');
   container.innerHTML = '';
