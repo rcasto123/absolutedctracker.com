@@ -661,7 +661,8 @@
   .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
   .badge-card { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; transition: all 0.2s; }
   .badge-card.unlocked { border-color: var(--accent-gold, #facc15); box-shadow: 0 0 12px rgba(250,204,21,0.1); }
-  .badge-card.locked { opacity: 0.45; }
+  .badge-card.locked .badge-name { color: var(--text-secondary); }
+  .badge-card.locked .badge-desc { color: var(--text-muted, #6b7280); }
   .badge-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
   .badge-card.unlocked .badge-icon { background: rgba(250,204,21,0.12); }
   .badge-card.locked .badge-icon { background: rgba(255,255,255,0.05); filter: grayscale(1); }
@@ -1563,24 +1564,27 @@ function renderAchievements() {
   if (!container) return;
   container.innerHTML = '';
 
+  // Single-pass data collection
   const released = ALL_ISSUES.filter(i => isReleased(i.date));
-  const ownedCount = released.filter(i => owned[issueKey(i)]).length;
+  let ownedCount = 0;
   const totalReleased = released.length;
-  const pct = totalReleased > 0 ? Math.round((ownedCount / totalReleased) * 100) : 0;
-
-  // Per-series stats
   const seriesStats = {};
+  const ownedMonths = new Set();
+
   released.forEach(i => {
+    const key = issueKey(i);
+    const isOwn = !!owned[key];
+    if (isOwn) { ownedCount++; ownedMonths.add(i.date.slice(0, 7)); }
     if (!seriesStats[i.series]) seriesStats[i.series] = { total: 0, owned: 0 };
     seriesStats[i.series].total++;
-    if (owned[issueKey(i)]) seriesStats[i.series].owned++;
+    if (isOwn) seriesStats[i.series].owned++;
   });
+
+  const pct = totalReleased > 0 ? Math.round((ownedCount / totalReleased) * 100) : 0;
   const completedSeries = Object.values(seriesStats).filter(s => s.total > 0 && s.owned === s.total).length;
   const totalSeries = Object.keys(seriesStats).length;
-
-  // First issue date
-  const ownedIssues = released.filter(i => owned[issueKey(i)]);
-  const distinctMonths = new Set(ownedIssues.map(i => i.date.slice(0, 7))).size;
+  const seriesWithOwned = Object.values(seriesStats).filter(s => s.owned > 0).length;
+  const distinctMonths = ownedMonths.size;
 
   const BADGES = [
     { id: 'first_issue', icon: '\u2B50', name: 'First Issue', desc: 'Add your first issue to the collection', check: () => ownedCount >= 1, progress: () => Math.min(ownedCount, 1), max: 1 },
@@ -1588,14 +1592,14 @@ function renderAchievements() {
     { id: 'dedicated', icon: '\uD83D\uDD25', name: 'Dedicated Reader', desc: 'Collect 10 issues', check: () => ownedCount >= 10, progress: () => Math.min(ownedCount, 10), max: 10 },
     { id: 'serious', icon: '\uD83D\uDCAA', name: 'Serious Collector', desc: 'Collect 25 issues', check: () => ownedCount >= 25, progress: () => Math.min(ownedCount, 25), max: 25 },
     { id: 'power', icon: '\u26A1', name: 'Power Collector', desc: 'Collect 50 issues', check: () => ownedCount >= 50, progress: () => Math.min(ownedCount, 50), max: 50 },
-    { id: 'quarter', icon: '\uD83C\uDF19', name: 'Quarter Way', desc: 'Reach 25% completion', check: () => pct >= 25, progress: () => Math.min(pct, 25), max: 25 },
-    { id: 'half', icon: '\u2600\uFE0F', name: 'Halfway There', desc: 'Reach 50% completion', check: () => pct >= 50, progress: () => Math.min(pct, 50), max: 50 },
-    { id: 'three_quarter', icon: '\uD83C\uDF1F', name: 'Almost Complete', desc: 'Reach 75% completion', check: () => pct >= 75, progress: () => Math.min(pct, 75), max: 75 },
-    { id: 'completionist', icon: '\uD83C\uDFC6', name: 'Completionist', desc: 'Collect every released issue', check: () => pct === 100 && totalReleased > 0, progress: () => Math.min(pct, 100), max: 100 },
+    { id: 'quarter', icon: '\uD83C\uDF19', name: 'Quarter Way', desc: 'Reach 25% completion', check: () => pct >= 25, progress: () => pct, max: 100 },
+    { id: 'half', icon: '\u2600\uFE0F', name: 'Halfway There', desc: 'Reach 50% completion', check: () => pct >= 50, progress: () => pct, max: 100 },
+    { id: 'three_quarter', icon: '\uD83C\uDF1F', name: 'Almost Complete', desc: 'Reach 75% completion', check: () => pct >= 75, progress: () => pct, max: 100 },
+    { id: 'completionist', icon: '\uD83C\uDFC6', name: 'Completionist', desc: 'Collect every released issue', check: () => pct === 100 && totalReleased > 0, progress: () => pct, max: 100 },
     { id: 'series_one', icon: '\uD83C\uDFAF', name: 'Series Complete', desc: 'Complete an entire series', check: () => completedSeries >= 1, progress: () => Math.min(completedSeries, 1), max: 1 },
     { id: 'series_three', icon: '\uD83C\uDF96\uFE0F', name: 'Multi-Series Master', desc: 'Complete 3 different series', check: () => completedSeries >= 3, progress: () => Math.min(completedSeries, 3), max: 3 },
-    { id: 'all_series', icon: '\uD83D\uDC51', name: 'Universe Master', desc: 'Complete every series', check: () => completedSeries === totalSeries && totalSeries > 0, progress: () => completedSeries, max: totalSeries },
-    { id: 'diverse', icon: '\uD83C\uDF0D', name: 'Diverse Taste', desc: 'Own at least one issue from every series', check: () => Object.values(seriesStats).every(s => s.owned > 0) && totalSeries > 0, progress: () => Object.values(seriesStats).filter(s => s.owned > 0).length, max: totalSeries },
+    { id: 'all_series', icon: '\uD83D\uDC51', name: 'Universe Master', desc: 'Complete every series', check: () => completedSeries === totalSeries && totalSeries > 0, progress: () => Math.min(completedSeries, totalSeries), max: Math.max(totalSeries, 1) },
+    { id: 'diverse', icon: '\uD83C\uDF0D', name: 'Diverse Taste', desc: 'Own at least one issue from every series', check: () => seriesWithOwned === totalSeries && totalSeries > 0, progress: () => Math.min(seriesWithOwned, totalSeries), max: Math.max(totalSeries, 1) },
     { id: 'monthly', icon: '\uD83D\uDCC5', name: 'Dedicated Subscriber', desc: 'Own issues from 3 different months', check: () => distinctMonths >= 3, progress: () => Math.min(distinctMonths, 3), max: 3 },
     { id: 'veteran', icon: '\uD83C\uDF93', name: 'Veteran Collector', desc: 'Own issues from 6 different months', check: () => distinctMonths >= 6, progress: () => Math.min(distinctMonths, 6), max: 6 },
   ];
@@ -1603,25 +1607,25 @@ function renderAchievements() {
   const unlockedCount = BADGES.filter(b => b.check()).length;
 
   // Summary
-  let html = '<div class="achievements-summary">';
-  html += '<div class="trophy-icon">\uD83C\uDFC6</div>';
+  let html = '<div class="achievements-summary" role="status" aria-label="Achievement progress">';
+  html += '<div class="trophy-icon" aria-hidden="true">\uD83C\uDFC6</div>';
   html += '<div><div class="trophy-stat">' + unlockedCount + ' / ' + BADGES.length + '</div>';
   html += '<div class="trophy-label">Achievements Unlocked</div></div>';
   html += '</div>';
 
   // Badges grid
-  html += '<div class="badges-grid">';
+  html += '<div class="badges-grid" role="list">';
   BADGES.forEach(b => {
     const unlocked = b.check();
     const prog = b.progress();
-    const progPct = b.max > 0 ? Math.round((prog / b.max) * 100) : 0;
-    html += '<div class="badge-card ' + (unlocked ? 'unlocked' : 'locked') + '">';
-    html += '<div class="badge-icon">' + b.icon + '</div>';
+    const progPct = b.max > 0 ? Math.min(Math.round((prog / b.max) * 100), 100) : 0;
+    html += '<div class="badge-card ' + (unlocked ? 'unlocked' : 'locked') + '" role="listitem" aria-label="' + b.name + ', ' + (unlocked ? 'unlocked' : 'locked — ' + progPct + '% progress') + '">';
+    html += '<div class="badge-icon" aria-hidden="true">' + b.icon + '</div>';
     html += '<div class="badge-info">';
     html += '<div class="badge-name">' + b.name + '</div>';
     html += '<div class="badge-desc">' + b.desc + '</div>';
     if (!unlocked) {
-      html += '<div class="badge-progress"><div class="badge-progress-fill" style="width:' + progPct + '%"></div></div>';
+      html += '<div class="badge-progress" role="progressbar" aria-valuenow="' + prog + '" aria-valuemin="0" aria-valuemax="' + b.max + '" aria-label="Progress towards ' + b.name + '"><div class="badge-progress-fill" style="width:' + progPct + '%"></div></div>';
     }
     html += '</div>';
     if (unlocked) {
