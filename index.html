@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://www.gstatic.com">
 <title>DC Absolute Universe — Collection Tracker</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600&family=Source+Sans+3:wght@300;400;600;700&display=swap');
 
   :root {
     --bg-primary: #0a0c10;
@@ -256,32 +256,58 @@
     display: flex;
     align-items: center;
     gap: 16px;
+    padding: 16px 20px;
     margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
     cursor: pointer;
     user-select: none;
-    transition: opacity 0.15s;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .series-header:hover { opacity: 0.85; }
-  .series-chevron { width: 18px; height: 18px; flex-shrink: 0; transition: transform 0.25s ease; color: var(--text-muted); }
+  .series-header::before {
+    content: ''; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 5px;
+    background: var(--accent-color);
+    border-radius: 12px 0 0 12px;
+  }
+  .series-header::after {
+    content: ''; position: absolute;
+    left: 0; top: 0; bottom: 0; right: 0;
+    background: linear-gradient(90deg, var(--accent-color) 0%, transparent 40%);
+    opacity: 0.08; pointer-events: none;
+  }
+  .series-header:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 0 12px color-mix(in srgb, var(--accent-color) 20%, transparent);
+  }
+  .series-header:hover::after { opacity: 0.12; }
+  .series-chevron { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent-color); transition: transform 0.25s ease; }
   .series-header.collapsed .series-chevron { transform: rotate(-90deg); }
   .series-header.collapsed + .issue-grid { display: none; }
   .accordion-controls { display: flex; gap: 8px; margin-bottom: 12px; }
   .accordion-ctrl-btn { background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-family: inherit; transition: all 0.15s; }
   .accordion-ctrl-btn:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); color: var(--text-primary); }
 
-  .series-color {
-    width: 4px;
-    height: 40px;
-    border-radius: 2px;
+  .series-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: white;
+    text-transform: uppercase;
   }
 
-  .series-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 1px;
-    color: white;
+  .series-count {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+    color: var(--accent-color);
+    font-weight: 500;
+    border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
   }
 
   .series-meta {
@@ -303,22 +329,22 @@
   .progress-bar {
     width: 120px;
     height: 6px;
-    background: var(--border);
+    background: rgba(255,255,255,0.06);
     border-radius: 3px;
     overflow: hidden;
   }
 
   .progress-fill {
     height: 100%;
-    background: var(--accent-green);
+    background: linear-gradient(90deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 70%, white));
     border-radius: 3px;
     transition: width 0.3s ease;
   }
 
   .progress-text {
     font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 600;
+    color: var(--accent-color);
+    font-weight: 500;
     min-width: 36px;
   }
 
@@ -1336,15 +1362,15 @@ function renderCollection(filter, search) {
     const isCollapsed = accState[sName] === true;
 
     block.innerHTML = `
-      <div class="series-header${isCollapsed ? ' collapsed' : ''}" role="button" tabindex="0" aria-expanded="${!isCollapsed}" aria-controls="grid-${sName.replace(/\s+/g, '-')}">
+      <div class="series-header${isCollapsed ? ' collapsed' : ''}" style="--accent-color:${color}" role="button" tabindex="0" aria-expanded="${!isCollapsed}" aria-controls="grid-${sName.replace(/\s+/g, '-')}">
         <svg class="series-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        <div class="series-color" style="background:${color}"></div>
         <div class="series-title">${sName}</div>
+        <span class="series-count">${issues.length} issues</span>
         <div class="series-progress">
           <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
           <div class="progress-text">${ownedInSeries}/${allInSeries.length}</div>
         </div>
-        <div class="series-meta"><strong>${issues.length}</strong> issues shown</div>
+        <div class="series-meta"><strong>${pct}%</strong> collected</div>
       </div>
       <div class="issue-grid" id="grid-${sName.replace(/\s+/g, '-')}"${isCollapsed ? ' style="display:none"' : ''}></div>
     `;
