@@ -1294,7 +1294,9 @@ function getAccordionState() {
   try { return JSON.parse(localStorage.getItem('accordion_state') || '{}'); } catch(e) { return {}; }
 }
 function saveAccordionState(state) {
-  try { localStorage.setItem('accordion_state', JSON.stringify(state)); } catch(e) {}
+  try { localStorage.setItem('accordion_state', JSON.stringify(state)); } catch(e) {
+    console.warn('Accordion state: localStorage unavailable. State will not persist.');
+  }
 }
 
 function renderCollection(filter, search) {
@@ -1304,11 +1306,10 @@ function renderCollection(filter, search) {
   let hasContent = false;
   const accState = getAccordionState();
 
-  // Expand/Collapse all controls
+  // Expand/Collapse all controls (appended only if content exists)
   const controls = document.createElement('div');
   controls.className = 'accordion-controls';
   controls.innerHTML = '<button class="accordion-ctrl-btn" id="expandAll">Expand All</button><button class="accordion-ctrl-btn" id="collapseAll">Collapse All</button>';
-  container.appendChild(controls);
 
   seriesNames.forEach(sName => {
     let issues = ALL_ISSUES.filter(i => i.series === sName);
@@ -1420,6 +1421,8 @@ function renderCollection(filter, search) {
   if (!hasContent) {
     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">ð­</div><p>No issues match your filters.</p></div>';
   } else {
+    // Insert controls at the top now that we know there's content
+    container.insertBefore(controls, container.firstChild);
     // Expand / Collapse All handlers
     document.getElementById('expandAll').addEventListener('click', () => {
       const st = {};
