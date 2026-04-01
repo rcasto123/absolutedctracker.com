@@ -287,6 +287,28 @@
   .series-chevron { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent-color); transition: transform 0.25s ease; }
   .series-header.collapsed .series-chevron { transform: rotate(-90deg); }
   .series-header.collapsed + .issue-grid { display: none; }
+
+  /* Card reveal animation — staggered slide-up */
+  @keyframes cardSlideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .issue-grid.animating .issue-card {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: cardSlideUp 0.35s ease forwards;
+  }
+  .issue-grid.animating .issue-card:nth-child(1)  { animation-delay: 0ms; }
+  .issue-grid.animating .issue-card:nth-child(2)  { animation-delay: 40ms; }
+  .issue-grid.animating .issue-card:nth-child(3)  { animation-delay: 80ms; }
+  .issue-grid.animating .issue-card:nth-child(4)  { animation-delay: 120ms; }
+  .issue-grid.animating .issue-card:nth-child(5)  { animation-delay: 160ms; }
+  .issue-grid.animating .issue-card:nth-child(6)  { animation-delay: 200ms; }
+  .issue-grid.animating .issue-card:nth-child(7)  { animation-delay: 240ms; }
+  .issue-grid.animating .issue-card:nth-child(8)  { animation-delay: 280ms; }
+  .issue-grid.animating .issue-card:nth-child(9)  { animation-delay: 320ms; }
+  .issue-grid.animating .issue-card:nth-child(10) { animation-delay: 360ms; }
+  .issue-grid.animating .issue-card:nth-child(n+11) { animation-delay: 400ms; }
   .accordion-controls { display: flex; gap: 8px; margin-bottom: 12px; }
   .accordion-ctrl-btn { background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-family: inherit; transition: all 0.15s; }
   .accordion-ctrl-btn:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); color: var(--text-primary); }
@@ -1430,7 +1452,15 @@ function renderCollection(filter, search) {
       const grd = block.querySelector('.issue-grid');
       const collapsed = header.classList.toggle('collapsed');
       header.setAttribute('aria-expanded', !collapsed);
-      grd.style.display = collapsed ? 'none' : '';
+      if (collapsed) {
+        grd.style.display = 'none';
+        grd.classList.remove('animating');
+      } else {
+        grd.style.display = '';
+        grd.classList.remove('animating');
+        void grd.offsetWidth;
+        grd.classList.add('animating');
+      }
       const st = getAccordionState();
       st[sName] = collapsed;
       saveAccordionState(st);
@@ -1454,10 +1484,18 @@ function renderCollection(filter, search) {
     document.getElementById('expandAll').addEventListener('click', () => {
       const st = {};
       container.querySelectorAll('.series-header').forEach(h => {
+        const wasCollapsed = h.classList.contains('collapsed');
         h.classList.remove('collapsed');
         h.setAttribute('aria-expanded', 'true');
         const g = h.nextElementSibling;
-        if (g) g.style.display = '';
+        if (g) {
+          g.style.display = '';
+          if (wasCollapsed) {
+            g.classList.remove('animating');
+            void g.offsetWidth;
+            g.classList.add('animating');
+          }
+        }
         const name = h.querySelector('.series-title').textContent;
         st[name] = false;
       });
