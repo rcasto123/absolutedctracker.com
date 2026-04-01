@@ -1182,6 +1182,11 @@
 
   <!-- âââ MEDIA TAB âââ -->
   <div class="tab-content" id="tab-arcs" role="tabpanel">
+    <div class="filter-bar" role="toolbar" aria-label="Reading order type">
+      <button class="filter-btn active" data-reading-order="arcs" aria-pressed="true">Story Arcs</button>
+      <button class="filter-btn" data-reading-order="publication" aria-pressed="false">Publication Order</button>
+      <button class="filter-btn" data-reading-order="essential" aria-pressed="false">Essential Only</button>
+    </div>
     <div id="arcsContainer"></div>
   </div>
 
@@ -1914,6 +1919,24 @@ function renderTrades() {
   container.appendChild(grid);
 }
 
+// Essential reading list — curated shortlist for new readers
+const ESSENTIAL_ISSUES = [
+  {title:'DC All In Special', note:'The event that launches Earth-Alpha. Start here.'},
+  {title:'Absolute Batman #1', note:'Bruce Wayne reimagined — no wealth, no Wayne Manor. The definitive Absolute origin.'},
+  {title:'Absolute Superman #1', note:'Kal-El without the Kents. A raw, powerful new take on the Man of Steel.'},
+  {title:'Absolute Wonder Woman #1', note:'Diana fights her way out of Hell in this mythology-heavy reimagining.'},
+  {title:'Absolute Batman #3', note:'The first major Batman arc climax. Raises the stakes dramatically.'},
+  {title:'Absolute Flash #1', note:'The speedster enters Earth-Alpha with a fresh twist on the Speed Force.'},
+  {title:'Absolute Green Lantern #1', note:'A cosmic new direction for the ring-bearer.'},
+  {title:'Absolute Martian Manhunter #1', note:'J\'onn J\'onzz arrives — alien horror meets detective noir.'},
+  {title:'Absolute Batman #7', note:'The escalation begins. A turning point for the Absolute Universe.'},
+  {title:'Absolute Evil #1', note:'The big bad arrives. Threads from all titles begin to converge.'},
+  {title:'Absolute Green Arrow #1', note:'Oliver Queen joins the Universe with a grounded, street-level debut.'},
+  {title:'Absolute Catwoman #1', note:'Selina Kyle enters with her own unique angle on Earth-Alpha.'},
+];
+
+let currentReadingOrder = 'arcs';
+
 function renderArcs() {
   const container = document.getElementById('arcsContainer');
   container.innerHTML = '';
@@ -1921,6 +1944,16 @@ function renderArcs() {
   const issueMap = {};
   ALL_ISSUES.forEach(i => { issueMap[i.title] = i; });
 
+  if (currentReadingOrder === 'arcs') {
+    renderStoryArcs(container, issueMap);
+  } else if (currentReadingOrder === 'publication') {
+    renderPublicationOrder(container, issueMap);
+  } else if (currentReadingOrder === 'essential') {
+    renderEssentialOrder(container, issueMap);
+  }
+}
+
+function renderStoryArcs(container, issueMap) {
   STORY_ARCS.forEach(arc => {
     const card = document.createElement('div');
     card.className = 'arc-card';
@@ -1943,24 +1976,106 @@ function renderArcs() {
     html += '<div class="arc-issues">';
 
     arcIssues.sort((a,b) => a.order - b.order).forEach(i => {
-      const color = SERIES_COLORS[i.series] || '#555';
-      const d = new Date(i.date);
-      const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-      const ownedClass = i.isOwned ? ' owned' : '';
-      const slug = i.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      html += '<div class="arc-issue' + ownedClass + '">';
-      html += '<div class="arc-order">' + i.order + '</div>';
-      html += '<div class="arc-dot" style="background:' + color + '"></div>';
-      html += '<div class="arc-issue-title"><a href="issue.html?id=' + slug + '">' + i.title + '</a></div>';
-      html += '<div class="arc-issue-date">' + dateStr + '</div>';
-      html += '<svg class="arc-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
-      html += '</div>';
+      html += renderArcIssueRow(i);
     });
 
     html += '</div>';
     card.innerHTML = html;
     container.appendChild(card);
   });
+}
+
+function renderPublicationOrder(container, issueMap) {
+  // Group released issues by month
+  const released = ALL_ISSUES.filter(i => isReleased(i.date))
+    .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  const months = {};
+  released.forEach((issue, idx) => {
+    const d = new Date(issue.date);
+    const key = d.toLocaleDateString('en-US', { month:'long', year:'numeric' });
+    if (!months[key]) months[key] = [];
+    months[key].push({ ...issue, order: idx + 1, isOwned: owned[issueKey(issue)] });
+  });
+
+  Object.keys(months).forEach(month => {
+    const issues = months[month];
+    const ownedCount = issues.filter(i => i.isOwned).length;
+    const total = issues.length;
+    const pillClass = ownedCount === total ? 'complete' : ownedCount > 0 ? 'partial' : 'empty';
+
+    const card = document.createElement('div');
+    card.className = 'arc-card';
+    let html = '<div class="arc-header">';
+    html += '<h3 class="arc-name">' + month + '</h3>';
+    html += '<span class="arc-progress-pill ' + pillClass + '">' + ownedCount + '/' + total + ' owned</span>';
+    html += '</div>';
+    html += '<div class="arc-desc">Issues released in ' + month + ', in publication order.</div>';
+    html += '<div class="arc-issues">';
+
+    issues.forEach(i => {
+      html += renderArcIssueRow(i);
+    });
+
+    html += '</div>';
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
+}
+
+function renderEssentialOrder(container, issueMap) {
+  const card = document.createElement('div');
+  card.className = 'arc-card';
+
+  const essentialIssues = ESSENTIAL_ISSUES.map((ei, idx) => {
+    const issue = issueMap[ei.title];
+    return issue ? { ...issue, order: idx + 1, isOwned: owned[issueKey(issue)], note: ei.note } : null;
+  }).filter(Boolean);
+
+  const ownedCount = essentialIssues.filter(i => i.isOwned).length;
+  const total = essentialIssues.length;
+  const pillClass = ownedCount === total ? 'complete' : ownedCount > 0 ? 'partial' : 'empty';
+
+  let html = '<div class="arc-header">';
+  html += '<h3 class="arc-name">Essential Reading</h3>';
+  html += '<span class="arc-progress-pill ' + pillClass + '">' + ownedCount + '/' + total + ' owned</span>';
+  html += '</div>';
+  html += '<div class="arc-desc">The curated shortlist for new readers. These are the key issues that define the Absolute Universe — start here if you\'re just getting into the line.</div>';
+  html += '<div class="arc-issues">';
+
+  essentialIssues.forEach(i => {
+    const color = SERIES_COLORS[i.series] || '#555';
+    const ownedClass = i.isOwned ? ' owned' : '';
+    const slug = i.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    html += '<div class="arc-issue' + ownedClass + '">';
+    html += '<div class="arc-order">' + i.order + '</div>';
+    html += '<div class="arc-dot" style="background:' + color + '"></div>';
+    html += '<div class="arc-issue-title"><a href="issue.html?id=' + slug + '">' + i.title + '</a>';
+    html += '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + i.note + '</div>';
+    html += '</div>';
+    html += '<svg class="arc-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    html += '</div>';
+  });
+
+  html += '</div>';
+  card.innerHTML = html;
+  container.appendChild(card);
+}
+
+function renderArcIssueRow(i) {
+  const color = SERIES_COLORS[i.series] || '#555';
+  const d = new Date(i.date);
+  const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const ownedClass = i.isOwned ? ' owned' : '';
+  const slug = i.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  let html = '<div class="arc-issue' + ownedClass + '">';
+  html += '<div class="arc-order">' + i.order + '</div>';
+  html += '<div class="arc-dot" style="background:' + color + '"></div>';
+  html += '<div class="arc-issue-title"><a href="issue.html?id=' + slug + '">' + i.title + '</a></div>';
+  html += '<div class="arc-issue-date">' + dateStr + '</div>';
+  html += '<svg class="arc-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+  html += '</div>';
+  return html;
 }
 
 function renderAchievements() {
@@ -2287,6 +2402,20 @@ document.querySelectorAll('[data-calendar-filter]').forEach(btn => {
     btn.setAttribute('aria-pressed', 'true');
     calendarShowAll = btn.dataset.calendarFilter === 'all';
     renderCalendar(calendarShowAll);
+  });
+});
+
+// Reading order type switcher
+document.querySelectorAll('[data-reading-order]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-reading-order]').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+    currentReadingOrder = btn.dataset.readingOrder;
+    renderArcs();
   });
 });
 
@@ -3087,10 +3216,12 @@ renderAchievements();
 <!-- Comic Cover Background Images -->
 <style>
   .issue-card { position: relative !important; overflow: hidden !important; z-index: 0 !important; }
-  .issue-card .card-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center top; opacity: 0.18; z-index: -1; transition: opacity 0.3s; pointer-events: none; }
-  .issue-card:hover .card-bg { opacity: 0.3; }
-  .issue-card.owned .card-bg { opacity: 0.22; }
-  .issue-card.owned:hover .card-bg { opacity: 0.35; }
+  .issue-card .card-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center top; opacity: 0; z-index: -1; transition: opacity 0.5s ease; pointer-events: none; }
+  .issue-card .card-bg.loaded { opacity: 0.18; }
+  .issue-card:hover .card-bg.loaded { opacity: 0.3; }
+  .issue-card.owned .card-bg.loaded { opacity: 0.22; }
+  .issue-card.owned:hover .card-bg.loaded { opacity: 0.35; }
+  .issue-card .card-bg-placeholder { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: -2; pointer-events: none; opacity: 0.1; filter: blur(20px); background-size: cover; background-position: center top; transform: scale(1.1); }
 .issue-name a { color: inherit; text-decoration: none; } .issue-name a:hover { text-decoration: underline; color: #58a6ff; }
 </style>
 <script>
@@ -3208,6 +3339,29 @@ renderAchievements();
     'Absolute Evil #1': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-evil-1-one-shot-cover-a-giussepe-camuncoli-stefano-nesi-4517323.jpg'
   };
 
+  // Lazy-load cover art with IntersectionObserver + blur-up effect
+  var _coverObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (!entry.isIntersecting) return;
+      var card = entry.target;
+      var bg = card.querySelector('.card-bg');
+      if (!bg || bg.classList.contains('loaded')) return;
+      var url = bg.dataset.src;
+      if (!url) return;
+      // Preload the image, then fade in
+      var img = new Image();
+      img.onload = function() {
+        bg.style.backgroundImage = 'url(' + url + ')';
+        bg.classList.add('loaded');
+        // Remove placeholder after transition
+        var ph = card.querySelector('.card-bg-placeholder');
+        if (ph) setTimeout(function() { ph.remove(); }, 600);
+      };
+      img.src = url;
+      _coverObserver.unobserve(card);
+    });
+  }, { rootMargin: '200px 0px', threshold: 0 });
+
   function applyCoverBackgrounds() {
     document.querySelectorAll('.issue-card').forEach(function(card) {
       if (card.querySelector('.card-bg')) return;
@@ -3215,10 +3369,17 @@ renderAchievements();
       if (name) {
         var url = coverMap[name.textContent.trim()];
         if (url) {
+          // Blurred placeholder (uses same URL, rendered blurry at low opacity)
+          var ph = document.createElement('div');
+          ph.className = 'card-bg-placeholder';
+          ph.style.backgroundImage = 'url(' + url + ')';
+          card.insertBefore(ph, card.firstChild);
+          // Full-res layer (lazy-loaded)
           var bg = document.createElement('div');
           bg.className = 'card-bg';
-          bg.style.backgroundImage = 'url(' + url + ')';
+          bg.dataset.src = url;
           card.insertBefore(bg, card.firstChild);
+          _coverObserver.observe(card);
         }
       }
     });
@@ -3226,7 +3387,7 @@ renderAchievements();
 
   applyCoverBackgrounds();
 
-  // Use MutationObserver instead of polling setInterval
+  // Use MutationObserver to apply covers when new cards are added
   var _bgObserver = new MutationObserver(function(mutations) {
     for (var i = 0; i < mutations.length; i++) {
       if (mutations[i].addedNodes.length) {
@@ -3241,7 +3402,6 @@ renderAchievements();
     }
   });
   _bgObserver.observe(document.body, { childList: true, subtree: true });
-  // Initial application
   applyCoverBackgrounds();
 })()
 </script>
