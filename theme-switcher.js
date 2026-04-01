@@ -293,9 +293,19 @@
       panel.style.borderColor = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
       panel.style.boxShadow = isLight ? '0 8px 32px rgba(0,0,0,0.12)' : '0 8px 32px rgba(0,0,0,0.5)';
     }
-    // Update panel labels
+    // Update panel labels, section headers, and dividers for light/dark
     var labels = document.querySelectorAll('.ts-swatch span:not(.ts-check):not(.ts-dot)');
     labels.forEach(function(l) { l.style.color = isLight ? '#334155' : '#cbd5e1'; });
+    var sectionLabels = panel ? panel.querySelectorAll('[role="presentation"]') : [];
+    sectionLabels.forEach(function(el) {
+      if (el.style.height === '1px') {
+        // Divider
+        el.style.background = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+      } else {
+        // Section label
+        el.style.color = isLight ? '#64748b' : '#64748b';
+      }
+    });
   }
 
   // ── Build the picker UI ──
@@ -507,13 +517,14 @@
     row.setAttribute('aria-label', t.name + ' theme');
     row.setAttribute('aria-selected', id === (saved || 'default') ? 'true' : 'false');
     row.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border:none;background:none;cursor:pointer;border-radius:8px;transition:background 0.15s;';
-    row.onmouseenter = function () { row.style.background = 'rgba(255,255,255,0.06)'; };
+    row.onmouseenter = function () { row.style.background = document.documentElement.classList.contains('light-mode') ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)'; };
     row.onmouseleave = function () { row.style.background = 'none'; };
 
     // Color dot (gradient-capable)
     var dot = document.createElement('div');
     dot.className = 'ts-dot';
-    dot.style.cssText = 'width:22px;height:22px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,0.15);transition:border-color 0.2s;';
+    var dotBorder = document.documentElement.classList.contains('light-mode') ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)';
+    dot.style.cssText = 'width:22px;height:22px;border-radius:50%;flex-shrink:0;border:2px solid ' + dotBorder + ';transition:border-color 0.2s;';
     dot.style.background = t.swatch;
 
     // Label

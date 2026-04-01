@@ -987,98 +987,166 @@
   }
 
   /* ── Light Mode Overrides ── */
+  /* --- Hero & Header --- */
   .light-mode .hero-overlay {
     background: linear-gradient(180deg,
-      rgba(241,245,249,0.2) 0%,
-      rgba(241,245,249,0.5) 50%,
-      rgba(241,245,249,0.92) 85%,
-      rgba(241,245,249,1) 100%);
+      rgba(var(--lm-bg-rgb, 241,245,249), 0.6) 0%,
+      rgba(var(--lm-bg-rgb, 241,245,249), 0.85) 40%,
+      rgba(var(--lm-bg-rgb, 241,245,249), 0.97) 75%,
+      rgba(var(--lm-bg-rgb, 241,245,249), 1) 100%);
   }
-  .light-mode .hero h1 { color: #1e293b; }
+  .light-mode .hero h1 { color: var(--text-primary); text-shadow: none; }
   .light-mode .hero-badge { color: #fff; }
-  .light-mode .stats-bar { box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  .light-mode .stat-number { color: #1e293b; }
-  .light-mode .issue-card {
-    border-color: #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-  .light-mode .issue-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  }
-  .light-mode .issue-card.owned {
-    background: rgba(34, 197, 94, 0.06);
-    border-color: rgba(34, 197, 94, 0.25);
-  }
-  .light-mode .series-header {
-    border-color: #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-  .light-mode .series-header:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 0 8px color-mix(in srgb, var(--accent-color) 15%, transparent);
-  }
-  .light-mode .series-header::after {
-    opacity: 0.05;
-  }
-  .light-mode .series-count {
-    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
-    color: color-mix(in srgb, var(--accent-color) 80%, #000);
-  }
-  .light-mode .filter-btn {
-    color: #475569;
-    border-color: #e2e8f0;
-  }
-  .light-mode .filter-btn:hover { background: #f1f5f9; }
-  .light-mode .filter-btn.active {
-    background: var(--accent-blue);
-    color: #fff;
-    border-color: var(--accent-blue);
-  }
-  .light-mode .search-input {
-    background: #fff;
-    border-color: #e2e8f0;
-    color: #1e293b;
-  }
-  .light-mode .search-input::placeholder { color: #94a3b8; }
-  .light-mode footer { color: #64748b; }
-  .light-mode footer a { color: #475569; }
-  .light-mode .mobile-bottom-nav {
-    background: #ffffff;
-    border-top-color: #e2e8f0;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
-  }
-  .light-mode .mobile-bottom-nav .bnav-btn { color: #94a3b8; }
+  .light-mode .hero p { color: var(--text-secondary); }
+
+  /* --- Stats Bar --- */
+  .light-mode .stats-bar { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .light-mode .stat-number { color: var(--text-primary); font-weight: 700; }
+  .light-mode .stat-label { color: var(--text-secondary); }
+
+  /* --- Nav Tabs --- */
+  .light-mode .nav-tabs .tab { color: var(--text-secondary); }
+  .light-mode .nav-tabs .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-blue, #3b82f6); }
+  .light-mode .nav-tabs .tab:hover { color: var(--text-primary); }
+  .light-mode .nav-tabs { border-bottom-color: var(--border); }
+
+  /* --- Filter Bar & Search --- */
+  .light-mode .filter-btn { color: var(--text-secondary); border-color: var(--border); background: var(--bg-secondary); }
+  .light-mode .filter-btn:hover { background: var(--bg-card-hover, #f1f5f9); color: var(--text-primary); }
+  .light-mode .filter-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+  .light-mode .search-input { background: var(--bg-secondary); border-color: var(--border); color: var(--text-primary); }
+  .light-mode .search-input::placeholder { color: var(--text-muted); }
+  .light-mode #markAllOwned { border-color: #16a34a !important; color: #16a34a !important; }
+
+  /* --- Series Accordion Headers --- */
+  .light-mode .series-header { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .light-mode .series-header:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+  .light-mode .series-header::after { opacity: 0.04; }
+  .light-mode .series-title { color: var(--text-primary); }
+  .light-mode .series-count { background: color-mix(in srgb, var(--accent-color) 12%, transparent); color: color-mix(in srgb, var(--accent-color) 85%, #000); }
+  .light-mode .series-meta { color: var(--text-secondary); }
+  .light-mode .series-meta strong { color: var(--text-primary); }
+  .light-mode .series-chevron { stroke: var(--text-muted); }
+  .light-mode .progress-bar { background: var(--border); }
+  .light-mode .progress-text { color: var(--text-secondary); }
+
+  /* --- Issue Cards --- */
+  .light-mode .issue-card { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .light-mode .issue-card:hover { border-color: #94a3b8; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .light-mode .issue-card.owned { background: rgba(34, 197, 94, 0.06); border-color: rgba(34, 197, 94, 0.3); }
+  .light-mode .issue-name { color: var(--text-primary); }
+  .light-mode .issue-name a { color: var(--text-primary); }
+  .light-mode .issue-name a:hover { color: #2563eb; }
+  .light-mode .issue-date { color: var(--text-secondary); }
+  .light-mode .issue-checkbox svg { color: var(--border); }
+  .light-mode .issue-card.owned .issue-checkbox svg { color: #22c55e; }
+
+  /* --- Variant Badge (on cards) --- */
+  .light-mode .variant-badge { background: rgba(180,130,30,0.1); color: #92700a; border-color: rgba(180,130,30,0.25); }
+  .light-mode .variant-badge .vb-owned { color: #16a34a; }
+
+  /* --- Release Badges --- */
+  .light-mode .badge-released { background: rgba(34,197,94,0.1); color: #16a34a; border-color: rgba(34,197,94,0.25); }
+  .light-mode .badge-upcoming { background: rgba(59,130,246,0.1); color: #2563eb; border-color: rgba(59,130,246,0.25); }
+
+  /* --- Calendar --- */
+  .light-mode .calendar-item { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .light-mode .calendar-month { color: var(--text-primary); }
+  .light-mode .calendar-date { color: var(--text-secondary); }
+  .light-mode .calendar-title { color: var(--text-primary); }
+  .light-mode .calendar-series { color: var(--text-secondary); }
+
+  /* --- Series Guide (Info Cards) --- */
+  .light-mode .info-card { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .light-mode .info-card-title { color: var(--text-primary); }
+  .light-mode .info-label { color: var(--text-muted); }
+  .light-mode .info-value { color: var(--text-primary); }
+  .light-mode .info-description { color: var(--text-secondary); }
+  .light-mode .info-card-type { color: var(--text-secondary); }
+
+  /* --- Trade Paperbacks --- */
+  .light-mode .tpb-card { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .light-mode .tpb-title { color: var(--text-primary); }
+  .light-mode .tpb-meta { color: var(--text-secondary); }
+  .light-mode .tpb-contents { color: var(--text-secondary); }
+
+  /* --- Reading Order / Story Arcs --- */
+  .light-mode .arc-card { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .light-mode .arc-title { color: var(--text-primary); }
+  .light-mode .arc-description { color: var(--text-secondary); }
+  .light-mode .arc-issue { border-color: var(--border); }
+  .light-mode .arc-issue:hover { background: var(--bg-card-hover, #f8fafc); }
+  .light-mode .arc-issue-title { color: var(--text-primary); }
+  .light-mode .arc-issue-title a { color: var(--text-primary); }
+  .light-mode .arc-issue-title a:hover { color: #2563eb; }
+  .light-mode .arc-issue-date { color: var(--text-secondary); }
+  .light-mode .arc-order { color: var(--text-muted); background: rgba(0,0,0,0.04); }
+  .light-mode .arc-issue.owned .arc-order { background: rgba(34,197,94,0.12); color: #16a34a; }
+  .light-mode .arc-progress-pill.complete { background: rgba(34,197,94,0.12); color: #16a34a; }
+  .light-mode .arc-progress-pill.partial { background: rgba(59,130,246,0.12); color: #2563eb; }
+  .light-mode .reading-mode-btn { color: var(--text-secondary); border-color: var(--border); background: var(--bg-secondary); }
+  .light-mode .reading-mode-btn:hover { background: var(--bg-card-hover, #f1f5f9); }
+  .light-mode .reading-mode-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+  .light-mode .essential-note { color: var(--text-secondary); }
+
+  /* --- Analytics --- */
+  .light-mode .analytics-card, .light-mode .stat-big-card { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .light-mode .stat-big-label { color: var(--text-secondary); }
+  .light-mode .analytics-label { color: var(--text-secondary); }
+  .light-mode .analytics-bar-track { background: var(--border); }
+  .light-mode .analytics-pct { color: var(--text-primary); }
+
+  /* --- Achievements --- */
+  .light-mode .badge-card { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .light-mode .badge-card.locked { opacity: 0.5; }
+  .light-mode .badge-title { color: var(--text-primary); }
+  .light-mode .badge-desc { color: var(--text-secondary); }
+
+  /* --- Media Tab --- */
+  .light-mode .media-card { background: var(--bg-secondary); border: 1px solid var(--border); }
+  .light-mode .media-title { color: var(--text-primary); }
+  .light-mode .media-desc { color: var(--text-secondary); }
+
+  /* --- Footer --- */
+  .light-mode footer { color: var(--text-muted); }
+  .light-mode footer a { color: var(--text-secondary); }
+
+  /* --- Mobile Bottom Nav --- */
+  .light-mode .mobile-bottom-nav { background: var(--bg-secondary); border-top: 1px solid var(--border); box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
+  .light-mode .mobile-bottom-nav .bnav-btn { color: var(--text-muted); }
   .light-mode .mobile-bottom-nav .bnav-btn.active { color: var(--accent-blue); }
-  .light-mode .more-menu-overlay { background: rgba(0,0,0,0.2); }
-  .light-mode .more-menu {
-    background: #ffffff;
-    border-color: #e2e8f0;
-    box-shadow: 0 -8px 32px rgba(0,0,0,0.1);
-  }
-  .light-mode .more-menu-item { color: #334155; }
-  .light-mode .more-menu-item:hover { background: #f8fafc; }
-  .light-mode .badge-card { border-color: #e2e8f0; }
-  .light-mode .badge-card.locked { opacity: 0.6; }
-  .light-mode .tpb-card, .light-mode .arc-card, .light-mode .calendar-item, .light-mode .info-card {
-    border-color: #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
+  .light-mode .more-menu-overlay { background: rgba(0,0,0,0.15); }
+  .light-mode .more-menu { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 -8px 24px rgba(0,0,0,0.1); }
+  .light-mode .more-menu-item { color: var(--text-primary); }
+  .light-mode .more-menu-item:hover { background: var(--bg-card-hover, #f8fafc); }
+
+  /* --- Accordion Controls --- */
+  .light-mode .accordion-ctrl-btn { color: var(--text-secondary); border-color: var(--border); }
+  .light-mode .accordion-ctrl-btn:hover { color: var(--text-primary); background: var(--bg-card-hover, #f1f5f9); }
+  .light-mode .accordion-controls { border-bottom-color: var(--border); }
+
+  /* --- Changelog Modal --- */
   .light-mode .changelog-overlay { background: rgba(0,0,0,0.2); }
-  .light-mode .changelog-modal {
-    background: #ffffff;
-    border-color: #e2e8f0;
-  }
-  .light-mode #themeSwitcher button {
-    border-color: rgba(0,0,0,0.1);
-    background: rgba(0,0,0,0.04);
-    color: #64748b;
-  }
-  .light-mode #themeSwitcher button:hover {
-    background: rgba(0,0,0,0.08);
-    color: #1e293b;
-  }
-  .light-mode .series-chevron { stroke: #64748b; }
-  .light-mode .progress-bar { background: #e2e8f0; }
+  .light-mode .changelog-modal { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); }
+  .light-mode .changelog-modal h2 { color: var(--text-primary); }
+  .light-mode .changelog-tag.feature { background: rgba(34,197,94,0.1); color: #16a34a; }
+  .light-mode .changelog-tag.fix { background: rgba(239,68,68,0.1); color: #dc2626; }
+  .light-mode .changelog-tag.improve { background: rgba(59,130,246,0.1); color: #2563eb; }
+
+  /* --- Theme Switcher Buttons --- */
+  .light-mode #themeSwitcher button { border-color: var(--border); background: var(--bg-secondary); color: var(--text-secondary); }
+  .light-mode #themeSwitcher button:hover { background: var(--bg-card-hover, #f1f5f9); color: var(--text-primary); }
+
+  /* --- Notification Bar --- */
+  .light-mode .notify-bar { background: var(--bg-secondary); border-color: var(--border); color: var(--text-primary); }
+
+  /* --- Section Titles --- */
+  .light-mode .section-title, .light-mode .tab-title { color: var(--text-primary); }
+  .light-mode .section-subtitle { color: var(--text-secondary); }
+
+  /* --- Auth UI (top-right) --- */
+  .light-mode #authUI #authBtn { border-color: var(--border); background: var(--bg-secondary); color: var(--text-secondary); }
+  .light-mode #authUI #syncBadge { background: rgba(0,0,0,0.06); color: var(--text-muted); }
   </style>
 <script type="application/ld+json">
 {
@@ -3432,7 +3500,7 @@ renderAchievements();
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=2" defer></script>
 <script src="auth-integration.js?v=4" defer></script>
-<script src="theme-switcher.js?v=8" defer></script>
+<script src="theme-switcher.js?v=9" defer></script>
 <script>
 // What's New toggle
 (function() {
