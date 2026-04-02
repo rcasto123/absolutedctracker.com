@@ -838,8 +838,13 @@
 
   /* ââ Footer ââ */
   /* -- What's New -- */
-  .arc-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
-  .arc-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .arc-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0; margin-bottom: 12px; overflow: hidden; }
+  .arc-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; cursor: pointer; user-select: none; transition: background 0.15s; flex-wrap: wrap; }
+  .arc-header:hover { background: rgba(255,255,255,0.03); }
+  .arc-chevron { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); transition: transform 0.25s ease; }
+  .arc-header.collapsed .arc-chevron { transform: rotate(-90deg); }
+  .arc-body { padding: 0 16px 14px; }
+  .arc-header.collapsed + .arc-body { display: none; }
   .arc-name { font-family: 'Oswald', sans-serif; font-size: 1.15rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
   .arc-progress-pill { font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
   .arc-progress-pill.complete { background: rgba(34,197,94,0.15); color: #22c55e; }
@@ -858,7 +863,7 @@
   .arc-check { width: 14px; height: 14px; color: #22c55e; opacity: 0; flex-shrink: 0; }
   .arc-issue.owned .arc-check { opacity: 1; }
   .arc-issue-date { color: var(--text-muted); font-size: 0.7rem; white-space: nowrap; }
-  @media(max-width:600px) { .arc-card { padding: 10px 12px; } .arc-issue-date { display: none; } }
+  @media(max-width:600px) { .arc-header { padding: 10px 12px; } .arc-body { padding: 0 12px 10px; } .arc-issue-date { display: none; } }
 
   /* -- Reading Order Enhancements -- */
   .read-next-card { background: linear-gradient(135deg, var(--accent-blue) 0%, color-mix(in srgb, var(--accent-blue) 60%, var(--accent-purple))); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; color: white; }
@@ -1473,6 +1478,7 @@
 
   /* --- Reading Order / Story Arcs --- */
   .light-mode .arc-card { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .light-mode .arc-header:hover { background: rgba(0,0,0,0.02); }
   .light-mode .arc-title { color: var(--text-primary); }
   .light-mode .arc-description { color: var(--text-secondary); }
   .light-mode .arc-issue { border-color: var(--border); }
@@ -3159,10 +3165,27 @@ function renderArcs() {
   }
 }
 
+function getArcAccordionState() {
+  try { return JSON.parse(localStorage.getItem('arc_accordion_state') || '{}'); } catch(e) { return {}; }
+}
+function saveArcAccordionState(state) {
+  try { localStorage.setItem('arc_accordion_state', JSON.stringify(state)); } catch(e) {}
+}
+
 function renderStoryArcs(container, issueMap) {
+  // Add expand/collapse controls
+  const controls = document.createElement('div');
+  controls.className = 'accordion-controls';
+  controls.innerHTML = '<button class="accordion-ctrl-btn" id="arcExpandAll">Expand All</button><button class="accordion-ctrl-btn" id="arcCollapseAll">Collapse All</button>';
+  container.appendChild(controls);
+
+  const accState = getArcAccordionState();
+
   STORY_ARCS.forEach(arc => {
     const card = document.createElement('div');
     card.className = 'arc-card';
+    const arcKey = 'arc-' + arc.name.replace(/\s+/g, '-').toLowerCase();
+    const isCollapsed = accState[arcKey] === true;
 
     const arcIssues = arc.issues.map(ai => {
       const issue = issueMap[ai.title];
@@ -3175,10 +3198,12 @@ function renderStoryArcs(container, issueMap) {
     const pillText = ownedCount + '/' + total;
     const progressPct = total > 0 ? Math.round((ownedCount / total) * 100) : 0;
 
-    let html = '<div class="arc-header">';
+    let html = '<div class="arc-header' + (isCollapsed ? ' collapsed' : '') + '" role="button" tabindex="0" aria-expanded="' + !isCollapsed + '">';
+    html += '<svg class="arc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
     html += '<h3 class="arc-name">' + arc.name + '</h3>';
     html += '<span class="arc-progress-pill ' + pillClass + '">' + pillText + ' owned</span>';
     html += '</div>';
+    html += '<div class="arc-body">';
     html += '<div class="arc-desc">' + arc.description + '</div>';
     html += '<div class="arc-progress">';
     html += '<div class="arc-progress-bar"><div class="arc-progress-fill" style="width:' + progressPct + '%"></div></div>';
@@ -3195,13 +3220,51 @@ function renderStoryArcs(container, issueMap) {
       html += renderArcIssueRow(i);
     });
 
-    html += '</div>';
+    html += '</div></div>';
     card.innerHTML = html;
     container.appendChild(card);
+
+    // Accordion toggle
+    const header = card.querySelector('.arc-header');
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      const nowCollapsed = header.classList.contains('collapsed');
+      header.setAttribute('aria-expanded', !nowCollapsed);
+      const st = getArcAccordionState();
+      if (nowCollapsed) st[arcKey] = true; else delete st[arcKey];
+      saveArcAccordionState(st);
+    });
+  });
+
+  // Expand/Collapse All
+  document.getElementById('arcExpandAll').addEventListener('click', () => {
+    container.querySelectorAll('.arc-header').forEach(h => {
+      h.classList.remove('collapsed');
+      h.setAttribute('aria-expanded', 'true');
+    });
+    saveArcAccordionState({});
+  });
+  document.getElementById('arcCollapseAll').addEventListener('click', () => {
+    const st = {};
+    container.querySelectorAll('.arc-header').forEach(h => {
+      h.classList.add('collapsed');
+      h.setAttribute('aria-expanded', 'false');
+      const name = h.querySelector('.arc-name');
+      if (name) st['arc-' + name.textContent.replace(/\s+/g, '-').toLowerCase()] = true;
+    });
+    saveArcAccordionState(st);
   });
 }
 
 function renderPublicationOrder(container, issueMap) {
+  // Add expand/collapse controls
+  const controls = document.createElement('div');
+  controls.className = 'accordion-controls';
+  controls.innerHTML = '<button class="accordion-ctrl-btn" id="pubExpandAll">Expand All</button><button class="accordion-ctrl-btn" id="pubCollapseAll">Collapse All</button>';
+  container.appendChild(controls);
+
+  const accState = getArcAccordionState();
+
   // Group released issues by month
   const released = ALL_ISSUES.filter(i => isReleased(i.date))
     .sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -3219,13 +3282,17 @@ function renderPublicationOrder(container, issueMap) {
     const ownedCount = issues.filter(i => i.isOwned).length;
     const total = issues.length;
     const pillClass = ownedCount === total ? 'complete' : ownedCount > 0 ? 'partial' : 'empty';
+    const monthKey = 'pub-' + month.replace(/\s+/g, '-').toLowerCase();
+    const isCollapsed = accState[monthKey] === true;
 
     const card = document.createElement('div');
     card.className = 'arc-card';
-    let html = '<div class="arc-header">';
+    let html = '<div class="arc-header' + (isCollapsed ? ' collapsed' : '') + '" role="button" tabindex="0" aria-expanded="' + !isCollapsed + '">';
+    html += '<svg class="arc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
     html += '<h3 class="arc-name">' + month + '</h3>';
     html += '<span class="arc-progress-pill ' + pillClass + '">' + ownedCount + '/' + total + ' owned</span>';
     html += '</div>';
+    html += '<div class="arc-body">';
     html += '<div class="arc-desc">' + total + ' issues released</div>';
     html += '<div class="arc-issues">';
 
@@ -3233,13 +3300,46 @@ function renderPublicationOrder(container, issueMap) {
       html += renderArcIssueRow(i);
     });
 
-    html += '</div>';
+    html += '</div></div>';
     card.innerHTML = html;
     container.appendChild(card);
+
+    const header = card.querySelector('.arc-header');
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      const nowCollapsed = header.classList.contains('collapsed');
+      header.setAttribute('aria-expanded', !nowCollapsed);
+      const st = getArcAccordionState();
+      if (nowCollapsed) st[monthKey] = true; else delete st[monthKey];
+      saveArcAccordionState(st);
+    });
+  });
+
+  document.getElementById('pubExpandAll').addEventListener('click', () => {
+    container.querySelectorAll('.arc-header').forEach(h => {
+      h.classList.remove('collapsed');
+      h.setAttribute('aria-expanded', 'true');
+    });
+    const st = getArcAccordionState();
+    Object.keys(st).forEach(k => { if (k.startsWith('pub-')) delete st[k]; });
+    saveArcAccordionState(st);
+  });
+  document.getElementById('pubCollapseAll').addEventListener('click', () => {
+    const st = getArcAccordionState();
+    container.querySelectorAll('.arc-header').forEach(h => {
+      h.classList.add('collapsed');
+      h.setAttribute('aria-expanded', 'false');
+      const name = h.querySelector('.arc-name');
+      if (name) st['pub-' + name.textContent.replace(/\s+/g, '-').toLowerCase()] = true;
+    });
+    saveArcAccordionState(st);
   });
 }
 
 function renderEssentialOrder(container, issueMap) {
+  const accState = getArcAccordionState();
+  const isCollapsed = accState['essential'] === true;
+
   const card = document.createElement('div');
   card.className = 'arc-card';
 
@@ -3252,10 +3352,12 @@ function renderEssentialOrder(container, issueMap) {
   const total = essentialIssues.length;
   const pillClass = ownedCount === total ? 'complete' : ownedCount > 0 ? 'partial' : 'empty';
 
-  let html = '<div class="arc-header">';
+  let html = '<div class="arc-header' + (isCollapsed ? ' collapsed' : '') + '" role="button" tabindex="0" aria-expanded="' + !isCollapsed + '">';
+  html += '<svg class="arc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
   html += '<h3 class="arc-name">Essential Reading</h3>';
   html += '<span class="arc-progress-pill ' + pillClass + '">' + ownedCount + '/' + total + ' owned</span>';
   html += '</div>';
+  html += '<div class="arc-body">';
   html += '<div class="arc-desc">The curated shortlist for new readers. These are the key issues that define the Absolute Universe — start here if you\'re just getting into the line.</div>';
   html += '<div class="arc-issues">';
 
@@ -3273,9 +3375,19 @@ function renderEssentialOrder(container, issueMap) {
     html += '</div>';
   });
 
-  html += '</div>';
+  html += '</div></div>';
   card.innerHTML = html;
   container.appendChild(card);
+
+  const header = card.querySelector('.arc-header');
+  header.addEventListener('click', () => {
+    header.classList.toggle('collapsed');
+    const nowCollapsed = header.classList.contains('collapsed');
+    header.setAttribute('aria-expanded', !nowCollapsed);
+    const st = getArcAccordionState();
+    if (nowCollapsed) st['essential'] = true; else delete st['essential'];
+    saveArcAccordionState(st);
+  });
 }
 
 function renderArcIssueRow(i) {
