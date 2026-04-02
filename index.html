@@ -246,6 +246,11 @@ window.addEventListener('unhandledrejection', function(e) {
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
       <div class="changelog-entry">
         <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Modular codebase refactor</div>
+        <div class="changelog-desc">The 5,600-line index.html monolith has been broken into 10 focused modules — separate files for CSS, data, state management, rendering, cover maps, initialization, and feature code (export, sharing, notifications). The site loads faster and the codebase is far easier to maintain and extend.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Automated data pipeline</div>
         <div class="changelog-desc">Issue data is now maintained in an external JSON file updated by an automated pipeline. New issues are discovered weekly via the Comic Vine API, and the site loads fresh data on every visit with offline fallback. No more manual data entry for new releases.</div>
       </div>
@@ -489,6 +494,7 @@ window.addEventListener('unhandledrejection', function(e) {
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">External JSON data loading with offline fallback</div><span class="roadmap-tag complete">Done</span></div>
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">GitHub Actions weekly data updates</div><span class="roadmap-tag complete">Done</span></div>
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Issue detail page cover art fix (28 issues)</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Modular codebase refactor (10 JS/CSS modules)</div><span class="roadmap-tag complete">Done</span></div>
       </div>
       <div class="roadmap-group">
         <div class="roadmap-group-title">Up Next (Quick Wins)</div>
@@ -510,7 +516,6 @@ window.addEventListener('unhandledrejection', function(e) {
       </div>
       <div class="roadmap-group">
         <div class="roadmap-group-title">Big Bets</div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Modular codebase refactor</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Community hub (profiles & feed)</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Advanced search & filters</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Recommendation engine & curated lists</div><span class="roadmap-tag big">Large</span></div>

@@ -8,11 +8,11 @@
 
 ## Current State Summary
 
-The site is a polished single-page app (~5400 lines in index.html) with 8 main tabs: Collection, Release Calendar, Series Guide, Trade Paperbacks, Reading Order, Analytics, Achievements, and Media.
+The site is a polished single-page app with a modular codebase (638-line index.html + 10 separate JS/CSS modules) and 8 main tabs: Collection, Release Calendar, Series Guide, Trade Paperbacks, Reading Order, Analytics, Achievements, and Media.
 
-**What's working well:** Full collection tracking loop with sharing, import/export, cloud sync. Themed hero backgrounds with per-hero CSS animations. Variant cover ownership. Light and dark mode with 12 themes (auto-detects system preference on first visit). Pull list, spending tracker, and price guide with market values. Enriched media tab with creator spotlights. Enhanced reading order with progress tracking and recommendations. Improved mobile navigation with scanner access. Lazy-loaded cover art. Barcode scanning (Phases 1–4) with batch mode, history, and offline queue. 43-bug comprehensive security and stability audit completed. Automated data pipeline with Comic Vine API and GitHub Actions for weekly updates. External JSON data loading with offline fallback.
+**What's working well:** Full collection tracking loop with sharing, import/export, cloud sync. Themed hero backgrounds with per-hero CSS animations. Variant cover ownership. Light and dark mode with 12 themes (auto-detects system preference on first visit). Pull list, spending tracker, and price guide with market values. Enriched media tab with creator spotlights. Enhanced reading order with progress tracking and recommendations. Improved mobile navigation with scanner access. Lazy-loaded cover art. Barcode scanning (Phases 1–4) with batch mode, history, and offline queue. 43-bug comprehensive security and stability audit completed. Automated data pipeline with Comic Vine API and GitHub Actions for weekly updates. External JSON data loading with offline fallback. Modular codebase — index.html split into focused JS/CSS modules for maintainability.
 
-**Where the gaps are:** The monolithic index.html is now 5400+ lines and badly needs modularization. No social features beyond text/image sharing.
+**Where the gaps are:** No social features beyond text/image sharing. No advanced search/filter system.
 
 ---
 
@@ -50,34 +50,34 @@ The site is a polished single-page app (~5400 lines in index.html) with 8 main t
 25. Automated data pipeline — Comic Vine API integration, external JSON data loading, GitHub Actions weekly updates, pipeline CLI with validate/sync/add modes
 26. Issue detail page cover art fix — 28 missing covers populated, broken cover loader fixed to use data pipeline JSON
 27. GitHub Actions CI/CD — scheduled weekly data updates with auto-PR creation
+28. Modular codebase refactor — 5,600-line index.html split into 10 focused modules (styles.css, data.js, state.js, renders.js, cover-map.js, init.js, export.js, share.js, notifications.js). 88% reduction in index.html size.
 
 ---
 
 ## Remaining — Quick Wins
 
-28. **Timeline view for collection growth** — Small effort. Visual timeline of when issues were added to the collection over time.
-29. **Blind buy random issue picker** — Small effort. "Surprise me" button that picks a random unowned issue to try next.
-30. **Completion date calculator** — Small effort. Estimate when you'll complete a series based on release schedule and buying pace.
-31. **Release schedule digest email** — Small effort. Weekly email with upcoming releases for your pulled series.
-32. **Custom tags for issues** — Small effort. User-defined labels (e.g. "signed", "first print", "graded") on individual issues.
+29. **Timeline view for collection growth** — Small effort. Visual timeline of when issues were added to the collection over time.
+30. **Blind buy random issue picker** — Small effort. "Surprise me" button that picks a random unowned issue to try next.
+31. **Completion date calculator** — Small effort. Estimate when you'll complete a series based on release schedule and buying pace.
+32. **Release schedule digest email** — Small effort. Weekly email with upcoming releases for your pulled series.
+33. **Custom tags for issues** — Small effort. User-defined labels (e.g. "signed", "first print", "graded") on individual issues.
 
 ---
 
 ## Remaining — Medium Features
 
-33. **Series tier list / ranking** — Medium effort. Drag-and-drop ranking of series by personal preference.
-34. **Collector's notes per issue** — Medium effort. Free-text notes field on each issue (synced to Firestore).
-35. **Smart series recommendations** — Medium effort. "If you like X, try Y" based on owned series and reading history.
-36. **Release window alerts** — Medium effort. Browser push notifications when a pulled issue's release date is approaching.
-37. **Variant completion leaderboard** — Medium effort. Ranked list of variant completeness across all users.
-38. **Series comparison tool** — Medium effort. Side-by-side comparison of two series (release cadence, page counts, prices, completion).
-39. **Pre-order countdown badges** — Medium effort. Visual countdown badges on upcoming issues within 2 weeks of release.
+34. **Series tier list / ranking** — Medium effort. Drag-and-drop ranking of series by personal preference.
+35. **Collector's notes per issue** — Medium effort. Free-text notes field on each issue (synced to Firestore).
+36. **Smart series recommendations** — Medium effort. "If you like X, try Y" based on owned series and reading history.
+37. **Release window alerts** — Medium effort. Browser push notifications when a pulled issue's release date is approaching.
+38. **Variant completion leaderboard** — Medium effort. Ranked list of variant completeness across all users.
+39. **Series comparison tool** — Medium effort. Side-by-side comparison of two series (release cadence, page counts, prices, completion).
+40. **Pre-order countdown badges** — Medium effort. Visual countdown badges on upcoming issues within 2 weeks of release.
 
 ---
 
 ## Remaining — Big Bets
 
-40. **Modular codebase refactor** — Large effort, High impact. Break index.html into modules (ES6 imports or separate JS files). Extract CSS into component stylesheets.
 41. **Community hub (profiles & feed)** — Large effort, Medium impact. Public profiles, collection leaderboards, and a community feed.
 42. **Advanced search & filters** — Large effort, Medium impact. Full-text search across all fields, multi-facet filtering (writer, artist, date range, price range, owned status).
 43. **Recommendation engine & curated lists** — Large effort, Medium impact. Algorithmic recommendations based on collection patterns plus editorially curated "best of" lists.
@@ -92,4 +92,4 @@ The site is a polished single-page app (~5400 lines in index.html) with 8 main t
 
 ## Suggested Next Sprint
 
-Item 40 (Modular Codebase Refactor) is the top priority — index.html is 5400+ lines and becoming unwieldy. After that, items 28–32 (Quick Wins) are fast to ship and would add nice polish. The automated data pipeline is live and keeps issue data fresh automatically.
+The modular refactor is done — index.html is now 638 lines with 10 focused modules. Items 29–33 (Quick Wins) are fast to ship and would add nice polish. After that, items 34–40 (Medium Features) add depth. The automated data pipeline keeps issue data fresh weekly.
