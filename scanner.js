@@ -72,6 +72,7 @@
 
   // ── Barcode Index ──
   var barcodeIndex = {};
+  var variantData = null; // loaded from variants.json
 
   function buildBarcodeIndex() {
     barcodeIndex = {};
@@ -81,7 +82,7 @@
         if (!issue.barcodes) return;
         var slug = issue.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         var key = issue.series + '|' + issue.issue;
-        var entry = { slug: slug, title: issue.title, key: key, variant: null, type: 'issue', price: issue.price || 4.99 };
+        var entry = { slug: slug, title: issue.title, key: key, variant: null, variantName: 'Cover A', type: 'issue', price: issue.price || 4.99 };
         if (issue.barcodes.upc) {
           barcodeIndex[issue.barcodes.upc] = entry;
           // DC UPCs are 17 digits (12-digit UPC-A + 5-digit add-on).
@@ -102,9 +103,46 @@
         }
         if (issue.barcodes.variants) {
           Object.keys(issue.barcodes.variants).forEach(function(varId) {
-            barcodeIndex[issue.barcodes.variants[varId]] = { slug: slug, title: issue.title, key: key, variant: varId, type: 'issue', price: issue.price || 4.99 };
+            barcodeIndex[issue.barcodes.variants[varId]] = { slug: slug, title: issue.title, key: key, variant: varId, variantName: 'Variant ' + varId, type: 'issue', price: issue.price || 4.99 };
           });
         }
+      });
+    }
+    // Index variant covers from variants.json
+    if (variantData) {
+      Object.keys(variantData).forEach(function(slug) {
+        var variants = variantData[slug];
+        // Find matching issue for this slug
+        var matchedIssue = null;
+        if (typeof ALL_ISSUES !== 'undefined') {
+          for (var i = 0; i < ALL_ISSUES.length; i++) {
+            var issueSlug = ALL_ISSUES[i].title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            if (issueSlug === slug) { matchedIssue = ALL_ISSUES[i]; break; }
+          }
+        }
+        if (!matchedIssue) return;
+        var key = matchedIssue.series + '|' + matchedIssue.issue;
+        variants.forEach(function(v, idx) {
+          if (!v.upc) return;
+          var coverName = v.cover || v.name || ('Variant #' + (idx + 1));
+          var entry = {
+            slug: slug,
+            title: matchedIssue.title,
+            key: key,
+            variant: String(idx),
+            variantName: coverName,
+            variantFullName: v.name || coverName,
+            type: 'issue',
+            price: matchedIssue.price || 4.99
+          };
+          barcodeIndex[v.upc] = entry;
+          // Also index the 12-digit prefix for camera scans
+          if (v.upc.length >= 12) {
+            var upc12 = v.upc.substring(0, 12);
+            // Don't overwrite the base issue's 12-digit entry
+            // Only add the full 17-digit variant UPC
+          }
+        });
       });
     }
     // Index trade paperbacks
@@ -604,11 +642,17 @@
 
     if (batchMode && result) {
       // Batch mode: auto-mark as owned (or queue offline), show toast, keep scanning
-      if (!isOwned(result.key, result.type)) {
+      var batchIsVariant = !!(result.variantName && result.variantName !== 'Cover A');
+      if (batchIsVariant && typeof toggleVariantOwned === 'function') {
+        if (typeof isVariantOwned === 'function' && !isVariantOwned(result.key, result.variant)) {
+          toggleVariantOwned(result.key, result.variant);
+          if (scanHistory.length > 0) scanHistory[0].owned = true;
+          renderHistory();
+        }
+      } else if (!isOwned(result.key, result.type)) {
         if (isOnline()) {
           setOwnedState(result.key, true, result.type);
         } else {
-          // Store locally + queue for sync
           var storageKey = (result.type === 'trade') ? 'au_trades' : 'au_owned';
           var state;
           try { state = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e) { state = {}; }
@@ -620,8 +664,9 @@
         renderHistory();
       }
       var icon = '<span style="color:#22c55e;">✓</span>';
+      var variantTag = batchIsVariant ? ' <span style="color:#eab308;font-size:0.8em;">' + result.variantName + '</span>' : '';
       var priceTag = (result.price || result.price === 0) ? ' <span style="color:#06b6d4;font-size:0.8em;">' + formatPrice(result.price) + '</span>' : '';
-      showToast(icon + ' <strong>' + result.title + '</strong>' + priceTag + ' added', 2000);
+      showToast(icon + ' <strong>' + result.title + '</strong>' + variantTag + priceTag + ' added', 2000);
       return;
     }
 
@@ -643,13 +688,23 @@
     var ownedBtn = document.getElementById('scannerOwnedBtn');
 
     if (result) {
-      var ownedNow = isOwned(result.key, result.type);
-      var typeLabel = result.type === 'trade' ? ' <span style="font-size:0.7rem;opacity:0.6;font-weight:400;">(TPB)</span>' : '';
-      if (ownedNow) {
-        titleEl.innerHTML = '<span style="color:var(--accent-green,#22c55e);">✓</span> ' + result.title + typeLabel;
+      var isVariantResult = !!(result.variantName && result.variantName !== 'Cover A');
+      var ownedNow;
+      if (isVariantResult && typeof isVariantOwned === 'function') {
+        ownedNow = isVariantOwned(result.key, result.variant);
       } else {
-        titleEl.innerHTML = '<span style="color:var(--accent-blue,#3b82f6);">●</span> ' + result.title + typeLabel;
+        ownedNow = isOwned(result.key, result.type);
       }
+      var typeLabel = result.type === 'trade' ? ' <span style="font-size:0.7rem;opacity:0.6;font-weight:400;">(TPB)</span>' : '';
+      var variantLabel = isVariantResult ? ' <span style="font-size:0.75rem;opacity:0.85;color:var(--accent-gold,#eab308);font-weight:500;">' + result.variantName + '</span>' : '';
+
+      var buildTitle = function(isOwn) {
+        var icon = isOwn
+          ? '<span style="color:var(--accent-green,#22c55e);">✓</span> '
+          : '<span style="color:var(--accent-blue,#3b82f6);">●</span> ';
+        return icon + result.title + typeLabel + variantLabel;
+      };
+      titleEl.innerHTML = buildTitle(ownedNow);
 
       // Price display
       if (result.price || result.price === 0) {
@@ -674,34 +729,42 @@
         if (isOwn) {
           ownedBtn.textContent = '✓ Owned — Remove?';
           ownedBtn.className = 'scanner-result-btn owned-btn owned';
-          titleEl.innerHTML = '<span style="color:var(--accent-green,#22c55e);">✓</span> ' + result.title + typeLabel;
         } else {
-          ownedBtn.textContent = result.type === 'trade' ? 'Mark Trade as Owned' : 'Mark as Owned';
+          ownedBtn.textContent = isVariantResult ? 'Mark Variant as Owned' : (result.type === 'trade' ? 'Mark Trade as Owned' : 'Mark as Owned');
           ownedBtn.className = 'scanner-result-btn owned-btn';
-          titleEl.innerHTML = '<span style="color:var(--accent-blue,#3b82f6);">●</span> ' + result.title + typeLabel;
         }
+        titleEl.innerHTML = buildTitle(isOwn);
       };
       updateOwnedBtn(ownedNow);
       ownedBtn.style.display = 'block';
       ownedBtn.onclick = function() {
-        var toggled = !isOwned(result.key, result.type);
-        if (isOnline()) {
-          setOwnedState(result.key, toggled, result.type);
-        } else if (toggled) {
-          var sk = (result.type === 'trade') ? 'au_trades' : 'au_owned';
-          var st;
-          try { st = JSON.parse(localStorage.getItem(sk) || '{}'); } catch(e) { st = {}; }
-          st[result.key] = true;
-          localStorage.setItem(sk, JSON.stringify(st));
-          queueOfflineScan(result.key, result.type);
+        if (isVariantResult && typeof toggleVariantOwned === 'function') {
+          // Toggle variant ownership
+          toggleVariantOwned(result.key, result.variant);
+          var nowOwned = (typeof isVariantOwned === 'function') ? isVariantOwned(result.key, result.variant) : false;
+          updateOwnedBtn(nowOwned);
+          vibrate(30);
+          if (scanHistory.length > 0) { scanHistory[0].owned = nowOwned; renderHistory(); }
+        } else {
+          // Standard issue/trade ownership toggle
+          var toggled = !isOwned(result.key, result.type);
+          if (isOnline()) {
+            setOwnedState(result.key, toggled, result.type);
+          } else if (toggled) {
+            var sk = (result.type === 'trade') ? 'au_trades' : 'au_owned';
+            var st;
+            try { st = JSON.parse(localStorage.getItem(sk) || '{}'); } catch(e) { st = {}; }
+            st[result.key] = true;
+            localStorage.setItem(sk, JSON.stringify(st));
+            queueOfflineScan(result.key, result.type);
+          }
+          updateOwnedBtn(toggled);
+          vibrate(30);
+          if (scanHistory.length > 0) { scanHistory[0].owned = toggled; renderHistory(); }
         }
-        updateOwnedBtn(toggled);
-        // Haptic feedback on own toggle
-        vibrate(30);
-        if (scanHistory.length > 0) { scanHistory[0].owned = toggled; renderHistory(); }
       };
 
-      document.getElementById('scannerHint').textContent = 'Issue found!';
+      document.getElementById('scannerHint').textContent = isVariantResult ? 'Variant found!' : 'Issue found!';
     } else {
       titleEl.innerHTML = '<span style="color:var(--accent-gold);">?</span> Issue not found';
       priceEl.style.display = 'none';
@@ -904,6 +967,16 @@
     // Listen for online/offline to update UI
     window.addEventListener('offline', function() { updateOfflineBar(); });
     window.addEventListener('online', function() { updateOfflineBar(); });
+    // Fetch variants.json to enable variant barcode lookups
+    fetch('/variants.json?v=2')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        variantData = data;
+        buildBarcodeIndex(); // Rebuild with variant UPCs included
+      })
+      .catch(function(err) {
+        console.warn('[Scanner] Could not load variants.json:', err);
+      });
   }
 
   if (document.readyState === 'loading') {
