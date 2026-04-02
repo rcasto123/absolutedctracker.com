@@ -10,9 +10,9 @@
 
 The site is a polished single-page app (~5400 lines in index.html) with 8 main tabs: Collection, Release Calendar, Series Guide, Trade Paperbacks, Reading Order, Analytics, Achievements, and Media.
 
-**What's working well:** Full collection tracking loop with sharing, import/export, cloud sync. Themed hero backgrounds with per-hero CSS animations. Variant cover ownership. Light and dark mode with 12 themes (auto-detects system preference on first visit). Pull list, spending tracker, and price guide with market values. Enriched media tab with creator spotlights. Enhanced reading order with progress tracking and recommendations. Improved mobile navigation with scanner access. Lazy-loaded cover art. Barcode scanning (Phases 1–4) with batch mode, history, and offline queue. 43-bug comprehensive security and stability audit completed.
+**What's working well:** Full collection tracking loop with sharing, import/export, cloud sync. Themed hero backgrounds with per-hero CSS animations. Variant cover ownership. Light and dark mode with 12 themes (auto-detects system preference on first visit). Pull list, spending tracker, and price guide with market values. Enriched media tab with creator spotlights. Enhanced reading order with progress tracking and recommendations. Improved mobile navigation with scanner access. Lazy-loaded cover art. Barcode scanning (Phases 1–4) with batch mode, history, and offline queue. 43-bug comprehensive security and stability audit completed. Automated data pipeline with Comic Vine API and GitHub Actions for weekly updates. External JSON data loading with offline fallback.
 
-**Where the gaps are:** The monolithic index.html is now 5400+ lines and badly needs modularization. Some newer series still use placeholder covers. No social features beyond text/image sharing.
+**Where the gaps are:** The monolithic index.html is now 5400+ lines and badly needs modularization. No social features beyond text/image sharing.
 
 ---
 
@@ -47,32 +47,31 @@ The site is a polished single-page app (~5400 lines in index.html) with 8 main t
 22. Barcode scanner (Phases 1–4) — camera-based UPC scanning, manual entry, batch mode, scan history, offline queue, trade paperback ISBNs, mobile bottom nav integration
 23. Themed hero backgrounds — per-hero cover art + CSS animation overlays
 24. 43-bug security & stability audit — CSP hardening, SRI hashes, XSS prevention, timezone fixes, sync race conditions, error handling, accessibility improvements, performance optimizations
+25. Automated data pipeline — Comic Vine API integration, external JSON data loading, GitHub Actions weekly updates, pipeline CLI with validate/sync/add modes
+26. Issue detail page cover art fix — 28 missing covers populated, broken cover loader fixed to use data pipeline JSON
+27. GitHub Actions CI/CD — scheduled weekly data updates with auto-PR creation
 
 ---
 
 ## Remaining Big Bets
 
-### 25. Modular Codebase Refactor
+### 28. Modular Codebase Refactor
 **Effort:** Large | **Impact:** High
 Break index.html into modules (ES6 imports or separate JS files). Extract CSS into component stylesheets.
 
-### 26. Compare Collections
+### 29. Compare Collections
 **Effort:** Large | **Impact:** Medium
 Let two signed-in users compare collections side by side — see gaps, overlaps, and trade opportunities.
 
-### 27. Automated Data Pipeline
-**Effort:** Large | **Impact:** High
-Auto-fetch new issue data, cover art, and release dates from external sources instead of manual updates.
-
-### 28. Personal Collection Journal
+### 30. Personal Collection Journal
 **Effort:** Large | **Impact:** Medium
 Add notes, ratings, and read dates to individual issues. Timeline view of reading history.
 
-### 29. Community Hub
+### 31. Community Hub
 **Effort:** Large | **Impact:** Medium
 Public profiles, collection leaderboards, and a community feed.
 
-### 30. Market Tracker & Price Alerts
+### 32. Market Tracker & Price Alerts
 **Effort:** Large | **Impact:** Medium
 Real-time eBay sold listings, price trend charts, and alerts for price drops/spikes.
 
@@ -80,4 +79,4 @@ Real-time eBay sold listings, price trend charts, and alerts for price drops/spi
 
 ## Suggested Next Sprint
 
-Item 25 (Modular Codebase Refactor) is now the top priority — the file is 5400+ lines and becoming unwieldy. After that, 27 (Automated Data Pipeline) would reduce manual maintenance burden.
+Item 28 (Modular Codebase Refactor) is now the top priority — the file is 5400+ lines and becoming unwieldy. The automated data pipeline is live and will keep issue data fresh automatically.

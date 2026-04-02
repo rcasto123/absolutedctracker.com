@@ -2020,6 +2020,16 @@ window.addEventListener('unhandledrejection', function(e) {
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
       <div class="changelog-entry">
         <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Automated data pipeline</div>
+        <div class="changelog-desc">Issue data is now maintained in an external JSON file updated by an automated pipeline. New issues are discovered weekly via the Comic Vine API, and the site loads fresh data on every visit with offline fallback. No more manual data entry for new releases.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag fix">Fix</span> Issue detail page covers</div>
+        <div class="changelog-desc">Fixed 28 issue detail pages that were missing cover art (Wonder Woman, Flash, Martian Manhunter, Green Lantern, Green Arrow, Catwoman, and Evil). Also fixed the cover loader that was pointing to a wrong URL — it now pulls from the data pipeline's JSON file.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Mobile scanner access</div>
         <div class="changelog-desc">The barcode scanner is now accessible directly from the mobile bottom navigation bar — tap the Scan icon to open it instantly. No more hunting for the floating button on small screens.</div>
       </div>
@@ -2249,6 +2259,10 @@ window.addEventListener('unhandledrejection', function(e) {
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Auto dark/light mode detection</div><span class="roadmap-tag complete">Done</span></div>
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">WCAG AA light theme contrast</div><span class="roadmap-tag complete">Done</span></div>
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">43-bug security &amp; stability audit</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Automated data pipeline (Comic Vine API)</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">External JSON data loading with offline fallback</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">GitHub Actions weekly data updates</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Issue detail page cover art fix (28 issues)</div><span class="roadmap-tag complete">Done</span></div>
       </div>
       <div class="roadmap-group">
         <div class="roadmap-group-title">Up Next (Quick Wins)</div>
@@ -2273,11 +2287,9 @@ window.addEventListener('unhandledrejection', function(e) {
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Modular codebase refactor</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Community hub (profiles & feed)</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Advanced search & filters</div><span class="roadmap-tag big">Large</span></div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Automated data pipeline</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Recommendation engine & curated lists</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Personal grading / condition tracker</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Offline-first data sync</div><span class="roadmap-tag big">Large</span></div>
-        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Barcode scanner integration</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Market tracker & price alerts</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Third-party API & integrations</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Collection insights & trends report</div><span class="roadmap-tag big">Large</span></div>
