@@ -69,10 +69,41 @@
     return merged;
   }
 
+  // Cached admin status — resolved eagerly on sign-in so menu renders synchronously
+  var _cachedIsAdmin = false;
+
   function _isCurrentUserAdmin() {
     if (typeof isCurrentUserAdmin === 'function') return isCurrentUserAdmin();
     console.warn('[auth] isCurrentUserAdmin is not available — firebase-config.js may not have loaded');
     return Promise.resolve(false);
+  }
+
+  // Eagerly resolve admin status so it's ready before menu opens
+  function _resolveAdminStatus() {
+    _isCurrentUserAdmin().then(function(isAdmin) {
+      _cachedIsAdmin = isAdmin;
+      // Re-render the menu if it's already been built and admin state changed
+      if (isAdmin && !document.querySelector('#authDropdown [data-admin-btn]')) {
+        var menuItems = document.querySelector('#authDropdown > div:nth-child(2)');
+        if (menuItems) {
+          var adminBtn = _createAdminButton();
+          menuItems.insertBefore(adminBtn, menuItems.lastElementChild);
+        }
+      }
+    }).catch(function() { _cachedIsAdmin = false; });
+  }
+
+  function _createAdminButton() {
+    var adminBtn = document.createElement('button');
+    adminBtn.textContent = 'Admin Dashboard';
+    adminBtn.setAttribute('role', 'menuitem');
+    adminBtn.setAttribute('tabindex', '-1');
+    adminBtn.setAttribute('data-admin-btn', 'true');
+    adminBtn.onclick = function() { window.location.href = 'admin.html'; };
+    adminBtn.style.cssText = 'display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#f59e0b;font-size:0.85rem;cursor:pointer;border-radius:6px';
+    adminBtn.onmouseenter = function() { this.style.background = 'rgba(255,255,255,0.06)'; };
+    adminBtn.onmouseleave = function() { this.style.background = 'none'; };
+    return adminBtn;
   }
 
   // ── Preview mode: block owned-toggling for signed-out users ──
@@ -430,21 +461,10 @@
       menuHTML += '<div style="padding:0.4rem">';
       menuHTML += '<button role="menuitem" tabindex="-1" onclick="window._authSyncNow()" style="display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#ddd;font-size:0.85rem;cursor:pointer;border-radius:6px" onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'none\'">Sync collection now</button>';
 
-      // Admin link
-      _isCurrentUserAdmin().then(function(isAdmin) {
-        if (isAdmin) {
-          var adminBtn = document.createElement('button');
-          adminBtn.textContent = 'Admin Dashboard';
-          adminBtn.setAttribute('role', 'menuitem');
-          adminBtn.setAttribute('tabindex', '-1');
-          adminBtn.onclick = function() { window.location.href = 'admin.html'; };
-          adminBtn.style.cssText = 'display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#f59e0b;font-size:0.85rem;cursor:pointer;border-radius:6px';
-          adminBtn.onmouseenter = function() { this.style.background = 'rgba(255,255,255,0.06)'; };
-          adminBtn.onmouseleave = function() { this.style.background = 'none'; };
-          var menuItems = document.querySelector('#authDropdown > div:last-child');
-          if (menuItems) menuItems.insertBefore(adminBtn, menuItems.lastElementChild);
-        }
-      });
+      // Admin link — uses cached admin status (resolved eagerly on sign-in)
+      if (_cachedIsAdmin) {
+        menuHTML += '<button role="menuitem" tabindex="-1" data-admin-btn="true" onclick="window.location.href=\'admin.html\'" style="display:block;width:100%;text-align:left;padding:0.5rem 0.7rem;background:none;border:none;color:#f59e0b;font-size:0.85rem;cursor:pointer;border-radius:6px" onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'none\'">Admin Dashboard</button>';
+      }
 
       menuHTML += '</div>';
       menuHTML += '<div style="border-top:1px solid rgba(255,255,255,0.08);padding:0.4rem">';
@@ -479,16 +499,26 @@
       .replace(/'/g, '&#39;');
   }
 
-  // Show sync status
+  // Show sync status with optional spinner for in-progress states (M3)
   function showSyncStatus(msg, isError) {
     var badge = document.getElementById('syncBadge');
     if (!badge) return;
-    badge.textContent = msg;
+    var isInProgress = !isError && (msg.indexOf('...') !== -1 || msg.indexOf('Syncing') !== -1 || msg.indexOf('Loading') !== -1);
+    badge.innerHTML = (isInProgress ? '<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:4px">&#8635;</span>' : '') + escapeHtml(msg);
     badge.style.display = 'block';
     badge.style.color = isError ? '#ef4444' : '';
-    var delay = isError ? 6000 : 3000;
+    // Inject keyframe once
+    if (!document.getElementById('syncSpinStyle')) {
+      var st = document.createElement('style');
+      st.id = 'syncSpinStyle';
+      st.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+      document.head.appendChild(st);
+    }
+    var delay = isError ? 6000 : (isInProgress ? 0 : 3000);
     clearTimeout(badge._hideTimer);
-    badge._hideTimer = setTimeout(function() { badge.style.display = 'none'; badge.style.color = ''; }, delay);
+    if (delay > 0) {
+      badge._hideTimer = setTimeout(function() { badge.style.display = 'none'; badge.style.color = ''; badge.innerHTML = ''; }, delay);
+    }
   }
 
   // Patch localStorage.setItem to also sync au_owned to Firestore.
@@ -654,10 +684,14 @@
 
     // Capture the unsubscribe function so we can clean up if needed
     _unsubscribeAuth = auth.onAuthStateChanged(function(user) {
-      updateAuthUI(user);
       if (user) {
+        // Eagerly resolve admin status BEFORE rendering UI
+        _resolveAdminStatus();
         handleSignIn(user);
+      } else {
+        _cachedIsAdmin = false;
       }
+      updateAuthUI(user);
     });
   }
 

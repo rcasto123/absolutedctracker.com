@@ -169,7 +169,7 @@
         '--border': '#e2e8f0',
         '--text-primary': '#1e293b',
         '--text-secondary': '#475569',
-        '--text-muted': '#94a3b8',
+        '--text-muted': '#64748b',
         '--owned-bg': 'rgba(34, 197, 94, 0.1)',
         '--owned-border': 'rgba(34, 197, 94, 0.35)'
       },
@@ -190,7 +190,7 @@
         '--border': '#fde68a',
         '--text-primary': '#292524',
         '--text-secondary': '#57534e',
-        '--text-muted': '#a8a29e',
+        '--text-muted': '#78716c',
         '--owned-bg': 'rgba(34, 197, 94, 0.1)',
         '--owned-border': 'rgba(34, 197, 94, 0.35)'
       },
@@ -211,7 +211,7 @@
         '--border': '#bfdbfe',
         '--text-primary': '#1e3a5f',
         '--text-secondary': '#3b6b9a',
-        '--text-muted': '#93b4d4',
+        '--text-muted': '#5b8ab5',
         '--owned-bg': 'rgba(34, 197, 94, 0.1)',
         '--owned-border': 'rgba(34, 197, 94, 0.35)'
       },
@@ -671,6 +671,12 @@
   function init() {
     var saved = null;
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { console.warn('[theme] Could not read theme preference:', e.message); }
+
+    // L10: Auto-detect system color scheme on first visit (no saved preference)
+    if (!saved && window.matchMedia) {
+      var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      if (prefersLight) saved = 'light';
+    }
 
     // Set initial hero background before first applyTheme (which does a crossfade)
     _initHeroBackground(saved && themes[saved] ? saved : 'default');
