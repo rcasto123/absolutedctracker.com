@@ -239,8 +239,9 @@
     btn.onmouseleave = function() { btn.style.background = 'rgba(255,255,255,0.08)'; btn.style.color = '#aaa'; };
     btn.onclick = openScanner;
     document.body.appendChild(btn);
+    // On mobile (<=768px), hide the fixed button — scanner is accessible via bottom nav
     var style = document.createElement('style');
-    style.textContent = '@media(max-width:600px){#scannerBtn{top:auto!important;right:auto!important;bottom:1rem!important;left:4rem!important;}}';
+    style.textContent = '@media(max-width:768px){#scannerBtn{display:none!important;}}';
     document.head.appendChild(style);
   }
 
@@ -874,6 +875,8 @@
     injectStyles();
     buildBarcodeIndex();
     createScannerButton();
+    // Expose openScanner globally so mobile bottom nav can call it
+    window._openScanner = openScanner;
     // Listen for online/offline to update UI
     window.addEventListener('offline', function() { updateOfflineBar(); });
     window.addEventListener('online', function() { updateOfflineBar(); });

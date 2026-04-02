@@ -1248,7 +1248,15 @@ window.addEventListener('unhandledrejection', function(e) {
     .stats-bar { flex-wrap: wrap; justify-content: center; gap: 16px 32px; padding: 16px; }
     .stat-number { font-size: 28px; }
     .stat-label { font-size: 10px; letter-spacing: 1.5px; }
-    .issue-card { padding: 8px; }
+    .issue-card { padding: 10px; gap: 6px; }
+    .issue-info { min-width: 0; flex: 1 1 0; }
+    .issue-name { font-size: 13px; }
+    .issue-date { font-size: 11px; }
+    .card-meta { padding-left: 28px; gap: 4px; }
+    .price-group { gap: 2px; }
+    .price-input { width: 48px; font-size: 11px; padding: 2px 4px; }
+    .price-label { font-size: 9px; }
+    .variant-tracker-label { font-size: 9px; }
     .series-title { font-size: 13px; }
     .issue-badge { font-size: 9px; padding: 2px 6px; }
     #themeSwitcher { top: 0.5rem !important; right: 3rem !important; }
@@ -2264,6 +2272,10 @@ window.addEventListener('unhandledrejection', function(e) {
     <button class="bnav-btn" data-bnav="achievements" aria-label="Achievements">
       <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
       <span>Awards</span>
+    </button>
+    <button class="bnav-btn" data-bnav="scanner" aria-label="Scan barcode">
+      <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+      <span>Scan</span>
     </button>
     <button class="bnav-btn" data-bnav="more" aria-label="More tabs">
       <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
@@ -3959,6 +3971,11 @@ document.querySelectorAll('.bnav-btn').forEach(btn => {
       overlay.classList.toggle('open');
       return;
     }
+    if (tabName === 'scanner') {
+      // Trigger the scanner modal — scanner.js exposes _openScanner on window
+      if (typeof window._openScanner === 'function') window._openScanner();
+      return;
+    }
     const navTab = document.querySelector('.nav-tab[data-tab="' + tabName + '"]');
     if (navTab) switchTab(navTab);
   });
@@ -5414,7 +5431,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="auth-integration.js?v=5" defer></script>
 <script src="theme-switcher.js?v=12" defer></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" integrity="sha384-c9d8RFSL+u3exBOJ4Yp3HUJXS4znl9f+z66d1y54ig+ea249SpqR+w1wyvXz/lk+" crossorigin="anonymous" defer></script>
-<script src="scanner.js?v=6" defer></script>
+<script src="scanner.js?v=7" defer></script>
 <script>
 // What's New toggle
 (function() {
