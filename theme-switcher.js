@@ -219,6 +219,42 @@
     }
   };
 
+  // ── Hero background cover art per theme (high-res #1 covers) ──
+  var heroCoverArt = {
+    default:          'https://static.dc.com/2024-09/DC_ALLIN_SP_Cv1_00111_C1.jpg',
+    batman:           'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-batman-1-max-1-per-customer-193132.jpg?width=2000',
+    superman:         'https://s3.amazonaws.com/comicgeeks/comics/covers/large-7938850.jpg',
+    wonderwoman:      'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-wonder-woman-1-cover-c-jim-lee-card-stock-variant-one-copy-per-customer-365350.jpg?width=2000',
+    flash:            'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-flash-1-cover-a-nick-robles-1-copy-per-customer-888803.jpg?width=2000',
+    greenlantern:     'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-green-lantern-1-cover-a-jahnoy-lindsay-661858.jpg?width=2000',
+    martianmanhunter: 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-martian-manhunter-1-of-6-cover-a-javier-rodriguez-one-copy-per-customer-436868.jpg?width=2000',
+    greenarrow:       'https://static.dc.com/2026-02/Absolute%20Green%20Arrow%201%20Main%20Albuquerque%20Maiolo.jpg',
+    catwoman:         'https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg'
+  };
+
+  // Overlay gradient colors per theme (top tint, bottom fade)
+  var heroOverlays = {
+    default:          { top: 'rgba(10,12,16,0.5)',   bot: 'rgba(10,12,16,1)' },
+    batman:           { top: 'rgba(13,13,26,0.4)',   bot: 'rgba(13,13,26,1)' },
+    superman:         { top: 'rgba(12,14,36,0.35)',  bot: 'rgba(12,14,36,1)' },
+    wonderwoman:      { top: 'rgba(18,10,24,0.4)',   bot: 'rgba(18,10,24,1)' },
+    flash:            { top: 'rgba(20,10,6,0.4)',    bot: 'rgba(20,10,6,1)' },
+    greenlantern:     { top: 'rgba(8,15,10,0.4)',    bot: 'rgba(8,15,10,1)' },
+    martianmanhunter: { top: 'rgba(6,14,20,0.4)',    bot: 'rgba(6,14,20,1)' },
+    greenarrow:       { top: 'rgba(10,16,10,0.4)',   bot: 'rgba(10,16,10,1)' },
+    catwoman:         { top: 'rgba(14,10,18,0.4)',   bot: 'rgba(14,10,18,1)' }
+  };
+
+  // CSS animation class per theme
+  var heroAnimClass = {
+    default: 'anim-default', batman: 'anim-batman', superman: 'anim-superman',
+    wonderwoman: 'anim-wonderwoman', flash: 'anim-flash', greenlantern: 'anim-greenlantern',
+    martianmanhunter: 'anim-martianmanhunter', greenarrow: 'anim-greenarrow', catwoman: 'anim-catwoman'
+  };
+
+  // Preload hero images
+  Object.keys(heroCoverArt).forEach(function(k) { var img = new Image(); img.src = heroCoverArt[k]; });
+
   // Theme display order
   var themeOrder = ['default', 'batman', 'superman', 'wonderwoman', 'flash', 'greenlantern', 'martianmanhunter', 'greenarrow', 'catwoman', 'light', 'lightWarm', 'lightHero'];
 
@@ -226,6 +262,55 @@
   var currentThemeId = 'default';
   var LIGHT_KEY = 'au_last_light';
   var DARK_KEY = 'au_last_dark';
+
+  // ── Swap the hero background image with crossfade ──
+  function _swapHeroBackground(themeId, isLight) {
+    var hero = document.querySelector('.hero');
+    if (!hero) return;
+
+    var overlayEl = hero.querySelector('.hero-overlay');
+    var animEl = hero.querySelector('.hero-anim');
+
+    // Resolve which cover to use — light themes reuse their base dark theme's cover
+    var coverKey = themeId;
+    if (isLight) coverKey = 'default'; // light themes use the default cover
+    var imgUrl = heroCoverArt[coverKey] || heroCoverArt['default'];
+    var ov = heroOverlays[coverKey] || heroOverlays['default'];
+    var animCls = heroAnimClass[coverKey] || 'anim-default';
+
+    // Update overlay gradient
+    if (overlayEl) {
+      overlayEl.style.background = 'linear-gradient(180deg, ' + ov.top + ' 0%, ' + ov.top.replace(/[\d.]+\)$/, '0.6)') + ' 40%, ' + ov.bot.replace(/1\)$/, '0.95)') + ' 80%, ' + ov.bot + ' 100%)';
+    }
+
+    // Update animation layer
+    if (animEl) {
+      animEl.className = 'hero-anim ' + animCls;
+    }
+
+    // Crossfade the background image
+    var oldBg = hero.querySelector('.hero-bg');
+    if (!oldBg) return; // first load is handled by init
+
+    var newBg = document.createElement('div');
+    newBg.className = 'hero-bg exiting';
+    newBg.style.backgroundImage = 'url(' + imgUrl + ')';
+    hero.insertBefore(newBg, hero.firstChild);
+
+    // Force reflow so browser registers the hidden state
+    newBg.getBoundingClientRect();
+
+    // Trigger crossfade
+    oldBg.classList.remove('entering');
+    oldBg.classList.add('exiting');
+    newBg.classList.remove('exiting');
+    newBg.classList.add('entering');
+
+    // Remove old layer after transition
+    setTimeout(function() {
+      if (oldBg.parentNode) oldBg.parentNode.removeChild(oldBg);
+    }, 900);
+  }
 
   // ── Apply a theme ──
   function applyTheme(id) {
@@ -285,6 +370,9 @@
         check.style.color = t.accent || '#3b82f6';
       }
     }
+
+    // ── Swap hero background cover art ──
+    _swapHeroBackground(id, isLight);
 
     // Update theme panel styling for light/dark
     var panel = document.getElementById('themePanel');
@@ -562,17 +650,43 @@
     var saved = null;
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { console.warn('[theme] Could not read theme preference:', e.message); }
 
+    // Set initial hero background before first applyTheme (which does a crossfade)
+    _initHeroBackground(saved && themes[saved] ? saved : 'default');
+
     if (saved) {
       if (themes[saved]) {
         applyTheme(saved);
       } else {
-        // Stale theme ID — clean it up and fall back to default
         console.warn('[theme] Stored theme "' + saved + '" no longer exists, resetting to default');
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
         applyTheme('default');
       }
     }
     createPicker();
+  }
+
+  // Set the hero background image for initial page load (no crossfade needed)
+  function _initHeroBackground(themeId) {
+    var hero = document.querySelector('.hero');
+    if (!hero) return;
+    var bg = hero.querySelector('.hero-bg');
+    if (!bg) return;
+
+    var isLight = themes[themeId] && themes[themeId].light;
+    var coverKey = isLight ? 'default' : themeId;
+    var imgUrl = heroCoverArt[coverKey] || heroCoverArt['default'];
+    var ov = heroOverlays[coverKey] || heroOverlays['default'];
+    var animCls = heroAnimClass[coverKey] || 'anim-default';
+
+    bg.style.backgroundImage = 'url(' + imgUrl + ')';
+
+    var overlayEl = hero.querySelector('.hero-overlay');
+    if (overlayEl) {
+      overlayEl.style.background = 'linear-gradient(180deg, ' + ov.top + ' 0%, ' + ov.top.replace(/[\d.]+\)$/, '0.6)') + ' 40%, ' + ov.bot.replace(/1\)$/, '0.95)') + ' 80%, ' + ov.bot + ' 100%)';
+    }
+
+    var animEl = hero.querySelector('.hero-anim');
+    if (animEl) animEl.className = 'hero-anim ' + animCls;
   }
 
   if (document.readyState === 'loading') {

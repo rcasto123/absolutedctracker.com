@@ -69,14 +69,24 @@
     align-items: flex-end;
   }
 
-  .hero-video {
+  .hero-bg {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     z-index: 0;
-    opacity: 0.5;
+    background-size: cover;
+    background-position: center 20%;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    will-change: opacity, transform;
+  }
+  .hero-bg.entering { opacity: 1; transform: scale(1); }
+  .hero-bg.exiting  { opacity: 0; transform: scale(1.04); }
+
+  .hero-anim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
   }
 
   .hero-overlay {
@@ -836,7 +846,131 @@
   footer a { color: var(--accent-blue); text-decoration: none; }
   footer a:hover { text-decoration: underline; }
 
-  /* ââ Responsive ââ */
+  /* ── Hero theme animation overlays ── */
+
+  /* Batman: rain + bat signal glow */
+  @keyframes au-rain { 0%{transform:translateY(-100%)} 100%{transform:translateY(100%)} }
+  @keyframes au-batSignal { 0%,100%{opacity:0.06;transform:scale(1)} 50%{opacity:0.15;transform:scale(1.08)} }
+  .anim-batman {
+    background: repeating-linear-gradient(90deg, transparent 0px, transparent 6px, rgba(245,197,24,0.04) 6px, rgba(245,197,24,0.04) 7px);
+    animation: au-rain 4s linear infinite;
+  }
+  .anim-batman::after {
+    content:''; position:absolute; width:300px; height:300px; top:5%; left:50%; transform:translateX(-50%);
+    background:radial-gradient(circle, rgba(245,197,24,0.12) 0%, transparent 70%); border-radius:50%;
+    animation: au-batSignal 6s ease-in-out infinite;
+  }
+
+  /* Superman: energy pulse */
+  @keyframes au-solarPulse { 0%,100%{transform:scale(0.8);opacity:0.08} 50%{transform:scale(1.4);opacity:0.2} }
+  @keyframes au-solarPulse2 { 0%,100%{transform:scale(1.2);opacity:0.05} 50%{transform:scale(0.7);opacity:0.15} }
+  .anim-superman::before {
+    content:''; position:absolute; width:500px; height:500px; top:-10%; left:30%;
+    background:radial-gradient(circle, rgba(220,38,38,0.2) 0%, transparent 70%); border-radius:50%;
+    animation: au-solarPulse 7s ease-in-out infinite;
+  }
+  .anim-superman::after {
+    content:''; position:absolute; width:400px; height:400px; top:10%; right:20%;
+    background:radial-gradient(circle, rgba(37,99,235,0.15) 0%, transparent 70%); border-radius:50%;
+    animation: au-solarPulse2 5s ease-in-out infinite;
+  }
+
+  /* Wonder Woman: golden sparkles */
+  @keyframes au-sparkle1 { 0%,100%{transform:translate(0,0) scale(1);opacity:0.1} 50%{transform:translate(60px,-80px) scale(1.5);opacity:0.35} }
+  @keyframes au-sparkle2 { 0%,100%{transform:translate(0,0) scale(1);opacity:0.08} 50%{transform:translate(-50px,-60px) scale(1.3);opacity:0.3} }
+  .anim-wonderwoman::before {
+    content:''; position:absolute; width:6px; height:6px; border-radius:50%; top:25%; left:20%;
+    background:#d4a844;
+    box-shadow: 120px -30px 0 0 rgba(212,168,68,0.5), 250px 50px 0 1px rgba(212,168,68,0.4), 400px -20px 0 0 rgba(212,168,68,0.3), 80px 80px 0 1px rgba(212,168,68,0.35), 320px 100px 0 0 rgba(212,168,68,0.25);
+    animation: au-sparkle1 5s ease-in-out infinite;
+  }
+  .anim-wonderwoman::after {
+    content:''; position:absolute; width:4px; height:4px; border-radius:50%; top:40%; left:35%;
+    background:#d4a844;
+    box-shadow: 60px -60px 0 1px rgba(212,168,68,0.4), 180px 20px 0 0 rgba(212,168,68,0.3), -40px 50px 0 1px rgba(212,168,68,0.35), 280px -40px 0 0 rgba(212,168,68,0.2);
+    animation: au-sparkle2 7s ease-in-out infinite;
+  }
+
+  /* Flash: speed lines + lightning */
+  @keyframes au-speedStreak { 0%{transform:translateX(-120%) skewX(-15deg);opacity:0} 15%{opacity:0.5} 85%{opacity:0.5} 100%{transform:translateX(120%) skewX(-15deg);opacity:0} }
+  @keyframes au-flash { 0%,20%,100%{opacity:0} 10%{opacity:0.6} 12%{opacity:0} 14%{opacity:0.4} 16%{opacity:0} }
+  .anim-flash::before {
+    content:''; position:absolute; width:200%; height:100%; top:0; left:-50%;
+    background: repeating-linear-gradient(-15deg, transparent 0px, transparent 40px, rgba(239,68,68,0.06) 40px, rgba(239,68,68,0.06) 42px);
+    animation: au-speedStreak 2.5s linear infinite;
+  }
+  .anim-flash::after {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 40%, rgba(245,158,11,0.15) 0%, transparent 60%);
+    animation: au-flash 4s ease-in-out infinite;
+  }
+
+  /* Green Lantern: ring expand */
+  @keyframes au-ringExpand { 0%{transform:translate(-50%,-50%) scale(0.3);opacity:0.3;border-width:3px} 100%{transform:translate(-50%,-50%) scale(2.5);opacity:0;border-width:1px} }
+  .anim-greenlantern::before {
+    content:''; position:absolute; width:200px; height:200px; top:40%; left:50%;
+    border:2px solid rgba(34,197,94,0.3); border-radius:50%;
+    animation: au-ringExpand 4s ease-out infinite;
+  }
+  .anim-greenlantern::after {
+    content:''; position:absolute; width:200px; height:200px; top:40%; left:50%;
+    border:2px solid rgba(34,197,94,0.25); border-radius:50%;
+    animation: au-ringExpand 4s ease-out infinite 2s;
+  }
+
+  /* Martian Manhunter: ripples + morph */
+  @keyframes au-ripple { 0%{transform:translate(-50%,-50%) scale(0.5);opacity:0.2} 100%{transform:translate(-50%,-50%) scale(3);opacity:0} }
+  @keyframes au-blobDrift { 0%,100%{border-radius:40% 60% 60% 40%/60% 40% 60% 40%;transform:translate(0,0) rotate(0deg)} 33%{border-radius:60% 40% 40% 60%/40% 60% 40% 60%;transform:translate(20px,-15px) rotate(30deg)} 66%{border-radius:50% 50% 40% 60%/60% 50% 50% 40%;transform:translate(-15px,10px) rotate(-20deg)} }
+  .anim-martianmanhunter::before {
+    content:''; position:absolute; width:150px; height:150px; top:45%; left:50%;
+    border:1px solid rgba(6,182,212,0.2); border-radius:50%;
+    animation: au-ripple 5s ease-out infinite;
+  }
+  .anim-martianmanhunter::after {
+    content:''; position:absolute; width:120px; height:120px; top:20%; right:15%;
+    background:rgba(6,182,212,0.06);
+    animation: au-blobDrift 10s ease-in-out infinite;
+  }
+
+  /* Green Arrow: arrow trails */
+  @keyframes au-arrowFly { 0%{transform:translateX(-100%) translateY(50px) rotate(-5deg);opacity:0} 10%{opacity:0.4} 90%{opacity:0.4} 100%{transform:translateX(200%) translateY(-30px) rotate(-5deg);opacity:0} }
+  @keyframes au-arrowFly2 { 0%{transform:translateX(-100%) translateY(20px) rotate(-8deg);opacity:0} 10%{opacity:0.3} 90%{opacity:0.3} 100%{transform:translateX(200%) translateY(-50px) rotate(-8deg);opacity:0} }
+  .anim-greenarrow::before {
+    content:''; position:absolute; width:80px; height:2px; top:35%; left:0;
+    background:linear-gradient(90deg, transparent, rgba(101,163,13,0.5), rgba(101,163,13,0.2), transparent);
+    animation: au-arrowFly 5s linear infinite;
+  }
+  .anim-greenarrow::after {
+    content:''; position:absolute; width:60px; height:2px; top:55%; left:0;
+    background:linear-gradient(90deg, transparent, rgba(101,163,13,0.4), rgba(101,163,13,0.15), transparent);
+    animation: au-arrowFly2 7s linear infinite 1.5s;
+  }
+
+  /* Catwoman: purple mist + eye gleam */
+  @keyframes au-mistSwirl { 0%,100%{transform:translateX(0) scaleX(1);opacity:0.08} 50%{transform:translateX(40px) scaleX(1.1);opacity:0.18} }
+  @keyframes au-eyeGleam { 0%,85%,100%{opacity:0} 90%{opacity:0.5} 93%{opacity:0} 95%{opacity:0.3} }
+  .anim-catwoman::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse at 40% 60%, rgba(168,85,247,0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 30%, rgba(139,92,246,0.08) 0%, transparent 45%);
+    animation: au-mistSwirl 8s ease-in-out infinite;
+  }
+  .anim-catwoman::after {
+    content:''; position:absolute; width:4px; height:4px; top:35%; left:48%; border-radius:50%;
+    background:#c084fc;
+    box-shadow: 20px 0 0 0 #c084fc, 0 0 20px 4px rgba(192,132,252,0.4), 20px 0 20px 4px rgba(192,132,252,0.4);
+    animation: au-eyeGleam 6s ease-in-out infinite;
+  }
+
+  /* Default: subtle particles */
+  @keyframes au-particleDrift { 0%,100%{transform:translateY(0);opacity:0.04} 50%{transform:translateY(-20px);opacity:0.1} }
+  .anim-default::before {
+    content:''; position:absolute; width:3px; height:3px; border-radius:50%; top:30%; left:25%;
+    background:rgba(59,130,246,0.5);
+    box-shadow: 100px 40px 0 0 rgba(59,130,246,0.3), 250px -20px 0 1px rgba(59,130,246,0.2), 400px 60px 0 0 rgba(59,130,246,0.25), 550px -10px 0 1px rgba(59,130,246,0.15);
+    animation: au-particleDrift 6s ease-in-out infinite;
+  }
+
+/* ââ Responsive ââ */
   @media (max-width: 768px) {
     .hero { height: 50vh; min-height: 350px; }
     .hero-content { padding: 0 20px 32px; }
@@ -988,6 +1122,9 @@
 
   /* ── Light Mode Overrides ── */
   /* --- Hero & Header --- */
+  .light-mode .hero-bg { opacity: 0.25; }
+  .light-mode .hero-bg.entering { opacity: 0.25; }
+  .light-mode .hero-anim { opacity: 0.4; }
   .light-mode .hero-overlay {
     background: linear-gradient(180deg,
       rgba(var(--lm-bg-rgb, 241,245,249), 0.6) 0%,
@@ -1168,9 +1305,8 @@
 
 <!-- ââ Hero ââ -->
 <section class="hero" role="banner">
-  <video class="hero-video" autoplay muted loop playsinline preload="metadata" aria-label="DC Absolute Universe background animation">
-    <source src="dc_absolute_universe_bg.mp4" type="video/mp4">
-  </video>
+  <div class="hero-bg entering" id="heroBg"></div>
+  <div class="hero-anim anim-default" id="heroAnim"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
     <div class="hero-badge">EARTH-ALPHA</div>
@@ -1287,6 +1423,26 @@
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Themed hero backgrounds</div>
+        <div class="changelog-desc">Each hero theme now swaps the hero banner to that series' #1 cover art with a smooth crossfade transition. Every theme gets a unique CSS animation overlay — Batman rain, Superman energy pulses, Wonder Woman sparkles, Flash speed lines, and more.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Variant cover ownership tracking</div>
+        <div class="changelog-desc">Mark individual variant covers as owned on issue detail pages. Variant badges on collection cards show how many variants you own. Syncs to the cloud alongside your regular collection.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Light and dark mode overhaul</div>
+        <div class="changelog-desc">Comprehensive CSS rewrite for light mode — every section now has proper contrast and clarity instead of washed-out colors. Three light themes available: Clean Light, Warm Light, and DC Blue Light.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> DC All In FCBD 2025 Special</div>
+        <div class="changelog-desc">Added the Free Comic Book Day 2025 flip book special to the collection, calendar, reading order, and issue detail pages.</div>
+      </div>
       <div class="changelog-entry">
         <time datetime="2026-03-31" class="changelog-date">March 31, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Series accordions</div>
@@ -3500,7 +3656,7 @@ renderAchievements();
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=2" defer></script>
 <script src="auth-integration.js?v=4" defer></script>
-<script src="theme-switcher.js?v=9" defer></script>
+<script src="theme-switcher.js?v=10" defer></script>
 <script>
 // What's New toggle
 (function() {
