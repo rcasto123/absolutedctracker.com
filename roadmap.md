@@ -1,6 +1,6 @@
 # Absolute DC Universe Collection Tracker — Feature Roadmap
 
-**Generated:** March 31, 2026
+**Updated:** April 1, 2026
 **Site:** [absolutedctracker.com](https://www.absolutedctracker.com)
 **Repo:** github.com/rcasto123/absolutedctracker.com
 
@@ -8,43 +8,31 @@
 
 ## Current State Summary
 
-The site is a polished single-page app (~2900 lines in index.html) with 8 main tabs: Collection, Release Calendar, Series Guide, Trade Paperbacks, Reading Order, Analytics, Achievements, and Media.
+The site is a polished single-page app (~3200 lines in index.html) with 8 main tabs: Collection, Release Calendar, Series Guide, Trade Paperbacks, Reading Order, Analytics, Achievements, and Media.
 
-**What's working well:** Core collection tracking loop is tight — mark issues owned, see progress bars, filter/search, export, sync across devices.
+**What's working well:** Core collection tracking loop is tight — mark issues owned, see progress bars, filter/search, export, sync across devices. Themed hero backgrounds with per-hero CSS animations. Variant cover ownership tracking. Light and dark mode with 12 themes. Keyboard shortcuts, bulk actions, and cloud sync.
 
-**Where the gaps are:** Cover art URLs are hardcoded and many reuse the same image. No dark/light mode toggle. The monolithic index.html will become harder to maintain.
+**Where the gaps are:** The monolithic index.html will become harder to maintain. Some newer series (Green Arrow, Catwoman) still use #1 cover for unsolicited issues.
 
 ---
 
-## Quick Wins
+## Completed
 
-### 1. Add a Web App Manifest (PWA)
-**What:** Create a manifest.json with app name, icons, theme color, and display: standalone.
-**Effort:** Small
-
-### 2. Fix Duplicate / Placeholder Cover Art
-**What:** Audit coverMap and replace reused placeholder URLs with actual cover art.
-**Effort:** Small
-
-### 3. Jump to Today on Release Calendar
-**What:** Add a button that auto-scrolls to the current month/week.
-**Effort:** Small
-
-### 4. Keyboard Shortcut for Quick-Toggle Owned
-**What:** Pressing O or Space on a focused card toggles owned state.
-**Effort:** Small
-
-### 5. Persist Active Tab in URL Hash
-**What:** Update window.location.hash when switching tabs.
-**Effort:** Small
-
-### 6. Collection Count in Page Title
-**What:** Update document.title dynamically to show owned/total count.
-**Effort:** Small
-
-### 7. Mark All Released as Owned Button
-**What:** Bulk-mark every released issue as owned.
-**Effort:** Small
+### 1. Add a Web App Manifest (PWA) ✅
+### 2. Fix Duplicate / Placeholder Cover Art ✅
+Batman #4–20 now have unique covers from Midtown Comics. Green Arrow #2–6 and Catwoman #2–4 still use #1 cover (issues not yet solicited).
+### 3. Jump to Today on Release Calendar ✅
+### 4. Keyboard Shortcut for Quick-Toggle Owned ✅
+O, Space, or Enter on a focused card toggles owned state.
+### 5. Persist Active Tab in URL Hash ✅
+### 6. Collection Count in Page Title ✅
+### 7. Mark All Released as Owned Button ✅
+### 11. Dark/Light Mode ✅
+3 light themes (Clean Light, Warm Light, DC Blue Light) + 8 dark hero themes. Comprehensive CSS overhaul for proper contrast.
+### 12. Variant Cover Ownership Tracking ✅
+Checkbox overlays on variant gallery, badge counts on collection cards, Firebase sync.
+### Themed Hero Backgrounds ✅
+Each hero theme swaps the hero banner to that series' #1 cover art with crossfade transitions and unique CSS animation overlays (Batman rain, Superman energy, Flash speed lines, etc.). Default theme shows the Character Showcase video.
 
 ---
 
@@ -58,14 +46,6 @@ The site is a polished single-page app (~2900 lines in index.html) with 8 main t
 
 ### 10. Collection Sharing Page
 **Effort:** Medium | **Impact:** High
-
-### 11. Dark/Light Mode
-**Effort:** Medium | **Impact:** Medium
-
-### 12. Variant Cover Ownership Tracking ✅ IN PROGRESS
-**Effort:** Medium–Large | **Impact:** High
-**What:** Let users mark individual variant covers as owned. Show variant progress badges on collection cards (e.g., "Variants: 2/5"). Add checkbox overlays to variant gallery on issue detail page. Sync variant ownership to Firebase alongside regular issue ownership.
-**Phases:** (1) Data model & sync, (2) Issue page UI, (3) Collection card badges, (4) Testing
 
 ### 13. Better Mobile Bottom Nav
 **Effort:** Medium | **Impact:** High
@@ -106,6 +86,6 @@ The site is a polished single-page app (~2900 lines in index.html) with 8 main t
 
 ---
 
-## Suggested First Sprint
+## Suggested Next Sprint
 
-Tackle items 1, 2, 3, 5, and 6 — they're all independent, small, and immediately visible to users. Total estimated time: 2–3 hours.
+Tackle items 8, 9, and 10 — Pull List, Spending Tracker, and Collection Sharing. These build on the existing collection data and add the most user-facing value.
