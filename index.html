@@ -792,6 +792,41 @@
   .arc-issue-date { color: var(--text-muted); font-size: 0.75rem; }
   @media(max-width:600px) { .arc-card { padding: 14px 16px; } .arc-issue-date { display: none; } }
 
+  /* -- Reading Order Enhancements -- */
+  .read-next-card { background: linear-gradient(135deg, var(--accent-blue) 0%, color-mix(in srgb, var(--accent-blue) 60%, var(--accent-purple))); border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; color: white; }
+  .read-next-label { font-size: 0.85rem; font-weight: 600; opacity: 0.9; margin-bottom: 4px; }
+  .read-next-title { font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .read-next-context { font-size: 0.9rem; opacity: 0.85; }
+  .arc-progress { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .arc-progress-bar { flex: 1; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; }
+  .arc-progress-fill { height: 100%; border-radius: 3px; background: var(--accent-green); transition: width 0.3s; }
+  .arc-progress-text { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .arc-series-switch { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 11px; color: var(--text-muted); margin: 2px 10px; }
+  .arc-series-switch::before, .arc-series-switch::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .arc-issue-status { display: inline-block; font-size: 0.8rem; margin-left: 6px; font-weight: 600; }
+
+  /* -- Media Tab Enhancements -- */
+  .media-section { margin-bottom: 32px; }
+  .media-section h2 { font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 20px; text-transform: uppercase; }
+  .media-section h3 { font-family: 'Oswald', sans-serif; font-size: 1.2rem; font-weight: 600; letter-spacing: 0.03em; margin-bottom: 16px; text-transform: uppercase; }
+  .creator-spotlight-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .creator-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; transition: all 0.2s; }
+  .creator-card:hover { border-color: var(--text-secondary); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+  .creator-card-series { font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .creator-card-type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-blue); font-weight: 600; margin-bottom: 12px; }
+  .creator-card-role { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2px; }
+  .creator-card-role strong { color: var(--text-secondary); }
+  .creator-card-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-top: 12px; }
+  .media-links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .media-link-card { display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-decoration: none; color: inherit; transition: all 0.2s; }
+  .media-link-card:hover { border-color: var(--accent-blue); background: color-mix(in srgb, var(--accent-blue) 5%, var(--bg-card)); }
+  .media-link-title { font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.03em; margin-bottom: 4px; }
+  .media-link-desc { font-size: 0.85rem; color: var(--text-muted); }
+  .collection-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .collection-stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .collection-stat-value { font-family: 'Oswald', sans-serif; font-size: 1.8rem; font-weight: 700; }
+  .collection-stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 4px; }
+
   /* -- Analytics Dashboard -- */
   .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .analytics-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
@@ -1148,11 +1183,15 @@
   }
   .mobile-bottom-nav .bottom-nav-items {
     display: flex;
-    justify-content: space-around;
-    align-items: center;
-    max-width: 500px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+    gap: 0;
+    max-width: 100%;
     margin: 0 auto;
   }
+  .mobile-bottom-nav .bottom-nav-items::-webkit-scrollbar { display: none; }
   .mobile-bottom-nav .bnav-btn {
     display: flex;
     flex-direction: column;
@@ -1165,11 +1204,13 @@
     font-weight: 600;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    padding: 6px 8px;
+    padding: 8px 14px;
     cursor: pointer;
-    transition: color 0.2s;
-    min-width: 56px;
+    transition: color 0.2s, transform 0.15s;
+    min-width: 64px;
     -webkit-tap-highlight-color: transparent;
+    position: relative;
+    flex-shrink: 0;
   }
   .mobile-bottom-nav .bnav-btn svg {
     width: 22px;
@@ -1183,8 +1224,22 @@
   .mobile-bottom-nav .bnav-btn.active {
     color: var(--accent-blue);
   }
+  .mobile-bottom-nav .bnav-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--accent-blue);
+  }
   .mobile-bottom-nav .bnav-btn:hover {
     color: var(--text-secondary);
+  }
+  .mobile-bottom-nav .bnav-btn:active {
+    transform: scale(0.92);
   }
 
   /* More menu overlay */
@@ -1358,6 +1413,13 @@
   .light-mode .reading-mode-btn:hover { background: var(--bg-card-hover, #f1f5f9); }
   .light-mode .reading-mode-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
   .light-mode .essential-note { color: var(--text-secondary); }
+  .light-mode .read-next-card { background: linear-gradient(135deg, #2563eb 0%, #7c3aed); }
+  .light-mode .creator-card { background: var(--bg-secondary); border: 1px solid var(--border); }
+  .light-mode .creator-card:hover { border-color: #2563eb; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1); }
+  .light-mode .creator-card-type { color: #2563eb; }
+  .light-mode .media-link-card { background: var(--bg-secondary); border: 1px solid var(--border); }
+  .light-mode .media-link-card:hover { border-color: #2563eb; background: rgba(37, 99, 235, 0.04); }
+  .light-mode .collection-stat-box { background: var(--bg-secondary); border: 1px solid var(--border); }
 
   /* --- Analytics --- */
   .light-mode .analytics-card, .light-mode .stat-big-card { background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
@@ -1434,6 +1496,212 @@
   .light-mode .roadmap-item { border-bottom-color: rgba(0,0,0,0.06); }
   .light-mode .roadmap-label.done { text-decoration-color: rgba(0,0,0,0.2); }
   .light-mode .value-bar-track { background: var(--bg-secondary); }
+
+  /* ── Share Collection Modal ── */
+  .share-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .share-overlay.open { display: flex; }
+  .share-modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .share-modal h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+  .share-preview {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    max-height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+  }
+  .share-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .share-actions button {
+    flex: 1;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .share-actions button:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: var(--bg-card-hover); }
+  .share-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+  .share-modal-close:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+  .share-modal { position: relative; }
+  .share-copy-tooltip {
+    display: none;
+    position: fixed;
+    background: var(--accent-green);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 2001;
+    pointer-events: none;
+  }
+  .share-copy-tooltip.show { display: block; animation: fadeInOut 2s ease; }
+  @keyframes fadeInOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* ── Import/Export Modal ── */
+  .import-export-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .import-export-overlay.open { display: flex; }
+  .import-export-modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  .import-export-modal h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+  }
+  .ie-section {
+    margin-bottom: 20px;
+  }
+  .ie-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .ie-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ie-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ie-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--bg-card-hover); }
+  #fileInput { display: none; }
+  .ie-import-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    padding: 10px;
+    background: var(--bg-card);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .import-export-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+  .import-export-modal-close:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+  /* Light mode overrides for modals */
+  .light-mode .share-modal { background: var(--bg-secondary); border-color: var(--border); }
+  .light-mode .share-modal h2 { color: var(--text-primary); }
+  .light-mode .share-preview { background: var(--bg-card); border-color: var(--border); color: var(--text-secondary); }
+  .light-mode .share-actions button { background: var(--bg-card); border-color: var(--border); color: var(--text-primary); }
+  .light-mode .share-actions button:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); }
+  .light-mode .share-modal-close { border-color: var(--border); color: var(--text-muted); }
+  .light-mode .share-modal-close:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+  .light-mode .import-export-modal { background: var(--bg-secondary); border-color: var(--border); }
+  .light-mode .import-export-modal h2 { color: var(--text-primary); }
+  .light-mode .ie-section h3 { color: var(--text-secondary); }
+  .light-mode .ie-btn { background: var(--bg-card); border-color: var(--border); color: var(--text-primary); }
+  .light-mode .ie-btn:hover { background: var(--bg-card-hover); border-color: var(--accent-cyan); }
+  .light-mode .ie-import-note { background: var(--bg-card); border-color: var(--border); color: var(--text-muted); }
+  .light-mode .import-export-modal-close { border-color: var(--border); color: var(--text-muted); }
+  .light-mode .import-export-modal-close:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
   </style>
 <script type="application/ld+json">
 {
@@ -1527,6 +1795,8 @@
       <button class="filter-btn" data-filter="upcoming" aria-pressed="false">Upcoming</button>
       <button class="filter-btn" data-filter="pull" aria-pressed="false">Pull List</button>
       <input class="search-input" type="text" id="searchInput" placeholder="Search issues..." aria-label="Search issues by title, writer, or artist">
+      <button class="filter-btn" id="shareCollection" style="border-color:var(--accent-blue);color:var(--accent-blue);" title="Share your collection">Share</button>
+      <button class="filter-btn" id="importExport" style="border-color:var(--text-muted);color:var(--text-muted);" title="Import or export collection data">Import/Export</button>
       <button class="filter-btn" id="markAllOwned" style="margin-left:auto;border-color:var(--accent-green);color:var(--accent-green);" title="Mark all released issues as owned">Mark All Owned</button>
     </div>
     <div id="collectionContainer" aria-live="polite"></div>
@@ -1580,6 +1850,63 @@
         </video>
       </div>
     </div>
+
+    <div class="media-section">
+      <h3>Collection Summary</h3>
+      <div class="collection-stats-grid" id="mediaStatsGrid">
+        <div class="collection-stat-box">
+          <div class="collection-stat-value" id="mediaTotalIssues">0</div>
+          <div class="collection-stat-label">Total Issues</div>
+        </div>
+        <div class="collection-stat-box">
+          <div class="collection-stat-value" id="mediaOwnedIssues">0</div>
+          <div class="collection-stat-label">Issues Owned</div>
+        </div>
+        <div class="collection-stat-box">
+          <div class="collection-stat-value" id="mediaCompletionPct">0%</div>
+          <div class="collection-stat-label">Completion</div>
+        </div>
+        <div class="collection-stat-box">
+          <div class="collection-stat-value" id="mediaUniqueSeries">0</div>
+          <div class="collection-stat-label">Series</div>
+        </div>
+        <div class="collection-stat-box">
+          <div class="collection-stat-value" id="mediaFirstIssueDate">–</div>
+          <div class="collection-stat-label">First Issue</div>
+        </div>
+        <div class="collection-stat-box">
+          <div class="collection-stat-value" id="mediaLatestIssueDate">–</div>
+          <div class="collection-stat-label">Latest Issue</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="media-section">
+      <h3>Creator Spotlight</h3>
+      <div class="creator-spotlight-grid" id="creatorSpotlightGrid"></div>
+    </div>
+
+    <div class="media-section">
+      <h3>News &amp; Community Links</h3>
+      <div class="media-links-grid">
+        <a href="https://dc.fandom.com/wiki/Absolute_Universe" target="_blank" rel="noopener" class="media-link-card">
+          <div class="media-link-title">DC Fandom Wiki</div>
+          <div class="media-link-desc">Complete Absolute Universe encyclopedia</div>
+        </a>
+        <a href="https://www.reddit.com/r/DCcomics/" target="_blank" rel="noopener" class="media-link-card">
+          <div class="media-link-title">r/DCcomics</div>
+          <div class="media-link-desc">Community discussions and theories</div>
+        </a>
+        <a href="https://leagueofcomicgeeks.com" target="_blank" rel="noopener" class="media-link-card">
+          <div class="media-link-title">League of Comic Geeks</div>
+          <div class="media-link-desc">Release tracking and community reviews</div>
+        </a>
+        <a href="https://www.comicbookherald.com/" target="_blank" rel="noopener" class="media-link-card">
+          <div class="media-link-title">Comic Book Herald</div>
+          <div class="media-link-desc">Reading guides and recommendations</div>
+        </a>
+      </div>
+    </div>
   </div>
 
   <!-- What's New -->
@@ -1589,6 +1916,31 @@
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Collection sharing</div>
+        <div class="changelog-desc">Share your collection as formatted text or a downloadable PNG image card showing your completion stats and per-series progress. Hit the Share button in the Collection tab.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Import / export</div>
+        <div class="changelog-desc">Export your entire collection as JSON or CSV. Import from other trackers or a backup file — owned issues, prices, pull list, and market values all merge in.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Better mobile navigation</div>
+        <div class="changelog-desc">Bottom nav is now scrollable with larger touch targets and an active tab indicator. Tapping a tab auto-scrolls it into view.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Enriched media tab</div>
+        <div class="changelog-desc">Creator spotlight cards for every series, collection stats at a glance, and curated community links to DC Fandom Wiki, Reddit, League of Comic Geeks, and Comic Book Herald.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Reading order enhancements</div>
+        <div class="changelog-desc">"What to read next" recommendation at the top, per-arc progress bars, cross-series switch indicators, and owned/missing/upcoming status icons on every issue.</div>
+      </div>
       <div class="changelog-entry">
         <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Pull list</div>
@@ -1714,15 +2066,12 @@
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Variant cover tracking</div><span class="roadmap-tag complete">Done</span></div>
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Price guide / market value</div><span class="roadmap-tag complete">Done</span></div>
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Themed hero backgrounds</div><span class="roadmap-tag complete">Done</span></div>
-      </div>
-      <div class="roadmap-group">
-        <div class="roadmap-group-title">Up Next</div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Collection sharing page</div><span class="roadmap-tag medium">Medium</span></div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Better mobile bottom nav</div><span class="roadmap-tag medium">Medium</span></div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Lazy-load cover art</div><span class="roadmap-tag medium">Medium</span></div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Enriched media tab</div><span class="roadmap-tag medium">Medium</span></div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Batch import CSV / JSON</div><span class="roadmap-tag medium">Medium</span></div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Reading order enhancements</div><span class="roadmap-tag medium">Medium</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Collection sharing</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Better mobile bottom nav</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Lazy-load cover art</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Enriched media tab</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Batch import / export</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Reading order enhancements</div><span class="roadmap-tag complete">Done</span></div>
       </div>
       <div class="roadmap-group">
         <div class="roadmap-group-title">Big Bets</div>
@@ -2629,7 +2978,40 @@ function renderArcs() {
   const issueMap = {};
   ALL_ISSUES.forEach(i => { issueMap[i.title] = i; });
 
+  // Find "What to read next" recommendation
+  let nextRecommendation = null;
   if (currentReadingOrder === 'arcs') {
+    for (let arc of STORY_ARCS) {
+      const arcIssues = arc.issues.map(ai => {
+        const issue = issueMap[ai.title];
+        return issue ? { ...issue, order: ai.order, isOwned: owned[issueKey(issue)] } : null;
+      }).filter(Boolean);
+
+      // Find first unowned issue in this arc
+      const unownedInArc = arcIssues.find(i => !i.isOwned);
+      if (unownedInArc) {
+        const ownedCount = arcIssues.filter(i => i.isOwned).length;
+        nextRecommendation = { issue: unownedInArc, arc, arcTotal: arcIssues.length, ownedCount };
+        break;
+      }
+    }
+
+    // Add "What to read next" card if applicable
+    if (nextRecommendation) {
+      const next = nextRecommendation;
+      const slug = next.issue.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const progress = next.ownedCount + '/' + next.arcTotal;
+      const rec = document.createElement('a');
+      rec.href = 'issue.html?id=' + slug;
+      rec.className = 'read-next-card';
+      rec.innerHTML = `
+        <div class="read-next-label">📖 Read Next</div>
+        <div class="read-next-title">${next.issue.title}</div>
+        <div class="read-next-context">Part of ${next.arc.name} — ${progress} complete</div>
+      `;
+      container.appendChild(rec);
+    }
+
     renderStoryArcs(container, issueMap);
   } else if (currentReadingOrder === 'publication') {
     renderPublicationOrder(container, issueMap);
@@ -2652,15 +3034,25 @@ function renderStoryArcs(container, issueMap) {
     const total = arcIssues.length;
     const pillClass = ownedCount === total ? 'complete' : ownedCount > 0 ? 'partial' : 'empty';
     const pillText = ownedCount + '/' + total;
+    const progressPct = total > 0 ? Math.round((ownedCount / total) * 100) : 0;
 
     let html = '<div class="arc-header">';
     html += '<h3 class="arc-name">' + arc.name + '</h3>';
     html += '<span class="arc-progress-pill ' + pillClass + '">' + pillText + ' owned</span>';
     html += '</div>';
     html += '<div class="arc-desc">' + arc.description + '</div>';
+    html += '<div class="arc-progress">';
+    html += '<div class="arc-progress-bar"><div class="arc-progress-fill" style="width:' + progressPct + '%"></div></div>';
+    html += '<div class="arc-progress-text">' + progressPct + '%</div>';
+    html += '</div>';
     html += '<div class="arc-issues">';
 
-    arcIssues.sort((a,b) => a.order - b.order).forEach(i => {
+    const sortedIssues = arcIssues.sort((a,b) => a.order - b.order);
+    sortedIssues.forEach((i, idx) => {
+      // Check for series switch
+      if (idx > 0 && sortedIssues[idx - 1].series !== i.series) {
+        html += '<div class="arc-series-switch">' + i.series + '</div>';
+      }
       html += renderArcIssueRow(i);
     });
 
@@ -2753,10 +3145,24 @@ function renderArcIssueRow(i) {
   const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
   const ownedClass = i.isOwned ? ' owned' : '';
   const slug = i.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+  // Determine status
+  let statusIcon = '◇'; // upcoming
+  let statusClass = '';
+  if (i.isOwned) {
+    statusIcon = '✓';
+    statusClass = ' owned';
+  } else if (isReleased(i.date)) {
+    statusIcon = '○';
+    statusClass = ' released';
+  }
+
   let html = '<div class="arc-issue' + ownedClass + '">';
   html += '<div class="arc-order">' + i.order + '</div>';
   html += '<div class="arc-dot" style="background:' + color + '"></div>';
-  html += '<div class="arc-issue-title"><a href="issue.html?id=' + slug + '">' + i.title + '</a></div>';
+  html += '<div class="arc-issue-title"><a href="issue.html?id=' + slug + '">' + i.title + '</a>';
+  html += '<span class="arc-issue-status" title="Issue status">' + statusIcon + '</span>';
+  html += '</div>';
   html += '<div class="arc-issue-date">' + dateStr + '</div>';
   html += '<svg class="arc-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
   html += '</div>';
@@ -2840,6 +3246,46 @@ function renderAchievements() {
   html += '</div>';
 
   container.innerHTML = html;
+}
+
+function renderMedia() {
+  // Update collection stats
+  const released = ALL_ISSUES.filter(i => isReleased(i.date));
+  const ownedIssues = released.filter(i => !!owned[issueKey(i)]);
+  const ownedCount = ownedIssues.length;
+  const totalReleased = released.length;
+  const pct = totalReleased > 0 ? Math.round((ownedCount / totalReleased) * 100) : 0;
+
+  // Get unique series
+  const uniqueSeries = new Set(released.map(i => i.series)).size;
+
+  // Get first and latest release dates
+  const releasedDates = released.map(i => new Date(i.date)).sort((a, b) => a - b);
+  const firstDate = releasedDates.length > 0 ? releasedDates[0].toLocaleDateString('en-US', { month:'short', year:'numeric' }) : '–';
+  const latestDate = releasedDates.length > 0 ? releasedDates[releasedDates.length - 1].toLocaleDateString('en-US', { month:'short', year:'numeric' }) : '–';
+
+  document.getElementById('mediaTotalIssues').textContent = totalReleased;
+  document.getElementById('mediaOwnedIssues').textContent = ownedCount;
+  document.getElementById('mediaCompletionPct').textContent = pct + '%';
+  document.getElementById('mediaUniqueSeries').textContent = uniqueSeries;
+  document.getElementById('mediaFirstIssueDate').textContent = firstDate;
+  document.getElementById('mediaLatestIssueDate').textContent = latestDate;
+
+  // Render creator spotlight
+  const creatorGrid = document.getElementById('creatorSpotlightGrid');
+  creatorGrid.innerHTML = '';
+  SERIES_INFO.forEach(series => {
+    const card = document.createElement('div');
+    card.className = 'creator-card';
+    card.innerHTML = `
+      <div class="creator-card-series">${series.name}</div>
+      <div class="creator-card-type">${series.type}</div>
+      <div class="creator-card-role"><strong>Writer:</strong> ${series.writer}</div>
+      <div class="creator-card-role"><strong>Artist:</strong> ${series.artist}</div>
+      <div class="creator-card-desc">${series.description}</div>
+    `;
+    creatorGrid.appendChild(card);
+  });
 }
 
 function renderAnalytics() {
@@ -3097,6 +3543,11 @@ function switchTab(tab) {
   history.replaceState(null, '', '#' + tab.dataset.tab);
   // Sync mobile bottom nav
   syncBottomNav(tab.dataset.tab);
+  // Render tab content dynamically
+  if (tab.dataset.tab === 'media') renderMedia();
+  else if (tab.dataset.tab === 'analytics') renderAnalytics();
+  else if (tab.dataset.tab === 'achievements') renderAchievements();
+  else if (tab.dataset.tab === 'arcs') renderArcs();
 }
 
 // ── Mobile Bottom Nav ──
@@ -3107,11 +3558,18 @@ function syncBottomNav(tabName) {
   if (overlay) overlay.classList.remove('open');
   if (primaryBnavTabs.includes(tabName)) {
     const btn = document.querySelector('.bnav-btn[data-bnav="' + tabName + '"]');
-    if (btn) btn.classList.add('active');
+    if (btn) {
+      btn.classList.add('active');
+      // Auto-scroll active tab into view on mobile
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   } else {
     // A "more" tab is active — highlight the More button
     const moreBtn = document.querySelector('.bnav-btn[data-bnav="more"]');
-    if (moreBtn) moreBtn.classList.add('active');
+    if (moreBtn) {
+      moreBtn.classList.add('active');
+      moreBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   }
   // Sync more menu active states
   document.querySelectorAll('.more-menu-item').forEach(m => {
@@ -3266,6 +3724,316 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
   renderCollection(currentFilter, currentSearch);
 });
 
+// ── Feature 1: Share Collection ──
+function generateShareText() {
+  const released = ALL_ISSUES.filter(i => isReleased(i.date));
+  const ownedCount = ALL_ISSUES.filter(i => owned[issueKey(i)]).length;
+  const pct = released.length > 0 ? Math.round((ownedCount / released.length) * 100) : 0;
+
+  const seriesNames = getSeriesNames();
+  let text = '🦇 My DC Absolute Universe Collection\n';
+  text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  text += ownedCount + '/' + released.length + ' issues collected (' + pct + '%)\n\n';
+
+  seriesNames.forEach(sName => {
+    const allInSeries = ALL_ISSUES.filter(i => i.series === sName && isReleased(i.date));
+    if (allInSeries.length === 0) return;
+    const ownedInSeries = allInSeries.filter(i => owned[issueKey(i)]).length;
+    text += '✅ ' + sName + ': ' + ownedInSeries + '/' + allInSeries.length + '\n';
+  });
+
+  text += '\nTrack yours at absolutedctracker.com';
+  return text;
+}
+
+document.getElementById('shareCollection').addEventListener('click', () => {
+  const overlay = document.getElementById('shareOverlay');
+  const preview = document.getElementById('sharePreview');
+  const shareText = generateShareText();
+
+  preview.textContent = shareText;
+  overlay.classList.add('open');
+});
+
+document.getElementById('shareModalClose').addEventListener('click', () => {
+  document.getElementById('shareOverlay').classList.remove('open');
+});
+
+document.getElementById('shareOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('shareOverlay')) {
+    document.getElementById('shareOverlay').classList.remove('open');
+  }
+});
+
+document.getElementById('shareCopyButton').addEventListener('click', () => {
+  const shareText = generateShareText();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareText).then(() => {
+      const tooltip = document.getElementById('shareCopyTooltip');
+      const btn = document.getElementById('shareCopyButton');
+      const rect = btn.getBoundingClientRect();
+      tooltip.style.left = rect.left + rect.width / 2 - 60 + 'px';
+      tooltip.style.top = rect.top - 35 + 'px';
+      tooltip.classList.add('show');
+      setTimeout(() => tooltip.classList.remove('show'), 2000);
+    }).catch(() => {
+      alert('Failed to copy to clipboard');
+    });
+  } else {
+    const textarea = document.createElement('textarea');
+    textarea.value = shareText;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      const tooltip = document.getElementById('shareCopyTooltip');
+      const btn = document.getElementById('shareCopyButton');
+      const rect = btn.getBoundingClientRect();
+      tooltip.style.left = rect.left + rect.width / 2 - 60 + 'px';
+      tooltip.style.top = rect.top - 35 + 'px';
+      tooltip.classList.add('show');
+      setTimeout(() => tooltip.classList.remove('show'), 2000);
+    } catch(err) {
+      alert('Failed to copy to clipboard');
+    }
+    document.body.removeChild(textarea);
+  }
+});
+
+document.getElementById('shareDownloadButton').addEventListener('click', () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 600;
+  canvas.height = 400;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#12151c';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#e8eaf0';
+  ctx.font = 'bold 28px Oswald';
+  ctx.textAlign = 'center';
+  ctx.fillText('DC Absolute Universe Collection', canvas.width / 2, 50);
+
+  const released = ALL_ISSUES.filter(i => isReleased(i.date));
+  const ownedCount = ALL_ISSUES.filter(i => owned[issueKey(i)]).length;
+  const pct = released.length > 0 ? Math.round((ownedCount / released.length) * 100) : 0;
+
+  ctx.fillStyle = '#1a7aff';
+  ctx.font = 'bold 56px Bebas Neue';
+  ctx.fillText(pct + '%', canvas.width / 2, 140);
+
+  ctx.fillStyle = '#8b92a8';
+  ctx.font = '14px Source Sans 3';
+  ctx.fillText(ownedCount + ' of ' + released.length + ' issues', canvas.width / 2, 165);
+
+  const seriesNames = getSeriesNames();
+  let y = 220;
+  const maxSeries = Math.min(seriesNames.length, 6);
+  for (let i = 0; i < maxSeries; i++) {
+    const sName = seriesNames[i];
+    const allInSeries = ALL_ISSUES.filter(j => j.series === sName && isReleased(j.date));
+    if (allInSeries.length === 0) continue;
+    const ownedInSeries = allInSeries.filter(j => owned[issueKey(j)]).length;
+    const sPct = Math.round((ownedInSeries / allInSeries.length) * 100);
+
+    const color = SERIES_COLORS[sName] || '#555';
+    ctx.fillStyle = color;
+    ctx.fillRect(50, y, 20, 14);
+    ctx.fillStyle = '#e8eaf0';
+    ctx.font = '12px Source Sans 3';
+    ctx.textAlign = 'left';
+    ctx.fillText(sName.substring(0, 20) + ': ' + sPct + '%', 80, y + 12);
+    y += 25;
+  }
+
+  ctx.fillStyle = '#6b7394';
+  ctx.font = '11px Source Sans 3';
+  ctx.textAlign = 'center';
+  ctx.fillText('absolutedctracker.com', canvas.width / 2, canvas.height - 15);
+
+  canvas.toBlob(blob => {
+    if (!blob) {
+      alert('Failed to generate image');
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-collection-' + new Date().toISOString().slice(0, 10) + '.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+});
+
+// ── Feature 2: Import/Export ──
+document.getElementById('importExport').addEventListener('click', () => {
+  document.getElementById('importExportOverlay').classList.add('open');
+});
+
+document.getElementById('importExportModalClose').addEventListener('click', () => {
+  document.getElementById('importExportOverlay').classList.remove('open');
+});
+
+document.getElementById('importExportOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('importExportOverlay')) {
+    document.getElementById('importExportOverlay').classList.remove('open');
+  }
+});
+
+document.getElementById('exportJsonBtn').addEventListener('click', () => {
+  const exportData = {
+    exported: new Date().toISOString().slice(0, 10),
+    source: 'absolutedctracker.com',
+    owned: owned,
+    prices: prices || {},
+    pullSeries: pullSeries || {},
+    pullIssues: pullIssues || {},
+    marketValues: marketValues || {}
+  };
+
+  const json = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'my-collection-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+  let csv = 'Series,Issue,Title,Date,Owned,Price Paid,Market Value\n';
+
+  ALL_ISSUES.forEach(issue => {
+    const key = issueKey(issue);
+    const isOwned = owned[key] ? 'Yes' : 'No';
+    const price = getPrice(key) || '';
+    const marketVal = getMarketValue(key) || '';
+
+    const series = (issue.series || '').replace(/"/g, '""');
+    const issueNum = (issue.issue || '').replace(/"/g, '""');
+    const title = (issue.title || '').replace(/"/g, '""');
+    const date = issue.date || '';
+
+    csv += '"' + series + '","' + issueNum + '","' + title + '","' + date + '",' + isOwned;
+    csv += ',' + (price ? price : '') + ',' + (marketVal ? marketVal : '') + '\n';
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'my-collection-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    try {
+      if (file.name.endsWith('.json')) {
+        const data = JSON.parse(event.target.result);
+        if (data.owned) {
+          Object.keys(data.owned).forEach(key => {
+            owned[key] = true;
+          });
+        }
+        if (data.prices) {
+          Object.keys(data.prices).forEach(key => {
+            prices[key] = data.prices[key];
+          });
+        }
+        if (data.pullSeries) {
+          Object.keys(data.pullSeries).forEach(key => {
+            pullSeries[key] = true;
+          });
+        }
+        if (data.pullIssues) {
+          Object.keys(data.pullIssues).forEach(key => {
+            pullIssues[key] = true;
+          });
+        }
+        if (data.marketValues) {
+          Object.keys(data.marketValues).forEach(key => {
+            marketValues[key] = data.marketValues[key];
+          });
+        }
+        alert('Imported ' + Object.keys(data.owned || {}).length + ' collection entries');
+      } else if (file.name.endsWith('.csv')) {
+        const lines = event.target.result.split('\n');
+        let imported = 0;
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          const cols = [];
+          let col = '';
+          let inQuotes = false;
+          for (let j = 0; j < line.length; j++) {
+            const ch = line[j];
+            if (ch === '"') {
+              inQuotes = !inQuotes;
+            } else if (ch === ',' && !inQuotes) {
+              cols.push(col);
+              col = '';
+            } else {
+              col += ch;
+            }
+          }
+          cols.push(col);
+
+          if (cols.length >= 5) {
+            const series = cols[0].replace(/^"|"$/g, '');
+            const issue = cols[1].replace(/^"|"$/g, '');
+            const isOwnedStr = cols[4].trim();
+            const price = cols[5] ? parseFloat(cols[5].replace(/^"|"$/g, '')) : 0;
+            const marketVal = cols[6] ? parseFloat(cols[6].replace(/^"|"$/g, '')) : 0;
+
+            if (isOwnedStr === 'Yes' || isOwnedStr === 'true') {
+              const key = series + '|' + issue;
+              owned[key] = true;
+              imported++;
+              if (price > 0) prices[key] = price;
+              if (marketVal > 0) marketValues[key] = marketVal;
+            }
+          }
+        }
+        alert('Imported ' + imported + ' owned issues from CSV');
+      }
+
+      saveOwned();
+      savePrices();
+      saveMarketValues();
+      savePullSeries();
+      savePullIssues();
+      renderCollection(currentFilter, currentSearch);
+      renderStats();
+      renderArcs();
+      renderAnalytics();
+      renderAchievements();
+      document.getElementById('importExportOverlay').classList.remove('open');
+      document.getElementById('fileInput').value = '';
+    } catch(err) {
+      alert('Error importing file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+});
+
 renderStats();
 renderCollection('all', '');
 renderCalendar(false);
@@ -3309,7 +4077,7 @@ renderAchievements();
       var seriesTitle = block.querySelector('.series-title');
       var seriesName = seriesTitle ? seriesTitle.textContent.trim() : 'Unknown';
       block.querySelectorAll('.issue-card').forEach(function(card) {
-        if (card.style.display === 'none' || card.closest('.issues-grid').style.display === 'none') return;
+        if (card.style.display === 'none' || card.closest('.issue-grid').style.display === 'none') return;
         var name = card.querySelector('.issue-name');
         var date = card.querySelector('.issue-date');
         var badge = card.querySelector('.issue-badge');
@@ -4269,6 +5037,47 @@ renderAchievements();
   });
 })();
 </script>
+
+<!-- ── Share Collection Modal ── -->
+<div class="share-overlay" id="shareOverlay">
+  <div class="share-modal">
+    <button class="share-modal-close" id="shareModalClose" aria-label="Close modal">×</button>
+    <h2>Share Your Collection</h2>
+    <div class="share-preview" id="sharePreview"></div>
+    <div class="share-actions">
+      <button id="shareCopyButton">Copy Text</button>
+      <button id="shareDownloadButton">Download Image</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Import/Export Modal ── -->
+<div class="import-export-overlay" id="importExportOverlay">
+  <div class="import-export-modal">
+    <button class="import-export-modal-close" id="importExportModalClose" aria-label="Close modal">×</button>
+    <h2>Import/Export Collection</h2>
+
+    <div class="ie-section">
+      <h3>Export</h3>
+      <div class="ie-buttons">
+        <button class="ie-btn" id="exportJsonBtn">Export JSON</button>
+        <button class="ie-btn" id="exportCsvBtn">Export CSV</button>
+      </div>
+    </div>
+
+    <div class="ie-section">
+      <h3>Import</h3>
+      <div class="ie-buttons">
+        <button class="ie-btn" id="importBtn">Choose File</button>
+      </div>
+      <input type="file" id="fileInput" accept=".json,.csv" aria-label="Select JSON or CSV file to import">
+      <div class="ie-import-note">Merge existing data with imported collection. Duplicates will be marked as owned.</div>
+    </div>
+  </div>
+</div>
+
+<div class="share-copy-tooltip" id="shareCopyTooltip">Copied to clipboard!</div>
+
 <script>
 // Register Service Worker for offline support
 if ('serviceWorker' in navigator) {
