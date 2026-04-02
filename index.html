@@ -837,8 +837,50 @@
   .badge-card.unlocked .badge-check { color: #22c55e; flex-shrink: 0; }
   @media(max-width:600px) { .badges-grid { grid-template-columns: 1fr; } }
 
+  /* ── Roadmap ── */
+  .roadmap-section {
+    margin-top: 32px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    overflow: hidden;
+  }
+  .roadmap-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .roadmap-toggle:hover { background: rgba(255,255,255,0.03); }
+  .roadmap-toggle svg { transition: transform 0.2s; color: var(--text-secondary); flex-shrink: 0; }
+  .roadmap-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .roadmap-body { display: none; padding: 0 20px 20px; }
+  .roadmap-body.open { display: block; }
+  .roadmap-group { margin-bottom: 20px; }
+  .roadmap-group-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 10px; font-weight: 700; }
+  .roadmap-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-check { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; }
+  .roadmap-check.done { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+  .roadmap-check.pending { background: rgba(212,168,68,0.12); color: var(--accent-gold); }
+  .roadmap-label { flex: 1; font-size: 13px; color: var(--text-secondary); }
+  .roadmap-label.done { color: var(--text-muted); text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.15); }
+  .roadmap-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+  .roadmap-tag.complete { background: rgba(34,197,94,0.12); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.25); }
+  .roadmap-tag.medium { background: rgba(59,130,246,0.12); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.25); }
+  .roadmap-tag.big { background: rgba(139,92,246,0.12); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.25); }
+
   .whats-new {
-    margin-top: 48px;
+    margin-top: 32px;
     border: 1px solid var(--border);
     border-radius: 12px;
     background: var(--bg-secondary);
@@ -1387,6 +1429,10 @@
   .light-mode .spending-stat { border-bottom-color: var(--border); }
   .light-mode .spending-series-row { border-bottom-color: var(--border); }
   .light-mode .price-guide-stat { border-bottom-color: var(--border); }
+  .light-mode .roadmap-section { background: var(--bg-secondary); border-color: var(--border); }
+  .light-mode .roadmap-toggle:hover { background: rgba(0,0,0,0.03); }
+  .light-mode .roadmap-item { border-bottom-color: rgba(0,0,0,0.06); }
+  .light-mode .roadmap-label.done { text-decoration-color: rgba(0,0,0,0.2); }
   .light-mode .value-bar-track { background: var(--bg-secondary); }
   </style>
 <script type="application/ld+json">
@@ -1642,6 +1688,49 @@
         <time datetime="2026-03-29" class="changelog-date">March 29, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Cloud sync &amp; accounts</div>
         <div class="changelog-desc">Sign in to sync your collection across devices. Your owned issues are automatically backed up to the cloud.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roadmap -->
+  <div class="roadmap-section" id="roadmapSection">
+    <button class="roadmap-toggle" id="roadmapToggle" aria-expanded="false" aria-controls="roadmapBody">
+      <span>Roadmap</span>
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="roadmap-body" id="roadmapBody" role="region" aria-labelledby="roadmapToggle">
+      <div class="roadmap-group">
+        <div class="roadmap-group-title">Completed</div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">PWA manifest</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Fix duplicate cover art</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Jump to today on calendar</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Keyboard shortcuts</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Persist active tab in URL</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Collection count in title</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Mark all as owned button</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Pull list / wish list</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Spending tracker</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Dark / light mode</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Variant cover tracking</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Price guide / market value</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Themed hero backgrounds</div><span class="roadmap-tag complete">Done</span></div>
+      </div>
+      <div class="roadmap-group">
+        <div class="roadmap-group-title">Up Next</div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Collection sharing page</div><span class="roadmap-tag medium">Medium</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Better mobile bottom nav</div><span class="roadmap-tag medium">Medium</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Lazy-load cover art</div><span class="roadmap-tag medium">Medium</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Enriched media tab</div><span class="roadmap-tag medium">Medium</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Batch import CSV / JSON</div><span class="roadmap-tag medium">Medium</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Reading order enhancements</div><span class="roadmap-tag medium">Medium</span></div>
+      </div>
+      <div class="roadmap-group">
+        <div class="roadmap-group-title">Big Bets</div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Modular codebase refactor</div><span class="roadmap-tag big">Large</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Compare collections</div><span class="roadmap-tag big">Large</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Automated data pipeline</div><span class="roadmap-tag big">Large</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Native mobile (barcode scan)</div><span class="roadmap-tag big">Large</span></div>
+        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Personal collection journal</div><span class="roadmap-tag big">Large</span></div>
       </div>
     </div>
   </div>
@@ -4167,6 +4256,17 @@ renderAchievements();
       if (badge) badge.style.display = 'none';
     }, { once: true });
   } catch(e) {}
+})();
+
+// Roadmap toggle
+(function() {
+  var toggle = document.getElementById('roadmapToggle');
+  var body = document.getElementById('roadmapBody');
+  if (!toggle || !body) return;
+  toggle.addEventListener('click', function() {
+    var open = body.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
 })();
 </script>
 <script>
