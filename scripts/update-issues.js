@@ -41,25 +41,34 @@ const ADD_INLINE  = ADD_ARG ? ADD_ARG.split('=').slice(1).join('=') : null;
 const CV_KEY = process.env.COMIC_VINE_API_KEY || '';
 const CV_BASE = 'https://comicvine.gamespot.com/api';
 
-// Absolute Universe series — map our name to Comic Vine volume IDs
-// These IDs are stable and findable at comicvine.gamespot.com
-const CV_VOLUMES = {
-  'Absolute Batman':            148078,
-  'Absolute Wonder Woman':      148079,
-  'Absolute Superman':          148080,
-  'Absolute Flash':             150391,
-  'Absolute Martian Manhunter': 149320,
-  'Absolute Green Lantern':     149321,
-  'Absolute Green Arrow':       152050,
-  'Absolute Catwoman':          152051,
-  // One-shots don't have persistent volume IDs — handled separately
-};
-
-// Series we track that aren't standard volumes
-const SPECIAL_TITLES = [
-  { series: 'DC All In', searchTerm: 'DC All In Special' },
-  { series: 'Absolute Evil', searchTerm: 'Absolute Evil' },
+// Absolute Universe series — Comic Vine volume IDs
+// Found via: /api/search/?resources=volume&query=<name> (pick DC Comics publisher, highest issue count)
+const CV_VOLUMES = [
+  { series: 'Absolute Batman',            volumeId: 160294 },  // 2024, 18+ issues
+  { series: 'Absolute Wonder Woman',      volumeId: 160511 },  // 2024, 18+ issues
+  { series: 'Absolute Superman',          volumeId: 160860 },  // 2025, 18+ issues
+  { series: 'Absolute Flash',             volumeId: 162847 },  // 2025, 13+ issues
+  { series: 'Absolute Martian Manhunter', volumeId: 162966 },  // 2025, 10+ issues
+  { series: 'Absolute Green Lantern',     volumeId: 163145 },  // 2025, 12+ issues
+  { series: 'Absolute Evil',              volumeId: 167313 },  // 2025, 1 issue (one-shot)
+  // Annuals are separate volumes in Comic Vine
+  { series: 'Absolute Batman',            volumeId: 168013 },  // 2025 Annual
+  { series: 'Absolute Wonder Woman',      volumeId: 170538 },  // 2026 Annual
 ];
+
+// Series that need search-based discovery (too new for stable volume IDs)
+const CV_SEARCH_SERIES = [
+  { series: 'Absolute Green Arrow',  searchTerm: 'Absolute Green Arrow' },
+  { series: 'Absolute Catwoman',     searchTerm: 'Absolute Catwoman' },
+  { series: 'DC All In',             searchTerm: 'DC All In Special' },
+];
+
+// Whitelist: only these series are valid Absolute Universe titles
+const VALID_SERIES = new Set([
+  'Absolute Batman', 'Absolute Wonder Woman', 'Absolute Superman',
+  'Absolute Flash', 'Absolute Martian Manhunter', 'Absolute Green Lantern',
+  'Absolute Green Arrow', 'Absolute Catwoman', 'Absolute Evil', 'DC All In',
+]);
 
 // Default pricing
 const PRICE_MAP = { Annual: 5.99, Special: 9.99, FCBD: 0, default: 4.99 };
@@ -186,11 +195,11 @@ async function fetchCVSearch(searchTerm) {
     const raw = await httpGet(url);
     const json = JSON.parse(raw);
     if (json.status_code !== 1 || !json.results) return [];
-    console.log(`       Found ${json.results.length} results`);
+    console.log(`       Found ${json.results.length} raw results`);
     return json.results.filter(r => {
       const vol = r.volume ? r.volume.name : '';
-      const name = r.name || '';
-      return (vol + ' ' + name).toLowerCase().includes(searchTerm.toLowerCase().split(' ')[0]);
+      // Only accept results where the volume name exactly matches one of our valid series
+      return VALID_SERIES.has(vol);
     }).map(r => ({
       series: r.volume ? r.volume.name : searchTerm,
       issue: cvIssueNumber(r.issue_number) || 'Special #1',
@@ -423,13 +432,13 @@ async function main() {
   const newCovers = {};
 
   // Fetch each series volume
-  console.log('── Fetching from Comic Vine ──\n');
+  console.log('── Fetching from Comic Vine (volumes) ──\n');
 
-  for (const [seriesName, volumeId] of Object.entries(CV_VOLUMES)) {
-    const results = await fetchCVVolume(seriesName, volumeId);
+  for (const vol of CV_VOLUMES) {
+    const results = await fetchCVVolume(vol.series, vol.volumeId);
     for (const r of results) {
       if (!r.issue || !r.date) continue;
-      const key = ikey(r.series, r.issue);
+      const key = ikey(vol.series, r.issue);
       if (existing.has(key)) {
         // Already have it — maybe grab cover
         if (WITH_COVERS && r.coverUrl && !data.coverMap[r.title]) {
@@ -438,38 +447,47 @@ async function main() {
         continue;
       }
       discovered.push({
-        series: r.series,
+        series: vol.series,
         issue: r.issue,
-        title: r.title,
+        title: `${vol.series} ${r.issue}`,
         date: r.date,
         writer: 'TBA',
         artist: 'TBA',
         price: guessPrice(r.issue),
       });
       existing.add(key);
-      if (r.coverUrl) newCovers[r.title] = r.coverUrl;
+      if (r.coverUrl) newCovers[`${vol.series} ${r.issue}`] = r.coverUrl;
     }
     // Rate limit: CV allows 200 req/15min but let's be polite
     await sleep(2000);
   }
 
-  // Search for special titles
-  for (const sp of SPECIAL_TITLES) {
+  // Search for series without stable volume IDs
+  console.log('\n── Fetching from Comic Vine (search) ──\n');
+
+  for (const sp of CV_SEARCH_SERIES) {
     const results = await fetchCVSearch(sp.searchTerm);
     for (const r of results) {
-      const key = ikey(r.series, r.issue);
+      // Strict filter: only accept results whose volume name exactly matches a valid series
+      const volName = r.series || '';
+      if (!VALID_SERIES.has(volName) && !volName.startsWith(sp.series)) continue;
+
+      // Map to our canonical series name
+      const canonSeries = VALID_SERIES.has(volName) ? volName : sp.series;
+      const key = ikey(canonSeries, r.issue);
       if (existing.has(key)) continue;
+
       discovered.push({
-        series: sp.series,
+        series: canonSeries,
         issue: r.issue,
-        title: r.title,
+        title: `${canonSeries} ${r.issue}`,
         date: r.date || 'TBD',
         writer: 'TBA',
         artist: 'TBA',
         price: guessPrice(r.issue),
       });
       existing.add(key);
-      if (r.coverUrl) newCovers[r.title] = r.coverUrl;
+      if (r.coverUrl) newCovers[`${canonSeries} ${r.issue}`] = r.coverUrl;
     }
     await sleep(2000);
   }
