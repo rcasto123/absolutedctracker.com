@@ -69,7 +69,7 @@
     btn.id = 'scannerBtn';
     btn.setAttribute('aria-label', 'Scan barcode');
     btn.setAttribute('title', 'Scan Barcode');
-    btn.style.cssText = 'position:fixed;top:1rem;right:7rem;z-index:998;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;color:#aaa;';
+    btn.style.cssText = 'position:fixed;top:1rem;right:10rem;z-index:998;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;color:#aaa;';
     btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="16" x2="11" y2="16"/></svg>';
     btn.onmouseenter = function() { btn.style.background = 'rgba(255,255,255,0.14)'; btn.style.color = '#fff'; };
     btn.onmouseleave = function() { btn.style.background = 'rgba(255,255,255,0.08)'; btn.style.color = '#aaa'; };
