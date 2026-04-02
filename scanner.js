@@ -646,6 +646,10 @@
       if (batchIsVariant && typeof toggleVariantOwned === 'function') {
         if (typeof isVariantOwned === 'function' && !isVariantOwned(result.key, result.variant)) {
           toggleVariantOwned(result.key, result.variant);
+          // Also mark the base issue as owned
+          if (!isOwned(result.key, 'issue')) {
+            setOwnedState(result.key, true, 'issue');
+          }
           if (scanHistory.length > 0) scanHistory[0].owned = true;
           renderHistory();
         }
@@ -742,6 +746,10 @@
           // Toggle variant ownership
           toggleVariantOwned(result.key, result.variant);
           var nowOwned = (typeof isVariantOwned === 'function') ? isVariantOwned(result.key, result.variant) : false;
+          // Also mark the base issue as owned if variant is owned
+          if (nowOwned && !isOwned(result.key, 'issue')) {
+            setOwnedState(result.key, true, 'issue');
+          }
           updateOwnedBtn(nowOwned);
           vibrate(30);
           if (scanHistory.length > 0) { scanHistory[0].owned = nowOwned; renderHistory(); }
