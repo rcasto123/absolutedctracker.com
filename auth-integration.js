@@ -27,6 +27,11 @@
   var _syncTimeout = null;
   var _syncDelay = 1500; // ms — adjusted dynamically based on connection
   var _lastSyncDuration = null;
+  // Lock to prevent concurrent sign-in sync + debounced patch sync
+  var _syncInProgress = false;
+  // Rate limit: minimum interval between cloud syncs (ms)
+  var _lastSyncTime = 0;
+  var _minSyncInterval = 3000;
   // Original Storage.prototype.setItem reference (for restore)
   var _originalSetItem = Storage.prototype.setItem;
   // Whether localStorage has been patched
@@ -474,12 +479,15 @@
   }
 
   // Show sync status
-  function showSyncStatus(msg) {
+  function showSyncStatus(msg, isError) {
     var badge = document.getElementById('syncBadge');
     if (!badge) return;
     badge.textContent = msg;
     badge.style.display = 'block';
-    setTimeout(function() { badge.style.display = 'none'; }, 3000);
+    badge.style.color = isError ? '#ef4444' : '';
+    var delay = isError ? 6000 : 3000;
+    clearTimeout(badge._hideTimer);
+    badge._hideTimer = setTimeout(function() { badge.style.display = 'none'; badge.style.color = ''; }, delay);
   }
 
   // Patch localStorage.setItem to also sync au_owned to Firestore.
@@ -497,14 +505,26 @@
         // Use adaptive delay: if previous sync was slow, wait longer
         var delay = _lastSyncDuration ? Math.max(1000, Math.min(_lastSyncDuration * 2, 5000)) : _syncDelay;
         _syncTimeout = setTimeout(function() {
+          if (_syncInProgress) return; // Don't sync while handleSignIn is running
+          // Rate limit: skip if synced too recently
+          var elapsed = Date.now() - _lastSyncTime;
+          if (elapsed < _minSyncInterval) {
+            clearTimeout(_syncTimeout);
+            _syncTimeout = setTimeout(arguments.callee, _minSyncInterval - elapsed);
+            return;
+          }
           try {
             var start = Date.now();
+            _lastSyncTime = start;
             _syncOwnedToCloud().then(function() {
               _lastSyncDuration = Date.now() - start;
               showSyncStatus('Synced');
             }).catch(function(e) {
               console.warn('[auth] Cloud sync failed:', e);
-              showSyncStatus('Sync failed');
+              var hint = (e && e.code === 'unavailable') ? 'Sync failed — offline' :
+                         (e && e.code === 'permission-denied') ? 'Sync failed — access denied' :
+                         'Sync failed — will retry';
+              showSyncStatus(hint, true);
             });
           } catch(e) {
             console.warn('[auth] Failed to sync:', e);
@@ -525,6 +545,9 @@
 
   // Load cloud data and merge with local on sign in
   async function handleSignIn(user) {
+    if (_syncInProgress) return; // Prevent concurrent syncs
+    _syncInProgress = true;
+    clearTimeout(_syncTimeout); // Cancel any pending debounced sync
     showSyncStatus('Syncing...');
     try {
       var cloudData = await _loadOwnedFromCloud();
@@ -571,7 +594,13 @@
       });
     } catch(e) {
       console.error('Sync error:', e);
-      showSyncStatus('Sync failed');
+      var hint = !navigator.onLine ? 'Sync failed — you are offline' :
+                 (e && e.code === 'permission-denied') ? 'Sync failed — check permissions' :
+                 (e && e.code === 'not-found') ? 'Sync failed — account not found' :
+                 'Sync failed — please try again';
+      showSyncStatus(hint, true);
+    } finally {
+      _syncInProgress = false;
     }
   }
 
@@ -598,7 +627,10 @@
       showSyncStatus('Synced');
       location.reload();
     } catch(e) {
-      showSyncStatus('Sync failed');
+      console.error('Manual sync error:', e);
+      var hint = !navigator.onLine ? 'Sync failed — offline' :
+                 'Sync failed — please try again';
+      showSyncStatus(hint, true);
     }
   };
 

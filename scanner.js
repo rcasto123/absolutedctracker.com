@@ -7,6 +7,12 @@
 (function() {
   'use strict';
 
+  // ── Helpers ──
+  function formatPrice(val) {
+    if (val === 0) return 'FREE';
+    return '$' + val.toFixed(2);
+  }
+
   // ── State ──
   var scanner = null;       // Html5Qrcode instance
   var isScanning = false;
@@ -398,7 +404,7 @@
         : '<span class="sh-icon new">+</span>';
       var timeStr = e.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       var typeLabel = e.type === 'trade' ? ' <span class="sh-type">TPB</span>' : '';
-      var priceLabel = e.found && e.price ? ' <span class="sh-price">$' + e.price.toFixed(2) + '</span>' : '';
+      var priceLabel = e.found && (e.price || e.price === 0) ? ' <span class="sh-price">' + formatPrice(e.price) + '</span>' : '';
       var link = e.slug ? ' href="issue.html?id=' + e.slug + '"' : '';
       html += '<div class="sh-entry" data-idx="' + i + '">'
         + icon
@@ -589,7 +595,7 @@
         renderHistory();
       }
       var icon = '<span style="color:#22c55e;">✓</span>';
-      var priceTag = result.price ? ' <span style="color:#06b6d4;font-size:0.8em;">$' + result.price.toFixed(2) + '</span>' : '';
+      var priceTag = (result.price || result.price === 0) ? ' <span style="color:#06b6d4;font-size:0.8em;">' + formatPrice(result.price) + '</span>' : '';
       showToast(icon + ' <strong>' + result.title + '</strong>' + priceTag + ' added', 2000);
       return;
     }
@@ -621,8 +627,8 @@
       }
 
       // Price display
-      if (result.price) {
-        priceEl.innerHTML = '<span class="scanner-price-tag">$' + result.price.toFixed(2) + '</span>'
+      if (result.price || result.price === 0) {
+        priceEl.innerHTML = '<span class="scanner-price-tag">' + formatPrice(result.price) + '</span>'
           + (sessionValue > 0 ? '<span class="scanner-session-total">Session: $' + sessionValue.toFixed(2) + '</span>' : '');
         priceEl.style.display = 'flex';
       } else {

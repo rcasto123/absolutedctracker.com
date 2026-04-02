@@ -1226,13 +1226,14 @@
     .series-variant-progress { margin-left: 0; }
     .filter-bar { flex-direction: column; align-items: stretch; }
     .search-input { min-width: unset; }
-    .nav-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .nav-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; }
+    .nav-tabs::-webkit-scrollbar { display: none; }
     .media-section { padding: 20px; }
   }
 
   @media (max-width: 480px) {
     .hero { height: 40vh; min-height: 250px; }
-    .nav-tab { padding: 14px 12px; font-size: 12px; letter-spacing: 1px; }
+    .nav-tab { padding: 14px 10px; font-size: 11px; letter-spacing: 0.8px; flex-shrink: 0; }
     .stats-bar { flex-wrap: wrap; justify-content: center; gap: 16px 32px; padding: 16px; }
     .stat-number { font-size: 28px; }
     .stat-label { font-size: 10px; letter-spacing: 1.5px; }
@@ -1805,7 +1806,7 @@
 
 <!-- ââ Hero ââ -->
 <section class="hero" role="banner">
-  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline preload="metadata" aria-label="DC Absolute Universe background animation">
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline preload="metadata" aria-label="DC Absolute Universe background animation" style="background:#0a0c10">
     <source src="dc_absolute_universe_bg.mp4" type="video/mp4">
   </video>
   <div class="hero-bg entering" id="heroBg"></div>
@@ -4081,9 +4082,11 @@ document.getElementById('jumpToToday').addEventListener('click', () => {
   }
 });
 
+let _searchDebounce = null;
 document.getElementById('searchInput').addEventListener('input', (e) => {
   currentSearch = e.target.value;
-  renderCollection(currentFilter, currentSearch);
+  clearTimeout(_searchDebounce);
+  _searchDebounce = setTimeout(() => renderCollection(currentFilter, currentSearch), 150);
 });
 
 // ── Feature 1: Share Collection ──
@@ -4570,6 +4573,7 @@ document.addEventListener('DOMContentLoaded', () => {
     html += '<script>window.onload=function(){window.print()}<\/script>';
     html += '</body></html>';
     var win = window.open('', '_blank');
+    if (!win) { alert('Pop-up blocked — please allow pop-ups for this site to print your checklist.'); return; }
     win.document.write(html);
     win.document.close();
     closeExportMenu();
@@ -4664,24 +4668,29 @@ document.addEventListener('DOMContentLoaded', () => {
     return 'I own ' + s.owned + '/' + s.released + ' issues (' + s.pct + ') of the DC Absolute Universe across ' + s.series + ' series! Track your collection at absolutedctracker.com';
   }
 
+  function _safeOpen(url, opts) {
+    var win = window.open(url, '_blank', opts);
+    if (!win) alert('Pop-up blocked — please allow pop-ups for this site to share.');
+  }
+
   function shareToTwitter() {
     var text = buildShareText();
     var url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
-    window.open(url, '_blank', 'width=550,height=420');
+    _safeOpen(url, 'width=550,height=420');
     closeShareMenu();
   }
 
   function shareToBluesky() {
     var text = buildShareText();
     var url = 'https://bsky.app/intent/compose?text=' + encodeURIComponent(text);
-    window.open(url, '_blank', 'width=550,height=420');
+    _safeOpen(url, 'width=550,height=420');
     closeShareMenu();
   }
 
   function shareToReddit() {
     var text = buildShareText();
     var url = 'https://www.reddit.com/submit?title=' + encodeURIComponent(text) + '&url=' + encodeURIComponent('https://www.absolutedctracker.com');
-    window.open(url, '_blank', 'width=700,height=500');
+    _safeOpen(url, 'width=700,height=500');
     closeShareMenu();
   }
 
@@ -5387,14 +5396,14 @@ document.addEventListener('DOMContentLoaded', () => {
   applyCoverBackgrounds();
 })()
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" integrity="sha384-sEVIly94UBRLKWdkYoPpSG7GD/e79YHMrxVyZaOk712Ga7+EAw6w1EFi+xBzBdd+" crossorigin="anonymous" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" integrity="sha384-EkqK+ezBWJuvO3hfrSx2iVqr3YQbhmnzn8kPhOpBZ+0GMVU5oGSgptwIu8D84HjE" crossorigin="anonymous" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" integrity="sha384-M481iNZJtbpypKgvlvZ+78Giq0BsewFLk5r2k+MOcGXlwKCc27DQRZ+WCV/zpmpC" crossorigin="anonymous" defer></script>
 <script src="firebase-config.js?v=3" defer></script>
-<script src="auth-integration.js?v=4" defer></script>
+<script src="auth-integration.js?v=5" defer></script>
 <script src="theme-switcher.js?v=12" defer></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
-<script src="scanner.js?v=5" defer></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" integrity="sha384-c9d8RFSL+u3exBOJ4Yp3HUJXS4znl9f+z66d1y54ig+ea249SpqR+w1wyvXz/lk+" crossorigin="anonymous" defer></script>
+<script src="scanner.js?v=6" defer></script>
 <script>
 // What's New toggle
 (function() {
