@@ -25,22 +25,24 @@
     ALL_ISSUES.forEach(function(issue) {
       if (!issue.barcodes) return;
       var slug = issue.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      var key = issue.series + '|' + issue.issue; // matches main app issueKey format
+      var entry = { slug: slug, title: issue.title, key: key, variant: null };
       // Main UPC
       if (issue.barcodes.upc) {
-        barcodeIndex[issue.barcodes.upc] = { slug: slug, title: issue.title, variant: null };
+        barcodeIndex[issue.barcodes.upc] = entry;
         // Also index without check digit (some scanners omit it)
         if (issue.barcodes.upc.length === 12) {
-          barcodeIndex[issue.barcodes.upc.substring(0, 11)] = { slug: slug, title: issue.title, variant: null };
+          barcodeIndex[issue.barcodes.upc.substring(0, 11)] = entry;
         }
       }
       // ISBN
       if (issue.barcodes.isbn) {
-        barcodeIndex[issue.barcodes.isbn] = { slug: slug, title: issue.title, variant: null };
+        barcodeIndex[issue.barcodes.isbn] = entry;
       }
       // Variant barcodes
       if (issue.barcodes.variants) {
         Object.keys(issue.barcodes.variants).forEach(function(varId) {
-          barcodeIndex[issue.barcodes.variants[varId]] = { slug: slug, title: issue.title, variant: varId };
+          barcodeIndex[issue.barcodes.variants[varId]] = { slug: slug, title: issue.title, key: key, variant: varId };
         });
       }
     });
@@ -55,12 +57,47 @@
     // Try without leading zeros
     var stripped = code.replace(/^0+/, '');
     if (barcodeIndex[stripped]) return barcodeIndex[stripped];
+    // Prefix match: match first 15 of 17 digits (ignores variant suffix)
+    // This lets any cover variant of an issue resolve correctly
+    if (code.length >= 15) {
+      var prefix15 = code.substring(0, 15);
+      var keys = Object.keys(barcodeIndex);
+      for (var i = 0; i < keys.length; i++) {
+        if (keys[i].substring(0, 15) === prefix15) return barcodeIndex[keys[i]];
+      }
+    }
     // Try matching partial (UPC prefix — first 11 digits)
     if (code.length >= 11) {
       var prefix = code.substring(0, 11);
       if (barcodeIndex[prefix]) return barcodeIndex[prefix];
     }
     return null;
+  }
+
+  // ── Owned State Helpers ──
+  // Key format matches main app: "series|issue" e.g. "Absolute Batman|#1"
+  function getOwnedState() {
+    try { return JSON.parse(localStorage.getItem('au_owned') || '{}'); } catch(e) { return {}; }
+  }
+
+  function setOwnedState(key, val) {
+    var state = getOwnedState();
+    if (val) { state[key] = true; } else { delete state[key]; }
+    localStorage.setItem('au_owned', JSON.stringify(state));
+    // Trigger cloud sync if available
+    if (typeof syncOwnedToCloud === 'function') {
+      try { syncOwnedToCloud(); } catch(e) {}
+    }
+    // Update main app owned object if on index.html
+    if (typeof owned !== 'undefined' && typeof saveOwned === 'function') {
+      if (val) { owned[key] = true; } else { delete owned[key]; }
+      saveOwned();
+    }
+  }
+
+  function isOwned(key) {
+    var state = getOwnedState();
+    return !!state[key];
   }
 
   // ── Create Scanner Button ──
@@ -115,6 +152,7 @@
       +       '<a class="scanner-result-btn primary" id="scannerViewBtn">View Issue</a>'
       +       '<button class="scanner-result-btn secondary" id="scannerRescanBtn">Scan Another</button>'
       +     '</div>'
+      +     '<button class="scanner-result-btn owned-btn" id="scannerOwnedBtn" style="display:none;margin-top:8px;width:100%;">Mark as Owned</button>'
       +   '</div>'
       + '</div>';
 
@@ -286,21 +324,49 @@
     var titleEl = document.getElementById('scannerResultTitle');
     var codeEl = document.getElementById('scannerResultCode');
     var viewBtn = document.getElementById('scannerViewBtn');
+    var ownedBtn = document.getElementById('scannerOwnedBtn');
 
     if (result) {
+      var ownedNow = isOwned(result.key);
       // Found
-      titleEl.innerHTML = '<span style="color:var(--accent-green);">✓</span> ' + result.title;
+      if (ownedNow) {
+        titleEl.innerHTML = '<span style="color:var(--accent-green,#22c55e);">✓</span> ' + result.title;
+      } else {
+        titleEl.innerHTML = '<span style="color:var(--accent-blue,#3b82f6);">●</span> ' + result.title;
+      }
       codeEl.textContent = 'Barcode: ' + code;
       var url = 'issue.html?id=' + result.slug;
       if (result.variant) url += '&variant=' + result.variant;
       viewBtn.href = url;
       viewBtn.style.display = '';
+
+      // Mark as Owned button
+      var updateOwnedBtn = function(isOwn) {
+        if (isOwn) {
+          ownedBtn.textContent = '✓ Owned — Remove?';
+          ownedBtn.className = 'scanner-result-btn owned-btn owned';
+          titleEl.innerHTML = '<span style="color:var(--accent-green,#22c55e);">✓</span> ' + result.title;
+        } else {
+          ownedBtn.textContent = 'Mark as Owned';
+          ownedBtn.className = 'scanner-result-btn owned-btn';
+          titleEl.innerHTML = '<span style="color:var(--accent-blue,#3b82f6);">●</span> ' + result.title;
+        }
+      };
+      updateOwnedBtn(ownedNow);
+      ownedBtn.style.display = 'block';
+      ownedBtn.onclick = function() {
+        var toggled = !isOwned(result.key);
+        setOwnedState(result.key, toggled);
+        updateOwnedBtn(toggled);
+      };
+
       document.getElementById('scannerHint').textContent = 'Issue found!';
     } else {
       // Not found
       titleEl.innerHTML = '<span style="color:var(--accent-gold);">?</span> Issue not found';
       codeEl.textContent = 'Barcode: ' + code;
       viewBtn.style.display = 'none';
+      ownedBtn.style.display = 'none';
       document.getElementById('scannerHint').textContent = 'Barcode not in database. Try another or search manually.';
     }
 
@@ -386,6 +452,14 @@
       +   'background:rgba(255,255,255,0.08);color:#aaa;border:1px solid rgba(255,255,255,0.12);'
       + '}'
       + '.scanner-result-btn.secondary:hover { background:rgba(255,255,255,0.12);color:#fff; }'
+      + '.scanner-result-btn.owned-btn {'
+      +   'background:rgba(59,130,246,0.15);color:var(--accent-blue,#3b82f6);border:1px solid rgba(59,130,246,0.3);'
+      + '}'
+      + '.scanner-result-btn.owned-btn:hover { background:rgba(59,130,246,0.25); }'
+      + '.scanner-result-btn.owned-btn.owned {'
+      +   'background:rgba(34,197,94,0.15);color:var(--accent-green,#22c55e);border-color:rgba(34,197,94,0.3);'
+      + '}'
+      + '.scanner-result-btn.owned-btn.owned:hover { background:rgba(34,197,94,0.25); }'
       // html5-qrcode overrides
       + '#scannerReader img[alt="Info icon"] { display:none !important; }'
       + '#scannerReader__header_message { display:none !important; }'
