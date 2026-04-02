@@ -1382,6 +1382,8 @@
   .light-mode .series-subscribe.subscribed { border-color: var(--accent-purple); background: rgba(139,92,246,0.08); }
   .light-mode .price-input { background: var(--bg-secondary); border-color: var(--border); color: var(--text-primary); }
   .light-mode .price-input:focus { border-color: var(--accent-cyan); }
+  .light-mode .market-input { background: var(--bg-secondary); border-color: var(--border); color: var(--text-primary); }
+  .light-mode .market-input:focus { border-color: var(--accent-green); }
   .light-mode .spending-stat { border-bottom-color: var(--border); }
   .light-mode .spending-series-row { border-bottom-color: var(--border); }
   .light-mode .price-guide-stat { border-bottom-color: var(--border); }
@@ -1702,7 +1704,7 @@
 //  DATA — DC Absolute Universe Comics
 // ââââââââââââââââââââââââââââââââââââââââ
 
-const TODAY = new Date('2026-03-29');
+const TODAY = new Date();
 
 const SERIES_COLORS = {
   'Absolute Batman':            '#5b8fbe',
@@ -2851,17 +2853,19 @@ function renderAnalytics() {
 
   // === Spending Summary Card ===
   let totalSpent = 0;
+  let itemsWithPrices = 0;
   const spendingBySeriesMap = {};
   ALL_ISSUES.forEach(i => {
     const price = getPrice(issueKey(i));
     if (price) {
       totalSpent += price;
+      itemsWithPrices++;
       if (!spendingBySeriesMap[i.series]) spendingBySeriesMap[i.series] = 0;
       spendingBySeriesMap[i.series] += price;
     }
   });
 
-  const avgPrice = ownedCount > 0 ? (totalSpent / ownedCount).toFixed(2) : 0;
+  const avgPrice = itemsWithPrices > 0 ? (totalSpent / itemsWithPrices).toFixed(2) : 0;
   const spendingCard = document.createElement('div');
   spendingCard.className = 'analytics-card';
   let spendingHtml = '<h3>Spending Tracker</h3><div class="spending-summary">';
