@@ -6,7 +6,7 @@
 // their collection.
 // ============================================================
 
-var CACHE_NAME = 'au-tracker-v45';
+var CACHE_NAME = 'au-tracker-v46';
 
 // App shell — files to pre-cache on install
 var APP_SHELL = [
@@ -29,7 +29,8 @@ var APP_SHELL = [
   '/scanner.js',
   '/variants.json',
   '/prices.json',
-  '/data/issues.json'
+  '/data/issues.json',
+  '/cover-fingerprints.json'
 ];
 
 // Skip caching these patterns

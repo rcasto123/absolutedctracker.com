@@ -73,6 +73,8 @@
   // ── Barcode Index ──
   var barcodeIndex = {};
   var variantData = null; // loaded from variants.json
+  var coverFingerprints = null; // loaded from cover-fingerprints.json
+  var FINGERPRINT_GRID = 8; // 8x8 grid = 64 pixels = 192 RGB values
 
   var seriesIndex = {}; // maps 12-digit UPC-A base to array of entries
 
@@ -305,6 +307,282 @@
   window.addEventListener('online', function() {
     syncOfflineQueue();
   });
+
+  // ── Cover Fingerprint Matching ──
+  // Computes an 8x8 RGB color fingerprint from a video element's current frame.
+  // Returns an array of 192 numbers (64 pixels × 3 RGB channels).
+  function computeFingerprint(videoEl) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var vw = videoEl.videoWidth;
+    var vh = videoEl.videoHeight;
+    if (!vw || !vh) return null;
+
+    // Center-crop to square (same as Python generator)
+    var dim = Math.min(vw, vh);
+    var sx = Math.floor((vw - dim) / 2);
+    var sy = Math.floor((vh - dim) / 2);
+
+    canvas.width = FINGERPRINT_GRID;
+    canvas.height = FINGERPRINT_GRID;
+    ctx.drawImage(videoEl, sx, sy, dim, dim, 0, 0, FINGERPRINT_GRID, FINGERPRINT_GRID);
+
+    var imageData = ctx.getImageData(0, 0, FINGERPRINT_GRID, FINGERPRINT_GRID);
+    var pixels = imageData.data; // RGBA flat array
+    var fp = [];
+    for (var i = 0; i < pixels.length; i += 4) {
+      fp.push(pixels[i], pixels[i + 1], pixels[i + 2]); // skip alpha
+    }
+    return fp;
+  }
+
+  // Euclidean distance between two fingerprint arrays
+  function fingerprintDistance(a, b) {
+    if (!a || !b || a.length !== b.length) return Infinity;
+    var sum = 0;
+    for (var i = 0; i < a.length; i++) {
+      var d = a[i] - b[i];
+      sum += d * d;
+    }
+    return Math.sqrt(sum);
+  }
+
+  // Match a captured fingerprint against all covers for a set of issue slugs.
+  // Returns sorted array of { slug, coverKey, distance, match } objects.
+  function matchCoverFingerprint(capturedFP, matches) {
+    if (!coverFingerprints || !capturedFP) return [];
+
+    var results = [];
+    for (var i = 0; i < matches.length; i++) {
+      var slug = matches[i].slug;
+      var fps = coverFingerprints[slug];
+      if (!fps) continue;
+
+      var keys = Object.keys(fps);
+      for (var j = 0; j < keys.length; j++) {
+        var coverKey = keys[j]; // 'a' for Cover A, 'v0', 'v1' etc for variants
+        var dist = fingerprintDistance(capturedFP, fps[coverKey]);
+        results.push({
+          slug: slug,
+          coverKey: coverKey,
+          distance: dist,
+          match: matches[i]
+        });
+      }
+    }
+
+    results.sort(function(a, b) { return a.distance - b.distance; });
+    return results;
+  }
+
+  // Build a result entry from a fingerprint match result
+  function buildResultFromMatch(fpMatch) {
+    var issueMatch = fpMatch.match;
+    var coverKey = fpMatch.coverKey;
+
+    // Cover A (standard)
+    if (coverKey === 'a') {
+      return issueMatch;
+    }
+
+    // Variant cover — coverKey is 'v0', 'v1', etc.
+    var variantIdx = parseInt(coverKey.substring(1));
+    var variants = variantData ? variantData[issueMatch.slug] : null;
+    if (variants && variants[variantIdx]) {
+      var v = variants[variantIdx];
+      var coverName = v.cover || v.name || ('Variant #' + (variantIdx + 1));
+      return {
+        slug: issueMatch.slug,
+        title: issueMatch.title,
+        key: issueMatch.key,
+        variant: String(variantIdx),
+        variantName: coverName,
+        variantFullName: v.name || coverName,
+        type: 'issue',
+        price: issueMatch.price || 4.99
+      };
+    }
+
+    // Fallback to base issue
+    return issueMatch;
+  }
+
+  // ── Cover Photo Capture UI ──
+  // Shows a "Point camera at cover" overlay with capture button.
+  // After capture, compares fingerprint and shows best match.
+  function showCoverCaptureUI(matches, code) {
+    // Pause barcode scanning but keep the video feed alive
+    if (scanner && isScanning) {
+      try { scanner.pause(true); } catch(e) {}
+    }
+    playBeep('success');
+    vibrate([50, 30, 50]);
+
+    var resultEl = document.getElementById('scannerResult');
+    var titleEl = document.getElementById('scannerResultTitle');
+    var codeEl = document.getElementById('scannerResultCode');
+    var viewBtn = document.getElementById('scannerViewBtn');
+    var ownedBtn = document.getElementById('scannerOwnedBtn');
+    var priceEl = document.getElementById('scannerResultPrice');
+
+    // Get the series name from the first match
+    var seriesName = matches[0].title.replace(/#\d+.*$/, '').trim();
+
+    titleEl.innerHTML = '<span style="color:var(--accent-gold,#eab308);">📸</span> ' + seriesName + ' detected';
+    codeEl.textContent = matches.length + ' issues in series — show the cover to identify';
+    priceEl.style.display = 'none';
+    viewBtn.style.display = 'none';
+    ownedBtn.style.display = 'none';
+
+    // Remove any old picker
+    var oldPicker = document.getElementById('scannerMultiPicker');
+    if (oldPicker) oldPicker.remove();
+
+    var container = document.createElement('div');
+    container.id = 'scannerMultiPicker';
+    container.style.cssText = 'margin-top:8px;display:flex;flex-direction:column;gap:8px;align-items:center;';
+
+    // Instruction text
+    var hint = document.createElement('div');
+    hint.style.cssText = 'font-size:0.82rem;color:rgba(255,255,255,0.6);text-align:center;padding:4px 0;';
+    hint.textContent = 'Point camera at the full cover, then tap Capture';
+    container.appendChild(hint);
+
+    // Capture button
+    var captureBtn = document.createElement('button');
+    captureBtn.className = 'scanner-result-btn primary';
+    captureBtn.style.cssText = 'width:100%;padding:12px 16px;font-size:0.95rem;';
+    captureBtn.innerHTML = '📷 Capture Cover';
+    captureBtn.onclick = function() {
+      // Get the video element from the scanner
+      var videoEl = document.querySelector('#scannerReader video');
+      if (!videoEl) {
+        hint.textContent = 'Camera not available — use manual picker below';
+        hint.style.color = '#eab308';
+        return;
+      }
+
+      // Resume briefly to get a live frame, then capture
+      try { scanner.resume(); } catch(e) {}
+      setTimeout(function() {
+        var fp = computeFingerprint(videoEl);
+        try { scanner.pause(true); } catch(e) {}
+
+        if (!fp) {
+          hint.textContent = 'Could not capture frame — try again';
+          hint.style.color = '#eab308';
+          return;
+        }
+
+        var results = matchCoverFingerprint(fp, matches);
+        if (results.length === 0) {
+          hint.textContent = 'No fingerprint data for this series — use manual picker';
+          hint.style.color = '#eab308';
+          return;
+        }
+
+        // Show the best match with confidence
+        var best = results[0];
+        var second = results.length > 1 ? results[1] : null;
+        var confidence = second ? (1 - best.distance / (best.distance + second.distance)) : 0.5;
+        // Normalize distance to a rough confidence percentage
+        var maxReasonableDistance = 3000;
+        var distConfidence = Math.max(0, 1 - best.distance / maxReasonableDistance);
+        var displayConfidence = Math.round(Math.max(confidence, distConfidence) * 100);
+
+        showCoverMatchResult(best, displayConfidence, matches, code);
+      }, 200); // Small delay to ensure frame is fresh after resume
+    };
+    container.appendChild(captureBtn);
+
+    // "Or pick manually" fallback link
+    var manualLink = document.createElement('button');
+    manualLink.className = 'scanner-result-btn secondary';
+    manualLink.style.cssText = 'width:100%;padding:10px 16px;font-size:0.82rem;';
+    manualLink.textContent = 'Pick manually instead';
+    manualLink.onclick = function() {
+      container.remove();
+      showMultiMatchPicker(matches, code);
+    };
+    container.appendChild(manualLink);
+
+    var inner = resultEl.querySelector('.scanner-result-inner');
+    if (inner) inner.appendChild(container);
+
+    resultEl.style.display = 'flex';
+    document.getElementById('scannerHint').textContent = 'Show the cover to the camera';
+  }
+
+  // Show the fingerprint match result with confirm/reject options
+  function showCoverMatchResult(fpMatch, confidence, allMatches, code) {
+    var resultEl = document.getElementById('scannerResult');
+    var titleEl = document.getElementById('scannerResultTitle');
+    var codeEl = document.getElementById('scannerResultCode');
+    var viewBtn = document.getElementById('scannerViewBtn');
+    var ownedBtn = document.getElementById('scannerOwnedBtn');
+    var priceEl = document.getElementById('scannerResultPrice');
+
+    var entry = buildResultFromMatch(fpMatch);
+    var isVariant = fpMatch.coverKey !== 'a';
+    var coverLabel = isVariant ? (entry.variantName || fpMatch.coverKey) : 'Cover A';
+
+    // Remove old picker
+    var oldPicker = document.getElementById('scannerMultiPicker');
+    if (oldPicker) oldPicker.remove();
+
+    var confColor = confidence >= 70 ? '#22c55e' : confidence >= 40 ? '#eab308' : '#ef4444';
+    titleEl.innerHTML = '<span style="color:' + confColor + ';">' + (confidence >= 70 ? '✓' : '?') + '</span> '
+      + entry.title
+      + (isVariant ? ' <span style="color:var(--accent-gold,#eab308);font-size:0.8em;">' + coverLabel + '</span>' : '');
+    codeEl.textContent = 'Confidence: ' + confidence + '% — Is this correct?';
+    priceEl.style.display = 'none';
+    viewBtn.style.display = 'none';
+    ownedBtn.style.display = 'none';
+
+    var container = document.createElement('div');
+    container.id = 'scannerMultiPicker';
+    container.style.cssText = 'margin-top:8px;display:flex;flex-direction:column;gap:6px;';
+
+    // Yes button
+    var yesBtn = document.createElement('button');
+    yesBtn.className = 'scanner-result-btn primary';
+    yesBtn.style.cssText = 'width:100%;padding:10px 16px;';
+    yesBtn.innerHTML = '✓ Yes, that\'s it';
+    yesBtn.onclick = function() {
+      container.remove();
+      barcodeIndex[code] = entry;
+      handleScanResult(code);
+    };
+    container.appendChild(yesBtn);
+
+    // Retry capture button
+    var retryBtn = document.createElement('button');
+    retryBtn.className = 'scanner-result-btn secondary';
+    retryBtn.style.cssText = 'width:100%;padding:10px 16px;';
+    retryBtn.innerHTML = '📷 Try again';
+    retryBtn.onclick = function() {
+      container.remove();
+      showCoverCaptureUI(allMatches, code);
+    };
+    container.appendChild(retryBtn);
+
+    // No — pick manually button
+    var noBtn = document.createElement('button');
+    noBtn.className = 'scanner-result-btn secondary';
+    noBtn.style.cssText = 'width:100%;padding:10px 16px;font-size:0.82rem;';
+    noBtn.textContent = 'No — pick manually';
+    noBtn.onclick = function() {
+      container.remove();
+      showMultiMatchPicker(allMatches, code);
+    };
+    container.appendChild(noBtn);
+
+    var inner = resultEl.querySelector('.scanner-result-inner');
+    if (inner) inner.appendChild(container);
+
+    resultEl.style.display = 'flex';
+    document.getElementById('scannerHint').textContent = confidence >= 70 ? 'High confidence match!' : 'Low confidence — verify or try again';
+  }
 
   // ── Create Scanner Button ──
   function createScannerButton() {
@@ -783,7 +1061,12 @@
 
     // Handle multi-match (camera read 12-digit UPC shared by a series)
     if (result && result.multiMatch) {
-      showMultiMatchPicker(result.matches, code);
+      // If we have cover fingerprints, try hybrid photo matching first
+      if (coverFingerprints) {
+        showCoverCaptureUI(result.matches, result.code || code);
+      } else {
+        showMultiMatchPicker(result.matches, result.code || code);
+      }
       return;
     }
 
@@ -1149,6 +1432,16 @@
       })
       .catch(function(err) {
         console.warn('[Scanner] Could not load variants.json:', err);
+      });
+    // Fetch cover fingerprints for hybrid photo matching
+    fetch('/cover-fingerprints.json?v=1')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        coverFingerprints = data;
+        console.log('[Scanner] Loaded cover fingerprints for', Object.keys(data).length, 'issues');
+      })
+      .catch(function(err) {
+        console.warn('[Scanner] Could not load cover-fingerprints.json:', err);
       });
   }
 
