@@ -519,9 +519,21 @@
   .series-subscribe:hover { color: var(--text-secondary); border-color: var(--text-secondary); }
   .series-subscribe.subscribed { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(139,92,246,0.1); }
 
+  .price-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .price-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
   .price-input {
-    width: 60px;
-    padding: 4px 8px;
+    width: 56px;
+    padding: 3px 6px;
     font-size: 12px;
     border: 1px solid var(--border);
     border-radius: 3px;
@@ -558,7 +570,7 @@
   .value-bar-track { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
   .value-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
   .value-bar-amount { width: 60px; text-align: right; color: var(--text-secondary); font-weight: 500; flex-shrink: 0; }
-  .market-input { width: 60px; padding: 4px 8px; font-size: 12px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg-secondary); color: var(--text-primary); transition: all 0.15s; }
+  .market-input { width: 56px; padding: 3px 6px; font-size: 12px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg-secondary); color: var(--text-primary); transition: all 0.15s; }
   .market-input:focus { outline: none; border-color: var(--accent-green); box-shadow: 0 0 0 2px rgba(34,197,94,0.1); }
   .market-input::-webkit-outer-spin-button, .market-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .market-input[type=number] { -moz-appearance: textfield; }
@@ -2647,12 +2659,12 @@ function renderCollection(filter, search) {
 
       const priceValue = getPrice(key) || '';
       const priceInputHTML = isOwned
-        ? `<input class="price-input" type="number" step="0.01" min="0" placeholder="$" value="${priceValue}" data-issue-key="${key}" title="Price paid for this issue">`
+        ? `<span class="price-group"><span class="price-label">Paid</span><input class="price-input" type="number" step="0.01" min="0" placeholder="0.00" value="${priceValue}" data-issue-key="${key}" title="Price paid for this issue"></span>`
         : '';
 
       const mvValue = getMarketValue(key) || '';
       const marketInputHTML = isOwned
-        ? `<input class="market-input" type="number" step="0.01" min="0" placeholder="MV$" value="${mvValue}" data-issue-key="${key}" title="Estimated market value">`
+        ? `<span class="price-group"><span class="price-label">Value</span><input class="market-input" type="number" step="0.01" min="0" placeholder="0.00" value="${mvValue}" data-issue-key="${key}" title="Estimated market value"></span>`
         : '';
 
       card.innerHTML = `
