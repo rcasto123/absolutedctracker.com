@@ -6,7 +6,7 @@
 // their collection.
 // ============================================================
 
-var CACHE_NAME = 'au-tracker-v22';
+var CACHE_NAME = 'au-tracker-v23';
 
 // App shell — files to pre-cache on install
 var APP_SHELL = [
@@ -17,6 +17,7 @@ var APP_SHELL = [
   '/auth-integration.js',
   '/theme-switcher.js',
   '/firebase-config.js',
+  '/scanner.js',
   '/variants.json',
   '/prices.json'
 ];

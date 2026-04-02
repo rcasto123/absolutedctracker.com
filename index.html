@@ -2000,6 +2000,16 @@
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
       <div class="changelog-entry">
         <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Barcode scanner</div>
+        <div class="changelog-desc">Scan comic barcodes with your phone camera to instantly look up issues. Supports UPC, ISBN, and QR codes. Manual entry fallback for when camera isn't available. Look for the scan icon in the top-right corner.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag enhancement">Enhancement</span> Reading order accordions</div>
+        <div class="changelog-desc">Story arcs, publication months, and essential reading sections are now collapsible accordions. Expand All / Collapse All buttons for quick navigation. Your accordion state is remembered between visits.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Variant collection analytics</div>
         <div class="changelog-desc">New Variant Collection card in Analytics showing total variants, owned count, completion percentage, and per-series variant breakdown bars.</div>
       </div>
@@ -2208,7 +2218,7 @@
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Recommendation engine & curated lists</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Personal grading / condition tracker</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Offline-first data sync</div><span class="roadmap-tag big">Large</span></div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Barcode scanner integration</div><span class="roadmap-tag big">Large</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Barcode scanner integration</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Market tracker & price alerts</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Third-party API & integrations</div><span class="roadmap-tag big">Large</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Collection insights & trends report</div><span class="roadmap-tag big">Large</span></div>
@@ -2291,13 +2301,13 @@ const SERIES_COLORS = {
 };
 
 const ALL_ISSUES = [
-  { series:'DC All In', issue:'Special #1', title:'DC All In Special', date:'2024-10-02', writer:'Scott Snyder & Joshua Williamson', artist:'Daniel Sampere & Wes Craig' },
-  { series:'Absolute Batman', issue:'#1', title:'Absolute Batman #1', date:'2024-10-09', writer:'Scott Snyder', artist:'Nick Dragotta' },
-  { series:'Absolute Batman', issue:'#2', title:'Absolute Batman #2', date:'2024-11-13', writer:'Scott Snyder', artist:'Nick Dragotta' },
-  { series:'Absolute Batman', issue:'#3', title:'Absolute Batman #3', date:'2024-12-11', writer:'Scott Snyder', artist:'Nick Dragotta' },
-  { series:'Absolute Batman', issue:'#4', title:'Absolute Batman #4', date:'2025-01-08', writer:'Scott Snyder', artist:'Nick Dragotta' },
-  { series:'Absolute Batman', issue:'#5', title:'Absolute Batman #5', date:'2025-02-12', writer:'Scott Snyder', artist:'Nick Dragotta' },
-  { series:'Absolute Batman', issue:'#6', title:'Absolute Batman #6', date:'2025-03-12', writer:'Scott Snyder', artist:'Nick Dragotta' },
+  { series:'DC All In', issue:'Special #1', title:'DC All In Special', date:'2024-10-02', writer:'Scott Snyder & Joshua Williamson', artist:'Daniel Sampere & Wes Craig', barcodes:{ upc:'76194138569900111' } },
+  { series:'Absolute Batman', issue:'#1', title:'Absolute Batman #1', date:'2024-10-09', writer:'Scott Snyder', artist:'Nick Dragotta', barcodes:{ upc:'76194138632100111' } },
+  { series:'Absolute Batman', issue:'#2', title:'Absolute Batman #2', date:'2024-11-13', writer:'Scott Snyder', artist:'Nick Dragotta', barcodes:{ upc:'76194138632100211' } },
+  { series:'Absolute Batman', issue:'#3', title:'Absolute Batman #3', date:'2024-12-11', writer:'Scott Snyder', artist:'Nick Dragotta', barcodes:{ upc:'76194138632100311' } },
+  { series:'Absolute Batman', issue:'#4', title:'Absolute Batman #4', date:'2025-01-08', writer:'Scott Snyder', artist:'Nick Dragotta', barcodes:{ upc:'76194138632100411' } },
+  { series:'Absolute Batman', issue:'#5', title:'Absolute Batman #5', date:'2025-02-12', writer:'Scott Snyder', artist:'Nick Dragotta', barcodes:{ upc:'76194138632100511' } },
+  { series:'Absolute Batman', issue:'#6', title:'Absolute Batman #6', date:'2025-03-12', writer:'Scott Snyder', artist:'Nick Dragotta', barcodes:{ upc:'76194138632100611' } },
   { series:'Absolute Batman', issue:'#7', title:'Absolute Batman #7', date:'2025-04-09', writer:'Scott Snyder', artist:'Nick Dragotta' },
   { series:'DC All In', issue:'FCBD Special', title:'DC All In FCBD 2025', date:'2025-05-03', writer:'Jeff Lemire & Dan Slott', artist:'Giuseppe Camuncoli & Rafael Albuquerque' },
   { series:'Absolute Batman', issue:'#8', title:'Absolute Batman #8', date:'2025-05-14', writer:'Scott Snyder', artist:'Nick Dragotta' },
@@ -2315,7 +2325,7 @@ const ALL_ISSUES = [
   { series:'Absolute Batman', issue:'#20', title:'Absolute Batman #20', date:'2026-05-13', writer:'Scott Snyder', artist:'Nick Dragotta' },
   { series:'Absolute Batman', issue:'Annual #1', title:'Absolute Batman 2025 Annual #1', date:'2025-10-29', writer:'Scott Snyder', artist:'Nick Dragotta' },
   { series:'Absolute Batman', issue:'Ark M #1', title:'Absolute Batman: Ark M Special #1', date:'2026-01-07', writer:'Scott Snyder', artist:'Nick Dragotta' },
-  { series:'Absolute Wonder Woman', issue:'#1', title:'Absolute Wonder Woman #1', date:'2024-10-23', writer:'Kelly Thompson', artist:'Hayden Sherman' },
+  { series:'Absolute Wonder Woman', issue:'#1', title:'Absolute Wonder Woman #1', date:'2024-10-23', writer:'Kelly Thompson', artist:'Hayden Sherman', barcodes:{ upc:'76194138633800111' } },
   { series:'Absolute Wonder Woman', issue:'#2', title:'Absolute Wonder Woman #2', date:'2024-11-27', writer:'Kelly Thompson', artist:'Hayden Sherman' },
   { series:'Absolute Wonder Woman', issue:'#3', title:'Absolute Wonder Woman #3', date:'2024-12-18', writer:'Kelly Thompson', artist:'Hayden Sherman' },
   { series:'Absolute Wonder Woman', issue:'#4', title:'Absolute Wonder Woman #4', date:'2025-01-22', writer:'Kelly Thompson', artist:'Hayden Sherman' },
@@ -2334,7 +2344,7 @@ const ALL_ISSUES = [
   { series:'Absolute Wonder Woman', issue:'#17', title:'Absolute Wonder Woman #17', date:'2026-02-25', writer:'Kelly Thompson', artist:'Hayden Sherman' },
   { series:'Absolute Wonder Woman', issue:'#18', title:'Absolute Wonder Woman #18', date:'2026-03-25', writer:'Kelly Thompson', artist:'Hayden Sherman' },
   { series:'Absolute Wonder Woman', issue:'#19', title:'Absolute Wonder Woman #19', date:'2026-04-22', writer:'Kelly Thompson', artist:'Hayden Sherman' },
-  { series:'Absolute Superman', issue:'#1', title:'Absolute Superman #1', date:'2024-11-06', writer:'Jason Aaron', artist:'Rafa Sandoval' },
+  { series:'Absolute Superman', issue:'#1', title:'Absolute Superman #1', date:'2024-11-06', writer:'Jason Aaron', artist:'Rafa Sandoval', barcodes:{ upc:'76194138634500111' } },
   { series:'Absolute Superman', issue:'#2', title:'Absolute Superman #2', date:'2024-12-04', writer:'Jason Aaron', artist:'Rafa Sandoval' },
   { series:'Absolute Superman', issue:'#3', title:'Absolute Superman #3', date:'2025-01-01', writer:'Jason Aaron', artist:'Rafa Sandoval' },
   { series:'Absolute Superman', issue:'#4', title:'Absolute Superman #4', date:'2025-02-05', writer:'Jason Aaron', artist:'Rafa Sandoval' },
@@ -5349,6 +5359,8 @@ renderAchievements();
 <script src="firebase-config.js?v=3" defer></script>
 <script src="auth-integration.js?v=4" defer></script>
 <script src="theme-switcher.js?v=12" defer></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+<script src="scanner.js?v=1" defer></script>
 <script>
 // What's New toggle
 (function() {
