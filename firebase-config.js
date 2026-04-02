@@ -78,6 +78,47 @@
     return all[issueKey] ? Object.keys(all[issueKey]).length : 0;
   };
 
+  /* ── Variant Price & Market Value (shared across pages) ── */
+  var _variantPrices = {};
+  try { _variantPrices = JSON.parse(localStorage.getItem('au_variant_prices') || '{}'); } catch(e) { _variantPrices = {}; }
+  var _variantMVs = {};
+  try { _variantMVs = JSON.parse(localStorage.getItem('au_variant_market_values') || '{}'); } catch(e) { _variantMVs = {}; }
+
+  function _saveVP() { try { localStorage.setItem('au_variant_prices', JSON.stringify(_variantPrices)); } catch(e){} }
+  function _saveVMV() { try { localStorage.setItem('au_variant_market_values', JSON.stringify(_variantMVs)); } catch(e){} }
+
+  window.setVariantPrice = function(issueKey, variantIdx, val) {
+    var v = parseFloat(val);
+    if (!_variantPrices[issueKey]) _variantPrices[issueKey] = {};
+    if (v > 0) _variantPrices[issueKey][variantIdx] = v;
+    else { delete _variantPrices[issueKey][variantIdx]; if (Object.keys(_variantPrices[issueKey]).length === 0) delete _variantPrices[issueKey]; }
+    _saveVP();
+  };
+  window.getVariantPrice = function(issueKey, variantIdx) {
+    if (_variantPrices[issueKey] && _variantPrices[issueKey][variantIdx]) return _variantPrices[issueKey][variantIdx];
+    return null;
+  };
+  window.getTotalVariantSpent = function(issueKey) {
+    if (!_variantPrices[issueKey]) return 0;
+    return Object.values(_variantPrices[issueKey]).reduce(function(sum, v) { return sum + v; }, 0);
+  };
+
+  window.setVariantMarketValue = function(issueKey, variantIdx, val) {
+    var v = parseFloat(val);
+    if (!_variantMVs[issueKey]) _variantMVs[issueKey] = {};
+    if (v > 0) _variantMVs[issueKey][variantIdx] = v;
+    else { delete _variantMVs[issueKey][variantIdx]; if (Object.keys(_variantMVs[issueKey]).length === 0) delete _variantMVs[issueKey]; }
+    _saveVMV();
+  };
+  window.getVariantMarketValue = function(issueKey, variantIdx) {
+    if (_variantMVs[issueKey] && _variantMVs[issueKey][variantIdx]) return _variantMVs[issueKey][variantIdx];
+    return null;
+  };
+  window.getTotalVariantValue = function(issueKey) {
+    if (!_variantMVs[issueKey]) return 0;
+    return Object.values(_variantMVs[issueKey]).reduce(function(sum, v) { return sum + v; }, 0);
+  };
+
   /* ── Firestore sync helpers ── */
   window.syncOwnedToCloud = function () {
     var user = auth.currentUser;

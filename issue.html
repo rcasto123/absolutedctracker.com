@@ -167,6 +167,11 @@
     .variant-checkbox{position:absolute;top:6px;left:6px;z-index:3;width:30px;height:30px;border-radius:6px;border:2px solid rgba(255,255,255,0.5);background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
     .variant-checkbox:hover{border-color:#22c55e;background:rgba(0,0,0,0.7)}
     .variant-checkbox.v-checked{background:#22c55e;border-color:#22c55e;box-shadow:0 2px 10px rgba(34,197,94,0.4)}
+    .variant-price-row{display:flex;gap:4px;padding:4px 6px;justify-content:center}
+    .variant-price-group{display:flex;align-items:center;gap:2px}
+    .variant-price-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:rgba(255,255,255,0.5)}
+    .variant-price-input,.variant-market-input{width:48px;padding:3px 5px;font-size:10px;border:1px solid rgba(255,255,255,0.2);border-radius:3px;background:rgba(34,197,94,0.1);color:inherit;text-align:right}
+    .variant-price-input:focus,.variant-market-input:focus{outline:none;border-color:#22c55e}
     .variant-checkbox svg{width:16px;height:16px;color:#fff;opacity:0;transition:opacity 0.15s}
     .variant-checkbox.v-checked svg{opacity:1}
     .variant-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:1000;justify-content:center;align-items:center;padding:2rem}
@@ -1406,11 +1411,16 @@ window.addEventListener('popstate', render);
         h += '<div class="variant-card' + ownedClass + '" data-vidx="' + i + '"' + d + '>';
         h += '<div class="variant-checkbox' + checkedClass + '" data-vidx="' + i + '">' + checkSvg + '</div>';
         h += '<img src="' + vs[i].url + '" loading=lazy onerror="this.parentElement.style.display=\'none\'">';
-        h += '<div class="variant-name">' + sn;
+        h += '<div class="variant-name">' + sn + '</div>';
         if (isOwned) {
-          h += '<input class="variant-market-input" type="number" step="0.01" min="0" placeholder="MV$" data-vidx="' + i + '" style="width:60px;padding:4px 8px;font-size:11px;margin-top:4px;border:1px solid rgba(255,255,255,0.3);border-radius:3px;background:rgba(34,197,94,0.15);color:inherit;" />';
+          var vpVal = (typeof getVariantPrice === 'function' && _issueKey) ? (getVariantPrice(_issueKey, String(i)) || '') : '';
+          var vmVal = (typeof getVariantMarketValue === 'function' && _issueKey) ? (getVariantMarketValue(_issueKey, String(i)) || '') : '';
+          h += '<div class="variant-price-row">';
+          h += '<span class="variant-price-group"><span class="variant-price-label">Paid</span><input class="variant-price-input" type="number" step="0.01" min="0" placeholder="0.00" value="' + vpVal + '" data-vidx="' + i + '"></span>';
+          h += '<span class="variant-price-group"><span class="variant-price-label">Value</span><input class="variant-market-input" type="number" step="0.01" min="0" placeholder="0.00" value="' + vmVal + '" data-vidx="' + i + '"></span>';
+          h += '</div>';
         }
-        h += '</div></div>';
+        h += '</div>';
       }
       h += "</div>";
       if (vs.length > n) h += "<div style=text-align:center;margin-top:0.75rem><button class=show-more-variants id=showMoreBtn>Show All " + vs.length + " Variants</button></div>";
@@ -1465,13 +1475,15 @@ window.addEventListener('popstate', render);
         }
       };
 
-      // Change handler for variant market value inputs
+      // Change handler for variant price and market value inputs
       sec.addEventListener('change', function(e) {
-        var input = e.target.closest('.variant-market-input');
-        if (input && _issueKey && typeof setVariantMarketValue === 'function') {
-          var idx = input.dataset.vidx;
-          var val = input.value;
-          setVariantMarketValue(_issueKey, idx, val);
+        var marketInput = e.target.closest('.variant-market-input');
+        if (marketInput && _issueKey && typeof setVariantMarketValue === 'function') {
+          setVariantMarketValue(_issueKey, marketInput.dataset.vidx, marketInput.value);
+        }
+        var priceInput = e.target.closest('.variant-price-input');
+        if (priceInput && _issueKey && typeof setVariantPrice === 'function') {
+          setVariantPrice(_issueKey, priceInput.dataset.vidx, priceInput.value);
         }
       });
     }).catch(function(){});
@@ -1480,7 +1492,7 @@ window.addEventListener('popstate', render);
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=2"></script>
+<script src="firebase-config.js?v=3"></script>
 <script src="auth-integration.js?v=4"></script>
 <script>
 if ('serviceWorker' in navigator) {

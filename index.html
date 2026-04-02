@@ -2419,26 +2419,7 @@ function getMarketValue(key) {
   return null;
 }
 
-// Variant Market Value localStorage model
-let variantMarketValues = {};
-try { variantMarketValues = JSON.parse(localStorage.getItem('au_variant_market_values') || '{}'); } catch(e) { variantMarketValues = {}; }
-function saveVariantMarketValues() { try { localStorage.setItem('au_variant_market_values', JSON.stringify(variantMarketValues)); } catch(e){} }
-function setVariantMarketValue(issueKey, variantIdx, val) {
-  var v = parseFloat(val);
-  if (!variantMarketValues[issueKey]) variantMarketValues[issueKey] = {};
-  if (v > 0) variantMarketValues[issueKey][variantIdx] = v;
-  else { delete variantMarketValues[issueKey][variantIdx]; if (Object.keys(variantMarketValues[issueKey]).length === 0) delete variantMarketValues[issueKey]; }
-  saveVariantMarketValues();
-}
-function getVariantMarketValue(issueKey, variantIdx) {
-  if (variantMarketValues[issueKey] && variantMarketValues[issueKey][variantIdx]) return variantMarketValues[issueKey][variantIdx];
-  if (_priceGuideData && _priceGuideData.variants && _priceGuideData.variants[issueKey] && _priceGuideData.variants[issueKey][variantIdx]) return _priceGuideData.variants[issueKey][variantIdx];
-  return null;
-}
-function getTotalVariantValue(issueKey) {
-  if (!variantMarketValues[issueKey]) return 0;
-  return Object.values(variantMarketValues[issueKey]).reduce(function(sum, v) { return sum + v; }, 0);
-}
+// Variant Market Value & Price functions are defined in firebase-config.js (shared across pages)
 
 // Pull List & Spending Tracker Functions
 let pullSeries = {};
@@ -2534,11 +2515,13 @@ function renderStats() {
   // Calculate pull list count (upcoming issues on pull list)
   const pullCount = ALL_ISSUES.filter(i => isUpcoming(i.date) && isOnPullList(issueKey(i), i.series)).length;
 
-  // Calculate total spending
+  // Calculate total spending (main issues + variants)
   let totalSpent = 0;
   ALL_ISSUES.forEach(i => {
-    const price = getPrice(issueKey(i));
+    const k = issueKey(i);
+    const price = getPrice(k);
     if (price) totalSpent += price;
+    totalSpent += getTotalVariantSpent(k);
   });
 
   // Calculate estimated collection value (main + variants)
@@ -3419,12 +3402,19 @@ function renderAnalytics() {
   let itemsWithPrices = 0;
   const spendingBySeriesMap = {};
   ALL_ISSUES.forEach(i => {
-    const price = getPrice(issueKey(i));
+    const k = issueKey(i);
+    const price = getPrice(k);
     if (price) {
       totalSpent += price;
       itemsWithPrices++;
       if (!spendingBySeriesMap[i.series]) spendingBySeriesMap[i.series] = 0;
       spendingBySeriesMap[i.series] += price;
+    }
+    const varSpent = getTotalVariantSpent(k);
+    if (varSpent > 0) {
+      totalSpent += varSpent;
+      if (!spendingBySeriesMap[i.series]) spendingBySeriesMap[i.series] = 0;
+      spendingBySeriesMap[i.series] += varSpent;
     }
   });
 
@@ -3998,6 +3988,20 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
         if (data.marketValues) {
           Object.keys(data.marketValues).forEach(key => {
             marketValues[key] = data.marketValues[key];
+          });
+        }
+        if (data.variantPrices) {
+          Object.keys(data.variantPrices).forEach(key => {
+            Object.keys(data.variantPrices[key]).forEach(idx => {
+              setVariantPrice(key, idx, data.variantPrices[key][idx]);
+            });
+          });
+        }
+        if (data.variantMarketValues) {
+          Object.keys(data.variantMarketValues).forEach(key => {
+            Object.keys(data.variantMarketValues[key]).forEach(idx => {
+              setVariantMarketValue(key, idx, data.variantMarketValues[key][idx]);
+            });
           });
         }
         alert('Imported ' + Object.keys(data.owned || {}).length + ' collection entries');
@@ -5023,7 +5027,7 @@ renderAchievements();
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=2" defer></script>
+<script src="firebase-config.js?v=3" defer></script>
 <script src="auth-integration.js?v=4" defer></script>
 <script src="theme-switcher.js?v=12" defer></script>
 <script>
