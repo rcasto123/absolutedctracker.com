@@ -2649,7 +2649,7 @@ function renderStats() {
     const k = issueKey(i);
     const price = getPrice(k);
     if (price) totalSpent += price;
-    totalSpent += getTotalVariantSpent(k);
+    totalSpent += (typeof getTotalVariantSpent === 'function' ? getTotalVariantSpent(k) : 0);
   });
 
   // Calculate estimated collection value (main + variants)
@@ -2660,7 +2660,7 @@ function renderStats() {
       const mv = getMarketValue(k);
       collectionValue += mv ? mv : getCoverPrice(k);
     }
-    collectionValue += getTotalVariantValue(k);
+    collectionValue += (typeof getTotalVariantValue === 'function' ? getTotalVariantValue(k) : 0);
   });
 
   document.getElementById('statOwned').textContent = ownedCount;
@@ -3692,7 +3692,7 @@ function renderAnalytics() {
       if (!spendingBySeriesMap[i.series]) spendingBySeriesMap[i.series] = 0;
       spendingBySeriesMap[i.series] += price;
     }
-    const varSpent = getTotalVariantSpent(k);
+    const varSpent = (typeof getTotalVariantSpent === 'function' ? getTotalVariantSpent(k) : 0);
     if (varSpent > 0) {
       totalSpent += varSpent;
       if (!spendingBySeriesMap[i.series]) spendingBySeriesMap[i.series] = 0;
@@ -3762,7 +3762,7 @@ function renderAnalytics() {
       }
     }
     // Add variant values
-    const vv = getTotalVariantValue(k);
+    const vv = (typeof getTotalVariantValue === 'function' ? getTotalVariantValue(k) : 0);
     if (vv > 0) {
       variantTotal += vv;
       variantValued++;
@@ -4344,14 +4344,14 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
         if (data.variantPrices) {
           Object.keys(data.variantPrices).forEach(key => {
             Object.keys(data.variantPrices[key]).forEach(idx => {
-              setVariantPrice(key, idx, data.variantPrices[key][idx]);
+              if (typeof setVariantPrice === 'function') setVariantPrice(key, idx, data.variantPrices[key][idx]);
             });
           });
         }
         if (data.variantMarketValues) {
           Object.keys(data.variantMarketValues).forEach(key => {
             Object.keys(data.variantMarketValues[key]).forEach(idx => {
-              setVariantMarketValue(key, idx, data.variantMarketValues[key][idx]);
+              if (typeof setVariantMarketValue === 'function') setVariantMarketValue(key, idx, data.variantMarketValues[key][idx]);
             });
           });
         }
@@ -4419,21 +4419,26 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
 
 }); // end DOMContentLoaded — share/import-export modal listeners
 
-renderStats();
-renderCollection('all', '');
-renderCalendar(false);
+// Defer all render calls to DOMContentLoaded so that defer'd scripts
+// (firebase-config.js, auth-integration.js) have loaded their globals
+// (getTotalVariantSpent, countOwnedVariants, etc.) before we use them.
+document.addEventListener('DOMContentLoaded', () => {
+  renderStats();
+  renderCollection('all', '');
+  renderCalendar(false);
 
-// Restore tab from URL hash
-if (location.hash) {
-  const hashTab = location.hash.slice(1);
-  const target = document.querySelector('.nav-tab[data-tab="' + hashTab + '"]');
-  if (target) switchTab(target);
-}
-renderSeriesGuide();
-renderTrades();
-renderArcs();
-renderAnalytics();
-renderAchievements();
+  // Restore tab from URL hash
+  if (location.hash) {
+    const hashTab = location.hash.slice(1);
+    const target = document.querySelector('.nav-tab[data-tab="' + hashTab + '"]');
+    if (target) switchTab(target);
+  }
+  renderSeriesGuide();
+  renderTrades();
+  renderArcs();
+  renderAnalytics();
+  renderAchievements();
+});
 </script>
 
 <!-- Export Feature -->
