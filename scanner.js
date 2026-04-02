@@ -1,7 +1,7 @@
 // ============================================================
 // Barcode Scanner Module for Absolute Universe Collection Tracker
 // ============================================================
-// Phase 3: Rapid batch mode, scan history, trade paperback ISBNs
+// Phase 4: Scan sounds & haptics, collection value, offline queue
 // ============================================================
 
 (function() {
@@ -15,6 +15,54 @@
   var lastScanTime = 0;
   var batchMode = false;    // Rapid batch scanning
   var scanHistory = [];     // Session scan log
+  var sessionValue = 0;     // Running $ value scanned this session
+
+  // ── Audio Context (scan beep) ──
+  var audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    return audioCtx;
+  }
+
+  function playBeep(type) {
+    // type: 'success' | 'error' | 'batch'
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === 'success' || type === 'batch') {
+        // Pleasant two-tone rising beep
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);        // A5
+        osc.frequency.setValueAtTime(1174.66, ctx.currentTime + 0.08); // D6
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.18);
+      } else if (type === 'error') {
+        // Low buzz for not-found
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+        osc.frequency.setValueAtTime(165, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.2);
+      }
+    } catch(e) {}
+  }
+
+  function vibrate(pattern) {
+    if (navigator.vibrate) {
+      try { navigator.vibrate(pattern); } catch(e) {}
+    }
+  }
 
   // ── Barcode Index ──
   var barcodeIndex = {};
@@ -27,7 +75,7 @@
         if (!issue.barcodes) return;
         var slug = issue.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         var key = issue.series + '|' + issue.issue;
-        var entry = { slug: slug, title: issue.title, key: key, variant: null, type: 'issue' };
+        var entry = { slug: slug, title: issue.title, key: key, variant: null, type: 'issue', price: issue.price || 4.99 };
         if (issue.barcodes.upc) {
           barcodeIndex[issue.barcodes.upc] = entry;
           if (issue.barcodes.upc.length === 12) {
@@ -39,7 +87,7 @@
         }
         if (issue.barcodes.variants) {
           Object.keys(issue.barcodes.variants).forEach(function(varId) {
-            barcodeIndex[issue.barcodes.variants[varId]] = { slug: slug, title: issue.title, key: key, variant: varId, type: 'issue' };
+            barcodeIndex[issue.barcodes.variants[varId]] = { slug: slug, title: issue.title, key: key, variant: varId, type: 'issue', price: issue.price || 4.99 };
           });
         }
       });
@@ -49,13 +97,11 @@
       TRADES.forEach(function(trade) {
         if (!trade.isbn) return;
         var slug = trade.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        var key = trade.title; // trade key format
-        var entry = { slug: slug, title: trade.title, key: key, variant: null, type: 'trade', subtitle: trade.subtitle || '' };
+        var key = trade.title;
+        var entry = { slug: slug, title: trade.title, key: key, variant: null, type: 'trade', subtitle: trade.subtitle || '', price: trade.price || 16.99 };
         barcodeIndex[trade.isbn] = entry;
-        // Also index without hyphens/spaces
         var clean = trade.isbn.replace(/[-\s]/g, '');
         if (clean !== trade.isbn) barcodeIndex[clean] = entry;
-        // Index ISBN-10 if 13-digit
         if (clean.length === 13 && clean.indexOf('978') === 0) {
           barcodeIndex[clean.substring(3, 12)] = entry;
         }
@@ -69,7 +115,6 @@
     if (barcodeIndex[code]) return barcodeIndex[code];
     var stripped = code.replace(/^0+/, '');
     if (barcodeIndex[stripped]) return barcodeIndex[stripped];
-    // Prefix match: first 15 of 17 digits (variant-agnostic UPC match)
     if (code.length >= 15) {
       var prefix15 = code.substring(0, 15);
       var keys = Object.keys(barcodeIndex);
@@ -98,7 +143,6 @@
     try { state = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e) { state = {}; }
     if (val) { state[key] = true; } else { delete state[key]; }
     localStorage.setItem(storageKey, JSON.stringify(state));
-    // Sync
     if (type !== 'trade' && typeof syncOwnedToCloud === 'function') {
       try { syncOwnedToCloud(); } catch(e) {}
     }
@@ -116,6 +160,66 @@
     var state = (type === 'trade') ? getOwnedTrades() : getOwnedState();
     return !!state[key];
   }
+
+  // ── Offline Scan Queue ──
+  var OFFLINE_QUEUE_KEY = 'au_scan_offline_queue';
+
+  function getOfflineQueue() {
+    try { return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); } catch(e) { return []; }
+  }
+
+  function saveOfflineQueue(queue) {
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+    updateOfflineBadge();
+  }
+
+  function queueOfflineScan(key, type) {
+    var queue = getOfflineQueue();
+    // Avoid duplicates
+    for (var i = 0; i < queue.length; i++) {
+      if (queue[i].key === key && queue[i].type === type) return;
+    }
+    queue.push({ key: key, type: type, time: Date.now() });
+    saveOfflineQueue(queue);
+  }
+
+  function syncOfflineQueue() {
+    var queue = getOfflineQueue();
+    if (queue.length === 0) return;
+    var synced = 0;
+    queue.forEach(function(item) {
+      try {
+        setOwnedState(item.key, true, item.type);
+        synced++;
+      } catch(e) {}
+    });
+    saveOfflineQueue([]);
+    if (synced > 0 && overlay && overlay.classList.contains('open')) {
+      showToast('<span style="color:#22c55e;">☁</span> Synced ' + synced + ' offline scan' + (synced > 1 ? 's' : ''), 3000);
+    }
+  }
+
+  function isOnline() {
+    return navigator.onLine !== false;
+  }
+
+  function updateOfflineBadge() {
+    var badge = document.getElementById('scannerOfflineBadge');
+    var queue = getOfflineQueue();
+    if (badge) {
+      if (queue.length > 0) {
+        badge.textContent = queue.length;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  }
+
+  // Listen for online events to auto-sync
+  window.addEventListener('online', function() {
+    syncOfflineQueue();
+  });
 
   // ── Create Scanner Button ──
   function createScannerButton() {
@@ -156,6 +260,7 @@
       +   '<div id="scannerReader"></div>'
       +   '<div class="scanner-hint" id="scannerHint">Point your camera at a barcode</div>'
       +   '<div class="scanner-toast" id="scannerToast"></div>'
+      +   '<div class="scanner-session-value" id="scannerSessionValue" style="display:none;"></div>'
       + '</div>'
       + '<div class="scanner-history" id="scannerHistory" style="display:none;">'
       +   '<div class="scanner-history-header">'
@@ -163,6 +268,11 @@
       +     '<button class="scanner-history-clear" id="scannerHistoryClear">Clear</button>'
       +   '</div>'
       +   '<div class="scanner-history-list" id="scannerHistoryList"></div>'
+      + '</div>'
+      + '<div class="scanner-offline-bar" id="scannerOfflineBar" style="display:none;">'
+      +   '<span class="offline-icon">⚡</span>'
+      +   '<span>Offline — scans will sync when reconnected</span>'
+      +   '<span class="offline-badge" id="scannerOfflineBadge" style="display:none;">0</span>'
       + '</div>'
       + '<div class="scanner-footer">'
       +   '<div class="scanner-manual">'
@@ -173,6 +283,7 @@
       + '<div class="scanner-result" id="scannerResult" style="display:none;">'
       +   '<div class="scanner-result-inner">'
       +     '<div class="scanner-result-title" id="scannerResultTitle"></div>'
+      +     '<div class="scanner-result-price" id="scannerResultPrice"></div>'
       +     '<div class="scanner-result-code" id="scannerResultCode"></div>'
       +     '<div class="scanner-result-actions">'
       +       '<a class="scanner-result-btn primary" id="scannerViewBtn">View Issue</a>'
@@ -220,7 +331,6 @@
     var hint = document.getElementById('scannerHint');
     if (batchMode) {
       hint.textContent = 'Batch mode — scanning...';
-      // If result card is showing, hide it and resume
       document.getElementById('scannerResult').style.display = 'none';
       lastScannedCode = '';
       resumeScanning();
@@ -241,6 +351,18 @@
     }, duration || 2000);
   }
 
+  // ── Session Value Display ──
+  function updateSessionValue() {
+    var el = document.getElementById('scannerSessionValue');
+    if (!el) return;
+    if (sessionValue > 0) {
+      el.innerHTML = '<span class="sv-label">Session total</span><span class="sv-amount">$' + sessionValue.toFixed(2) + '</span>';
+      el.style.display = 'flex';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
   // ── Scan History ──
   function addToHistory(code, result) {
     var entry = {
@@ -251,6 +373,7 @@
       slug: result ? result.slug : null,
       found: !!result,
       owned: result ? isOwned(result.key, result.type) : false,
+      price: result ? (result.price || 0) : 0,
       time: new Date()
     };
     scanHistory.unshift(entry);
@@ -275,12 +398,13 @@
         : '<span class="sh-icon new">+</span>';
       var timeStr = e.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       var typeLabel = e.type === 'trade' ? ' <span class="sh-type">TPB</span>' : '';
+      var priceLabel = e.found && e.price ? ' <span class="sh-price">$' + e.price.toFixed(2) + '</span>' : '';
       var link = e.slug ? ' href="issue.html?id=' + e.slug + '"' : '';
       html += '<div class="sh-entry" data-idx="' + i + '">'
         + icon
         + '<div class="sh-info">'
         + (e.found ? '<a class="sh-title"' + link + '>' + e.title + typeLabel + '</a>' : '<span class="sh-title">' + e.title + '</span>')
-        + '<span class="sh-code">' + e.code + ' · ' + timeStr + '</span>'
+        + '<span class="sh-code">' + e.code + ' · ' + timeStr + priceLabel + '</span>'
         + '</div>'
         + '</div>';
     });
@@ -289,6 +413,8 @@
 
   function clearHistory() {
     scanHistory = [];
+    sessionValue = 0;
+    updateSessionValue();
     renderHistory();
   }
 
@@ -303,7 +429,19 @@
     document.getElementById('manualBarcodeInput').value = '';
     lastScannedCode = '';
     renderHistory();
+    updateSessionValue();
+    updateOfflineBar();
+    updateOfflineBadge();
+    // Try to sync any pending offline scans
+    if (isOnline()) syncOfflineQueue();
     startCamera();
+  }
+
+  function updateOfflineBar() {
+    var bar = document.getElementById('scannerOfflineBar');
+    if (bar) {
+      bar.style.display = isOnline() ? 'none' : 'flex';
+    }
   }
 
   // ── Close Scanner ──
@@ -350,7 +488,6 @@
         if (decodedText === lastScannedCode && (now - lastScanTime) < 3000) return;
         lastScannedCode = decodedText;
         lastScanTime = now;
-        if (navigator.vibrate) navigator.vibrate(100);
         handleScanResult(decodedText);
       },
       function onScanFailure() {}
@@ -416,25 +553,48 @@
   function handleScanResult(code) {
     var result = lookupBarcode(code);
 
+    // Sound & haptics
+    if (result) {
+      playBeep(batchMode ? 'batch' : 'success');
+      vibrate([50, 30, 50]); // double-tap pattern
+    } else {
+      playBeep('error');
+      vibrate(150); // single long buzz
+    }
+
     // Add to history
     addToHistory(code, result);
 
+    // Track session value
+    if (result && result.price) {
+      sessionValue += result.price;
+      updateSessionValue();
+    }
+
     if (batchMode && result) {
-      // Batch mode: auto-mark as owned, show toast, keep scanning
+      // Batch mode: auto-mark as owned (or queue offline), show toast, keep scanning
       if (!isOwned(result.key, result.type)) {
-        setOwnedState(result.key, true, result.type);
-        // Update history entry
+        if (isOnline()) {
+          setOwnedState(result.key, true, result.type);
+        } else {
+          // Store locally + queue for sync
+          var storageKey = (result.type === 'trade') ? 'au_trades' : 'au_owned';
+          var state;
+          try { state = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e) { state = {}; }
+          state[result.key] = true;
+          localStorage.setItem(storageKey, JSON.stringify(state));
+          queueOfflineScan(result.key, result.type);
+        }
         if (scanHistory.length > 0) scanHistory[0].owned = true;
         renderHistory();
       }
       var icon = '<span style="color:#22c55e;">✓</span>';
-      showToast(icon + ' <strong>' + result.title + '</strong> added', 2000);
-      // Don't pause camera — keep scanning
+      var priceTag = result.price ? ' <span style="color:#06b6d4;font-size:0.8em;">$' + result.price.toFixed(2) + '</span>' : '';
+      showToast(icon + ' <strong>' + result.title + '</strong>' + priceTag + ' added', 2000);
       return;
     }
 
     if (batchMode && !result) {
-      // Batch mode, not found: brief toast
       showToast('<span style="color:#eab308;">?</span> Unknown barcode: ' + code, 2500);
       return;
     }
@@ -446,6 +606,7 @@
 
     var resultEl = document.getElementById('scannerResult');
     var titleEl = document.getElementById('scannerResultTitle');
+    var priceEl = document.getElementById('scannerResultPrice');
     var codeEl = document.getElementById('scannerResultCode');
     var viewBtn = document.getElementById('scannerViewBtn');
     var ownedBtn = document.getElementById('scannerOwnedBtn');
@@ -458,9 +619,19 @@
       } else {
         titleEl.innerHTML = '<span style="color:var(--accent-blue,#3b82f6);">●</span> ' + result.title + typeLabel;
       }
+
+      // Price display
+      if (result.price) {
+        priceEl.innerHTML = '<span class="scanner-price-tag">$' + result.price.toFixed(2) + '</span>'
+          + (sessionValue > 0 ? '<span class="scanner-session-total">Session: $' + sessionValue.toFixed(2) + '</span>' : '');
+        priceEl.style.display = 'flex';
+      } else {
+        priceEl.style.display = 'none';
+      }
+
       codeEl.textContent = 'Barcode: ' + code;
       if (result.type === 'trade') {
-        viewBtn.style.display = 'none'; // no detail page for TPBs yet
+        viewBtn.style.display = 'none';
       } else {
         var url = 'issue.html?id=' + result.slug;
         if (result.variant) url += '&variant=' + result.variant;
@@ -483,15 +654,26 @@
       ownedBtn.style.display = 'block';
       ownedBtn.onclick = function() {
         var toggled = !isOwned(result.key, result.type);
-        setOwnedState(result.key, toggled, result.type);
+        if (isOnline()) {
+          setOwnedState(result.key, toggled, result.type);
+        } else if (toggled) {
+          var sk = (result.type === 'trade') ? 'au_trades' : 'au_owned';
+          var st;
+          try { st = JSON.parse(localStorage.getItem(sk) || '{}'); } catch(e) { st = {}; }
+          st[result.key] = true;
+          localStorage.setItem(sk, JSON.stringify(st));
+          queueOfflineScan(result.key, result.type);
+        }
         updateOwnedBtn(toggled);
-        // Update history
+        // Haptic feedback on own toggle
+        vibrate(30);
         if (scanHistory.length > 0) { scanHistory[0].owned = toggled; renderHistory(); }
       };
 
       document.getElementById('scannerHint').textContent = 'Issue found!';
     } else {
       titleEl.innerHTML = '<span style="color:var(--accent-gold);">?</span> Issue not found';
+      priceEl.style.display = 'none';
       codeEl.textContent = 'Barcode: ' + code;
       viewBtn.style.display = 'none';
       ownedBtn.style.display = 'none';
@@ -544,6 +726,14 @@
       +   'box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:20;'
       + '}'
       + '.scanner-toast.show { opacity:1;transform:translateX(-50%) translateY(0); }'
+      // Session value floating pill
+      + '.scanner-session-value {'
+      +   'position:absolute;top:12px;right:12px;display:none;align-items:center;gap:8px;'
+      +   'background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.25);'
+      +   'border-radius:20px;padding:6px 14px;z-index:15;'
+      + '}'
+      + '.sv-label { font-size:0.7rem;color:rgba(6,182,212,0.7);text-transform:uppercase;letter-spacing:0.04em;font-weight:600; }'
+      + '.sv-amount { font-size:0.9rem;color:#06b6d4;font-weight:700;font-family:"Oswald",sans-serif; }'
       // History panel
       + '.scanner-history {'
       +   'max-height:180px;border-top:1px solid rgba(255,255,255,0.08);'
@@ -575,7 +765,20 @@
       + '.sh-title { display:block;font-size:0.8rem;color:#fff;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }'
       + 'a.sh-title:hover { text-decoration:underline; }'
       + '.sh-type { font-size:0.6rem;background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px;color:rgba(255,255,255,0.5); }'
+      + '.sh-price { color:#06b6d4;font-size:0.65rem;font-weight:600; }'
       + '.sh-code { display:block;font-size:0.65rem;color:rgba(255,255,255,0.3);font-family:monospace; }'
+      // Offline bar
+      + '.scanner-offline-bar {'
+      +   'display:none;align-items:center;gap:8px;padding:8px 16px;'
+      +   'background:rgba(234,179,8,0.12);border-top:1px solid rgba(234,179,8,0.25);'
+      +   'font-size:0.78rem;color:#eab308;flex-shrink:0;'
+      + '}'
+      + '.offline-icon { font-size:1rem; }'
+      + '.offline-badge {'
+      +   'display:none;align-items:center;justify-content:center;min-width:20px;height:20px;'
+      +   'border-radius:10px;background:#eab308;color:#000;font-size:0.65rem;font-weight:700;'
+      +   'padding:0 6px;margin-left:auto;'
+      + '}'
       // Footer
       + '.scanner-footer {'
       +   'padding:12px 16px;border-top:1px solid rgba(255,255,255,0.08);'
@@ -607,6 +810,15 @@
       + '.scanner-result-title {'
       +   'font-family:"Oswald",sans-serif;font-size:1.1rem;font-weight:600;color:#fff;'
       +   'margin-bottom:4px;'
+      + '}'
+      + '.scanner-result-price {'
+      +   'display:none;align-items:center;gap:10px;margin-bottom:6px;'
+      + '}'
+      + '.scanner-price-tag {'
+      +   'font-size:1rem;font-weight:700;color:#06b6d4;font-family:"Oswald",sans-serif;'
+      + '}'
+      + '.scanner-session-total {'
+      +   'font-size:0.72rem;color:rgba(6,182,212,0.55);font-weight:600;'
       + '}'
       + '.scanner-result-code { font-size:0.75rem;color:rgba(255,255,255,0.4);margin-bottom:12px;font-family:monospace; }'
       + '.scanner-result-actions { display:flex;gap:8px; }'
@@ -645,7 +857,9 @@
       + '.light-mode .scanner-toast { background:#fff;border-color:rgba(0,0,0,0.1);color:#1a1a2e;box-shadow:0 4px 16px rgba(0,0,0,0.1); }'
       + '.light-mode .scanner-history { background:rgba(0,0,0,0.03);border-top-color:rgba(0,0,0,0.08); }'
       + '.light-mode .sh-title { color:#1a1a2e; }'
-      + '.light-mode .sh-code { color:rgba(0,0,0,0.35); }';
+      + '.light-mode .sh-code { color:rgba(0,0,0,0.35); }'
+      + '.light-mode .scanner-offline-bar { background:rgba(234,179,8,0.08);border-top-color:rgba(234,179,8,0.15); }'
+      + '.light-mode .scanner-session-value { background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.15); }';
     document.head.appendChild(css);
   }
 
@@ -654,6 +868,9 @@
     injectStyles();
     buildBarcodeIndex();
     createScannerButton();
+    // Listen for online/offline to update UI
+    window.addEventListener('offline', function() { updateOfflineBar(); });
+    window.addEventListener('online', function() { updateOfflineBar(); });
   }
 
   if (document.readyState === 'loading') {
