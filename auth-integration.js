@@ -403,7 +403,12 @@
       // Signed in — show avatar/initials
       var initials = (user.displayName || user.email || '?').charAt(0).toUpperCase();
       if (user.photoURL) {
-        btn.innerHTML = '<img src="' + user.photoURL + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover" alt="Profile">';
+        var img = document.createElement('img');
+        img.src = user.photoURL;
+        img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover';
+        img.alt = 'Profile';
+        btn.textContent = '';
+        btn.appendChild(img);
       } else {
         btn.textContent = initials;
         btn.style.color = '#fff';

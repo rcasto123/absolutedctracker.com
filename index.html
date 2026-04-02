@@ -2285,7 +2285,7 @@
 //  DATA — DC Absolute Universe Comics
 // ââââââââââââââââââââââââââââââââââââââââ
 
-const TODAY = new Date();
+function getToday() { return new Date(); }
 
 const SERIES_COLORS = {
   'Absolute Batman':            '#5b8fbe',
@@ -2522,8 +2522,17 @@ try {
   owned = Object.assign({}, SHEET_OWNED);
 }
 
-function saveOwned() { try { localStorage.setItem('au_owned', JSON.stringify(owned)); } catch(e){} }
-function saveTrades() { try { localStorage.setItem('au_trades', JSON.stringify(ownedTrades)); } catch(e){} }
+function _showStorageError() {
+  if (document.getElementById('storageWarning')) return;
+  var w = document.createElement('div');
+  w.id = 'storageWarning';
+  w.style.cssText = 'position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:#b91c1c;color:#fff;padding:10px 20px;border-radius:8px;z-index:9999;font-size:0.85rem;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+  w.textContent = 'Storage full — your changes may not be saved. Try clearing old browser data.';
+  document.body.appendChild(w);
+  setTimeout(function(){ w.remove(); }, 6000);
+}
+function saveOwned() { try { localStorage.setItem('au_owned', JSON.stringify(owned)); } catch(e){ _showStorageError(); } }
+function saveTrades() { try { localStorage.setItem('au_trades', JSON.stringify(ownedTrades)); } catch(e){ _showStorageError(); } }
 
 // Market Value localStorage model
 let marketValues = {};
@@ -2592,7 +2601,7 @@ function getPrice(issueKey) {
 
 // Variant cover data cache — loaded once from variants.json
 let _variantData = {};
-fetch('variants.json').then(r => r.json()).then(d => {
+fetch('variants.json?v=2').then(r => r.json()).then(d => {
   _variantData = d;
   // Re-render collection to show variant badges now that data is loaded
   if (typeof renderCollection === 'function') renderCollection(currentFilter, currentSearch);
@@ -2611,8 +2620,10 @@ function makeSlug(name) { return name.toLowerCase().replace(/[:#]/g, '').replace
 
 function tradeKey(t) { return t.title; }
 
-function isReleased(dateStr) { return new Date(dateStr) <= TODAY; }
-function isUpcoming(dateStr) { return new Date(dateStr) > TODAY; }
+// Parse YYYY-MM-DD as local date (not UTC) to avoid timezone off-by-one
+function parseLocalDate(dateStr) { const [y,m,d] = dateStr.split('-').map(Number); return new Date(y, m-1, d); }
+function isReleased(dateStr) { return parseLocalDate(dateStr) <= getToday(); }
+function isUpcoming(dateStr) { return parseLocalDate(dateStr) > getToday(); }
 
 const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -2974,7 +2985,7 @@ function renderCalendar(showAll) {
   const container = document.getElementById('calendarContainer');
   container.innerHTML = '';
 
-  let issues = [...ALL_ISSUES].sort((a,b) => new Date(a.date) - new Date(b.date));
+  let issues = [...ALL_ISSUES].sort((a,b) => parseLocalDate(a.date) - parseLocalDate(b.date));
   if (!showAll) issues = issues.filter(i => isUpcoming(i.date));
 
   if (issues.length === 0) {
@@ -2984,7 +2995,7 @@ function renderCalendar(showAll) {
 
   const months = {};
   issues.forEach(i => {
-    const d = new Date(i.date);
+    const d = parseLocalDate(i.date);
     const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
     if (!months[key]) months[key] = [];
     months[key].push(i);
@@ -3001,10 +3012,11 @@ function renderCalendar(showAll) {
 
     const list = monthDiv.querySelector('.calendar-list');
     items.forEach(i => {
-      const dd = new Date(i.date);
+      const dd = parseLocalDate(i.date);
       const dayStr = dd.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-      const past = dd < TODAY;
-      const isToday = dd.toDateString() === TODAY.toDateString();
+      const now = getToday();
+      const past = dd < now;
+      const isToday = dd.toDateString() === now.toDateString();
       const color = SERIES_COLORS[i.series] || '#555';
 
       const item = document.createElement('div');
@@ -3277,7 +3289,7 @@ function renderPublicationOrder(container, issueMap) {
 
   // Group released issues by month
   const released = ALL_ISSUES.filter(i => isReleased(i.date))
-    .sort((a,b) => new Date(a.date) - new Date(b.date));
+    .sort((a,b) => parseLocalDate(a.date) - parseLocalDate(b.date));
 
   const months = {};
   released.forEach((issue, idx) => {
@@ -3402,7 +3414,7 @@ function renderEssentialOrder(container, issueMap) {
 
 function renderArcIssueRow(i) {
   const color = SERIES_COLORS[i.series] || '#555';
-  const d = new Date(i.date);
+  const d = parseLocalDate(i.date);
   const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
   const ownedClass = i.isOwned ? ' owned' : '';
   const slug = i.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -3541,7 +3553,7 @@ function renderMedia() {
   const uniqueSeries = new Set(released.map(i => i.series)).size;
 
   // Get first and latest release dates
-  const releasedDates = released.map(i => new Date(i.date)).sort((a, b) => a - b);
+  const releasedDates = released.map(i => parseLocalDate(i.date)).sort((a, b) => a - b);
   const firstDate = releasedDates.length > 0 ? releasedDates[0].toLocaleDateString('en-US', { month:'short', year:'numeric' }) : '–';
   const latestDate = releasedDates.length > 0 ? releasedDates[releasedDates.length - 1].toLocaleDateString('en-US', { month:'short', year:'numeric' }) : '–';
 
@@ -3591,7 +3603,7 @@ function renderAnalytics() {
   const months = {};
   ALL_ISSUES.forEach(i => {
     if (!isReleased(i.date)) return;
-    const d = new Date(i.date);
+    const d = parseLocalDate(i.date);
     const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
     if (!months[key]) months[key] = { total: 0, owned: 0 };
     months[key].total++;
@@ -3875,6 +3887,9 @@ let calendarShowAll = false;
 
 // Tab switching with keyboard navigation (arrow keys)
 function switchTab(tab) {
+  if (!tab || !tab.dataset || !tab.dataset.tab) return;
+  var tabPanel = document.getElementById('tab-' + tab.dataset.tab);
+  if (!tabPanel) return;
   document.querySelectorAll('.nav-tab').forEach(t => {
     t.classList.remove('active');
     t.setAttribute('aria-selected', 'false');
@@ -3884,7 +3899,7 @@ function switchTab(tab) {
   tab.classList.add('active');
   tab.setAttribute('aria-selected', 'true');
   tab.setAttribute('tabindex', '0');
-  document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  tabPanel.classList.add('active');
   tab.focus();
   // Persist tab in URL hash
   history.replaceState(null, '', '#' + tab.dataset.tab);
@@ -4093,6 +4108,9 @@ function generateShareText() {
   return text;
 }
 
+// Defer share/import-export modal listeners — modal HTML is below this script block
+document.addEventListener('DOMContentLoaded', () => {
+
 document.getElementById('shareCollection').addEventListener('click', () => {
   const overlay = document.getElementById('shareOverlay');
   const preview = document.getElementById('sharePreview');
@@ -4294,6 +4312,10 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
     try {
       if (file.name.endsWith('.json')) {
         const data = JSON.parse(event.target.result);
+        if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+          alert('Invalid import file: expected a JSON object with an "owned" key.');
+          return;
+        }
         if (data.owned) {
           Object.keys(data.owned).forEach(key => {
             owned[key] = true;
@@ -4394,6 +4416,8 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   };
   reader.readAsText(file);
 });
+
+}); // end DOMContentLoaded — share/import-export modal listeners
 
 renderStats();
 renderCollection('all', '');
@@ -4582,9 +4606,9 @@ renderAchievements();
   }
 
   injectExportButton();
-  setInterval(function() {
-    if (!document.getElementById('export-dropdown')) injectExportButton();
-  }, 500);
+  var _exportObserver = new MutationObserver(function() { if (!document.getElementById('export-dropdown')) injectExportButton(); });
+  var _collTab = document.getElementById('tab-collection');
+  if (_collTab) _exportObserver.observe(_collTab, { childList: true, subtree: true });
 })();
 </script>
 
@@ -4704,7 +4728,7 @@ renderAchievements();
     var seriesData = {};
     if (typeof ALL_ISSUES !== 'undefined' && typeof owned !== 'undefined') {
       ALL_ISSUES.forEach(function(i) {
-        if (new Date(i.date) > new Date()) return;
+        if (parseLocalDate(i.date) > getToday()) return;
         if (!seriesData[i.series]) seriesData[i.series] = { total: 0, owned: 0 };
         seriesData[i.series].total++;
         var key = i.series + '|' + i.issue;
@@ -4902,10 +4926,12 @@ renderAchievements();
 
   injectShareButton();
   injectPrivacyToggle();
-  setInterval(function() {
+  var _shareObserver = new MutationObserver(function() {
     injectShareButton();
     if (!document.getElementById('privacy-toggle-wrap')) injectPrivacyToggle();
-  }, 500);
+  });
+  var _analyticsTab = document.getElementById('tab-analytics');
+  if (_analyticsTab) _shareObserver.observe(_analyticsTab, { childList: true, subtree: true });
 })();
 </script>
 
@@ -4944,7 +4970,7 @@ renderAchievements();
     var issues = [];
     if (typeof ALL_ISSUES !== 'undefined') {
       issues = ALL_ISSUES.filter(function(i) {
-        return new Date(i.date) > new Date();
+        return parseLocalDate(i.date) > getToday();
       });
     }
     if (issues.length === 0) {
@@ -5155,7 +5181,10 @@ renderAchievements();
   }
 
   injectCalActions();
-  setInterval(function() { if (!document.getElementById('calActions')) injectCalActions(); }, 500);
+  // Re-inject if removed (e.g. by tab re-render) — use MutationObserver instead of setInterval
+  var _calObserver = new MutationObserver(function() { if (!document.getElementById('calActions')) injectCalActions(); });
+  var _calTab = document.getElementById('tab-calendar');
+  if (_calTab) _calObserver.observe(_calTab, { childList: true, subtree: true });
   setTimeout(checkTodayReleases, 3000);
 })();
 </script>

@@ -1428,7 +1428,7 @@ window.addEventListener('popstate', render);
       }
     }
 
-    fetch("variants.json").then(function(r){return r.json()}).then(function(allVariants){
+    fetch("variants.json?v=2").then(function(r){return r.json()}).then(function(allVariants){
       var vs = allVariants[slug];
       if (!vs || vs.length === 0) return;
       var mainContent = document.querySelector(".main-content");
