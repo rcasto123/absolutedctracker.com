@@ -473,6 +473,64 @@
   .badge-upcoming { background: rgba(212,168,68,0.12); color: var(--accent-gold); border: 1px solid rgba(212,168,68,0.3); }
   .badge-announced { background: rgba(139,92,246,0.12); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
 
+  /* ââ Pull List & Price Input ââ */
+  .pull-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 16px;
+  }
+  .pull-icon:not(.active) { opacity: 0.4; }
+  .pull-icon.active { opacity: 1; color: var(--accent-purple); }
+
+  .series-subscribe {
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 3px;
+    border: 1px solid var(--text-muted);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .series-subscribe:hover { color: var(--text-secondary); border-color: var(--text-secondary); }
+  .series-subscribe.subscribed { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(139,92,246,0.1); }
+
+  .price-input {
+    width: 60px;
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: all 0.15s;
+  }
+  .price-input:focus { outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 0 2px rgba(6,182,212,0.1); }
+  .price-input::-webkit-outer-spin-button,
+  .price-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .price-input[type=number] { -moz-appearance: textfield; }
+
+  /* ââ Spending Summary ââ */
+  .spending-summary { margin-bottom: 24px; }
+  .spending-stat { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .spending-stat:last-child { border-bottom: none; }
+  .spending-stat-label { color: var(--text-secondary); }
+  .spending-stat-value { font-weight: 600; color: var(--accent-cyan); }
+  .spending-by-series { margin-top: 12px; }
+  .spending-series-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; }
+  .spending-series-label { color: var(--text-muted); }
+  .spending-series-total { color: var(--text-secondary); font-weight: 500; }
+
   /* ââ Release Calendar ââ */
   .calendar-month { margin-bottom: 32px; }
 
@@ -1296,6 +1354,15 @@
   /* --- Auth UI (top-right) --- */
   .light-mode #authUI #authBtn { border-color: var(--border); background: var(--bg-secondary); color: var(--text-secondary); }
   .light-mode #authUI #syncBadge { background: rgba(0,0,0,0.06); color: var(--text-muted); }
+
+  /* Pull List & Spending Tracker Light Mode */
+  .light-mode .series-subscribe { border-color: var(--text-secondary); color: var(--text-secondary); }
+  .light-mode .series-subscribe:hover { border-color: var(--text-primary); color: var(--text-primary); }
+  .light-mode .series-subscribe.subscribed { border-color: var(--accent-purple); background: rgba(139,92,246,0.08); }
+  .light-mode .price-input { background: var(--bg-secondary); border-color: var(--border); color: var(--text-primary); }
+  .light-mode .price-input:focus { border-color: var(--accent-cyan); }
+  .light-mode .spending-stat { border-bottom-color: var(--border); }
+  .light-mode .spending-series-row { border-bottom-color: var(--border); }
   </style>
 <script type="application/ld+json">
 {
@@ -1352,6 +1419,14 @@
     <div class="stat-number" id="statSeries" aria-label="Active series count">0</div>
     <div class="stat-label">Active Series</div>
   </div>
+  <div class="stat-item">
+    <div class="stat-number accent-purple" id="statPull" aria-label="Issues on pull list">0</div>
+    <div class="stat-label">On Pull</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number accent-cyan" id="statSpent" aria-label="Total spending">$0.00</div>
+    <div class="stat-label">Total Spent</div>
+  </div>
 </div>
 
 <!-- ââ Main ââ -->
@@ -1375,6 +1450,7 @@
       <button class="filter-btn" data-filter="owned" aria-pressed="false">Owned</button>
       <button class="filter-btn" data-filter="missing" aria-pressed="false">Missing</button>
       <button class="filter-btn" data-filter="upcoming" aria-pressed="false">Upcoming</button>
+      <button class="filter-btn" data-filter="pull" aria-pressed="false">Pull List</button>
       <input class="search-input" type="text" id="searchInput" placeholder="Search issues..." aria-label="Search issues by title, writer, or artist">
       <button class="filter-btn" id="markAllOwned" style="margin-left:auto;border-color:var(--accent-green);color:var(--accent-green);" title="Mark all released issues as owned">Mark All Owned</button>
     </div>
@@ -1438,6 +1514,16 @@
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Pull list</div>
+        <div class="changelog-desc">Subscribe to entire series or pin individual upcoming issues to your pull list. New "Pull List" filter in the Collection tab shows only the issues you're tracking. Pull count displays in the stats bar so you always know what's coming.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Spending tracker</div>
+        <div class="changelog-desc">Log what you paid for each issue with inline price inputs on owned cards. The Analytics tab now includes a Spending Tracker card with total spent, average price per issue, and a per-series spending breakdown.</div>
+      </div>
       <div class="changelog-entry">
         <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Themed hero backgrounds</div>
@@ -1814,6 +1900,58 @@ try {
 function saveOwned() { try { localStorage.setItem('au_owned', JSON.stringify(owned)); } catch(e){} }
 function saveTrades() { try { localStorage.setItem('au_trades', JSON.stringify(ownedTrades)); } catch(e){} }
 
+// Pull List & Spending Tracker Functions
+let pullSeries = {};
+let pullIssues = {};
+let prices = {};
+
+try {
+  pullSeries = JSON.parse(localStorage.getItem('au_pull_series') || '{}');
+  pullIssues = JSON.parse(localStorage.getItem('au_pull_issues') || '{}');
+  prices = JSON.parse(localStorage.getItem('au_prices') || '{}');
+} catch(e) {
+  pullSeries = {};
+  pullIssues = {};
+  prices = {};
+}
+
+function savePullSeries() { try { localStorage.setItem('au_pull_series', JSON.stringify(pullSeries)); } catch(e){} }
+function savePullIssues() { try { localStorage.setItem('au_pull_issues', JSON.stringify(pullIssues)); } catch(e){} }
+function savePrices() { try { localStorage.setItem('au_prices', JSON.stringify(prices)); } catch(e){} }
+
+function getPullSeries() { return pullSeries; }
+function getPullIssues() { return pullIssues; }
+function getPrices() { return prices; }
+
+function isSeriesOnPull(seriesName) { return !!pullSeries[seriesName]; }
+function isIssueOnPull(issueKey) { return !!pullIssues[issueKey]; }
+function isOnPullList(issueKey, seriesName) {
+  return isSeriesOnPull(seriesName) || isIssueOnPull(issueKey);
+}
+
+function toggleSeriesPull(seriesName) {
+  if (pullSeries[seriesName]) delete pullSeries[seriesName];
+  else pullSeries[seriesName] = true;
+  savePullSeries();
+}
+
+function toggleIssuePull(issueKey) {
+  if (pullIssues[issueKey]) delete pullIssues[issueKey];
+  else pullIssues[issueKey] = true;
+  savePullIssues();
+}
+
+function setPrice(issueKey, price) {
+  const p = parseFloat(price);
+  if (p > 0) prices[issueKey] = p;
+  else delete prices[issueKey];
+  savePrices();
+}
+
+function getPrice(issueKey) {
+  return prices[issueKey] || null;
+}
+
 // Variant cover data cache — loaded once from variants.json
 let _variantData = {};
 fetch('variants.json').then(r => r.json()).then(d => {
@@ -1845,11 +1983,23 @@ function renderStats() {
   const series = new Set(ALL_ISSUES.filter(i => isReleased(i.date)).map(i => i.series));
   const pct = released > 0 ? Math.round((ownedCount / released) * 100) : 0;
 
+  // Calculate pull list count (upcoming issues on pull list)
+  const pullCount = ALL_ISSUES.filter(i => isUpcoming(i.date) && isOnPullList(issueKey(i), i.series)).length;
+
+  // Calculate total spending
+  let totalSpent = 0;
+  ALL_ISSUES.forEach(i => {
+    const price = getPrice(issueKey(i));
+    if (price) totalSpent += price;
+  });
+
   document.getElementById('statOwned').textContent = ownedCount;
   document.getElementById('statReleased').textContent = released;
   document.getElementById('statPercent').textContent = pct + '%';
   document.getElementById('statUpcoming').textContent = upcoming;
   document.getElementById('statSeries').textContent = series.size;
+  document.getElementById('statPull').textContent = pullCount;
+  document.getElementById('statSpent').textContent = '$' + totalSpent.toFixed(2);
 
   // Dynamic page title with collection count
   document.title = ownedCount + '/' + released + ' — DC Absolute Universe Collection Tracker';
@@ -1881,6 +2031,7 @@ function renderCollection(filter, search) {
     if (filter === 'owned') issues = issues.filter(i => owned[issueKey(i)]);
     else if (filter === 'missing') issues = issues.filter(i => !owned[issueKey(i)] && isReleased(i.date));
     else if (filter === 'upcoming') issues = issues.filter(i => isUpcoming(i.date));
+    else if (filter === 'pull') issues = issues.filter(i => isUpcoming(i.date) && isOnPullList(issueKey(i), sName));
 
     if (search) {
       const q = search.toLowerCase();
@@ -1899,6 +2050,7 @@ function renderCollection(filter, search) {
     const color = SERIES_COLORS[sName] || '#555';
     const isCollapsed = accState[sName] === true;
 
+    const isSeriesSubscribed = isSeriesOnPull(sName);
     block.innerHTML = `
       <div class="series-header${isCollapsed ? ' collapsed' : ''}" style="--accent-color:${color}" role="button" tabindex="0" aria-expanded="${!isCollapsed}" aria-controls="grid-${sName.replace(/\s+/g, '-')}">
         <svg class="series-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -1909,6 +2061,7 @@ function renderCollection(filter, search) {
           <div class="progress-text">${ownedInSeries}/${allInSeries.length}</div>
         </div>
         <div class="series-meta"><strong>${pct}%</strong> collected</div>
+        <button class="series-subscribe${isSeriesSubscribed ? ' subscribed' : ''}" title="Toggle series subscription on pull list" aria-pressed="${isSeriesSubscribed}">Subscribe</button>
       </div>
       <div class="issue-grid" id="grid-${sName.replace(/\s+/g, '-')}"${isCollapsed ? ' style="display:none"' : ''}></div>
     `;
@@ -1939,6 +2092,16 @@ function renderCollection(filter, search) {
         ? `<span class="variant-badge">${variantOwnedCount > 0 ? '<span class="vb-owned">' + variantOwnedCount + '</span>/' : ''}${variantCount} variants</span>`
         : '';
 
+      const isOnPull = isOnPullList(key, sName);
+      const pullIconHTML = !released
+        ? `<div class="pull-icon${isOnPull ? ' active' : ''}" title="Add to pull list">📌</div>`
+        : '';
+
+      const priceValue = getPrice(key) || '';
+      const priceInputHTML = isOwned
+        ? `<input class="price-input" type="number" step="0.01" min="0" placeholder="$" value="${priceValue}" data-issue-key="${key}" title="Price paid for this issue">`
+        : '';
+
       card.innerHTML = `
         <div class="issue-checkbox">${checkSvg}</div>
         <div class="issue-info">
@@ -1946,6 +2109,8 @@ function renderCollection(filter, search) {
           <div class="issue-date">${dateStr} · ${issue.writer}</div>
         </div>
         ${variantBadgeHTML}
+        ${pullIconHTML}
+        ${priceInputHTML}
         <div class="issue-badge ${badgeClass}">${badgeText}</div>
       `;
 
@@ -1960,6 +2125,42 @@ function renderCollection(filter, search) {
         renderAchievements();
       };
 
+      // Pull icon handler for upcoming issues
+      const pullIcon = card.querySelector('.pull-icon');
+      if (pullIcon) {
+        pullIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleIssuePull(key);
+          pullIcon.classList.toggle('active');
+          renderStats();
+        });
+      }
+
+      // Price input handler for owned issues
+      const priceInput = card.querySelector('.price-input');
+      if (priceInput) {
+        priceInput.addEventListener('click', (e) => e.stopPropagation());
+        priceInput.addEventListener('focus', (e) => e.stopPropagation());
+        priceInput.addEventListener('blur', (e) => {
+          const price = parseFloat(e.target.value);
+          if (e.target.value && price > 0) {
+            setPrice(key, price);
+          } else {
+            delete prices[key];
+            savePrices();
+            e.target.value = '';
+          }
+          renderStats();
+          renderAnalytics();
+        });
+        priceInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.target.blur();
+          }
+          e.stopPropagation();
+        });
+      }
+
       card.addEventListener('click', toggleOwned);
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'o' || e.key === 'O') {
@@ -1973,8 +2174,18 @@ function renderCollection(filter, search) {
 
     // Accordion toggle handler
     const header = block.querySelector('.series-header');
+    const subscribeBtn = header.querySelector('.series-subscribe');
+
+    subscribeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSeriesPull(sName);
+      subscribeBtn.classList.toggle('subscribed');
+      subscribeBtn.setAttribute('aria-pressed', subscribeBtn.classList.contains('subscribed'));
+      renderStats();
+    });
+
     header.addEventListener('click', (e) => {
-      if (e.target.closest('a')) return;
+      if (e.target.closest('a') || e.target.closest('.series-subscribe')) return;
       const grd = block.querySelector('.issue-grid');
       const collapsed = header.classList.toggle('collapsed');
       header.setAttribute('aria-expanded', !collapsed);
@@ -2514,6 +2725,59 @@ function renderAnalytics() {
     <div class="timeline-row">${barsHtml}</div>
     <div class="timeline-labels">${labelsHtml}</div>`;
   grid.appendChild(timeCard);
+
+  // === Spending Summary Card ===
+  let totalSpent = 0;
+  const spendingBySeriesMap = {};
+  ALL_ISSUES.forEach(i => {
+    const price = getPrice(issueKey(i));
+    if (price) {
+      totalSpent += price;
+      if (!spendingBySeriesMap[i.series]) spendingBySeriesMap[i.series] = 0;
+      spendingBySeriesMap[i.series] += price;
+    }
+  });
+
+  const avgPrice = ownedCount > 0 ? (totalSpent / ownedCount).toFixed(2) : 0;
+  const spendingCard = document.createElement('div');
+  spendingCard.className = 'analytics-card';
+  let spendingHtml = '<h3>Spending Tracker</h3><div class="spending-summary">';
+  spendingHtml += `<div class="spending-stat">
+    <span class="spending-stat-label">Total Spent</span>
+    <span class="spending-stat-value">$${totalSpent.toFixed(2)}</span>
+  </div>`;
+  spendingHtml += `<div class="spending-stat">
+    <span class="spending-stat-label">Average Price</span>
+    <span class="spending-stat-value">$${avgPrice}</span>
+  </div>`;
+
+  if (Object.keys(spendingBySeriesMap).length > 0) {
+    let mostExpensiveSeries = '';
+    let mostExpensive = 0;
+    Object.keys(spendingBySeriesMap).forEach(s => {
+      if (spendingBySeriesMap[s] > mostExpensive) {
+        mostExpensive = spendingBySeriesMap[s];
+        mostExpensiveSeries = s;
+      }
+    });
+    spendingHtml += `<div class="spending-stat">
+      <span class="spending-stat-label">Top Spending</span>
+      <span class="spending-stat-value">${mostExpensiveSeries.replace('Absolute ', '')}</span>
+    </div>`;
+
+    spendingHtml += '<div class="spending-by-series"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">By Series</div>';
+    Object.keys(spendingBySeriesMap).sort((a,b) => spendingBySeriesMap[b] - spendingBySeriesMap[a]).forEach(s => {
+      const spent = spendingBySeriesMap[s];
+      spendingHtml += `<div class="spending-series-row">
+        <span class="spending-series-label">${s.replace('Absolute ', '')}</span>
+        <span class="spending-series-total">$${spent.toFixed(2)}</span>
+      </div>`;
+    });
+    spendingHtml += '</div>';
+  }
+  spendingHtml += '</div>';
+  spendingCard.innerHTML = spendingHtml;
+  grid.appendChild(spendingCard);
 
   container.appendChild(grid);
 }
@@ -3671,7 +3935,7 @@ renderAchievements();
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=2" defer></script>
 <script src="auth-integration.js?v=4" defer></script>
-<script src="theme-switcher.js?v=10" defer></script>
+<script src="theme-switcher.js?v=11" defer></script>
 <script>
 // What's New toggle
 (function() {
