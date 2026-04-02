@@ -531,6 +531,27 @@
   .spending-series-label { color: var(--text-muted); }
   .spending-series-total { color: var(--text-secondary); font-weight: 500; }
 
+  /* Price Guide */
+  .price-guide-summary { margin-bottom: 24px; }
+  .price-guide-stat { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .price-guide-stat:last-child { border-bottom: none; }
+  .price-guide-stat-label { color: var(--text-secondary); }
+  .price-guide-stat-value { font-weight: 600; color: var(--accent-green); }
+  .price-guide-stat-value.negative { color: var(--accent-red); }
+  .value-bar-container { margin-top: 12px; }
+  .value-bar-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
+  .value-bar-label { width: 100px; flex-shrink: 0; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .value-bar-track { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+  .value-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .value-bar-amount { width: 60px; text-align: right; color: var(--text-secondary); font-weight: 500; flex-shrink: 0; }
+  .market-input { width: 60px; padding: 4px 8px; font-size: 12px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg-secondary); color: var(--text-primary); transition: all 0.15s; }
+  .market-input:focus { outline: none; border-color: var(--accent-green); box-shadow: 0 0 0 2px rgba(34,197,94,0.1); }
+  .market-input::-webkit-outer-spin-button, .market-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .market-input[type=number] { -moz-appearance: textfield; }
+  .price-guide-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .price-guide-link { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; font-size: 11px; border: 1px solid var(--border); border-radius: 3px; color: var(--text-secondary); text-decoration: none; transition: all 0.15s; }
+  .price-guide-link:hover { border-color: var(--accent-green); color: var(--accent-green); }
+
   /* ââ Release Calendar ââ */
   .calendar-month { margin-bottom: 32px; }
 
@@ -1363,6 +1384,8 @@
   .light-mode .price-input:focus { border-color: var(--accent-cyan); }
   .light-mode .spending-stat { border-bottom-color: var(--border); }
   .light-mode .spending-series-row { border-bottom-color: var(--border); }
+  .light-mode .price-guide-stat { border-bottom-color: var(--border); }
+  .light-mode .value-bar-track { background: var(--bg-secondary); }
   </style>
 <script type="application/ld+json">
 {
@@ -1426,6 +1449,10 @@
   <div class="stat-item">
     <div class="stat-number accent-cyan" id="statSpent" aria-label="Total spending">$0.00</div>
     <div class="stat-label">Total Spent</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number accent-green" id="statValue" aria-label="Estimated collection value">$0.00</div>
+    <div class="stat-label">Est. Value</div>
   </div>
 </div>
 
@@ -1518,6 +1545,11 @@
         <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Pull list</div>
         <div class="changelog-desc">Subscribe to entire series or pin individual upcoming issues to your pull list. New "Pull List" filter in the Collection tab shows only the issues you're tracking. Pull count displays in the stats bar so you always know what's coming.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Price guide &amp; market value</div>
+        <div class="changelog-desc">Track estimated market value for every issue and variant cover. Price Guide card in Analytics shows cover price totals, market value, ROI, and per-series value bars. Prices load from a central data file with fallback to your own estimates. Links to GoCollect, PriceCharting, CovrPrice, and ComicsPriceGuide for real-time lookups.</div>
       </div>
       <div class="changelog-entry">
         <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
@@ -1882,6 +1914,16 @@ const SHEET_OWNED = {
   'Absolute Evil|#1': true,
 };
 
+const COVER_PRICES = {
+  'DC All In|Special #1': 5.99,
+  'DC All In|FCBD Special': 0.00,
+  'Absolute Batman|Annual #1': 5.99,
+  'Absolute Batman|Ark M #1': 5.99,
+  'Absolute Evil|#1': 4.99,
+  '_default': 4.99
+};
+function getCoverPrice(key) { return COVER_PRICES[key] !== undefined ? COVER_PRICES[key] : COVER_PRICES['_default']; }
+
 let owned = {};
 let ownedTrades = {};
 try {
@@ -1899,6 +1941,38 @@ try {
 
 function saveOwned() { try { localStorage.setItem('au_owned', JSON.stringify(owned)); } catch(e){} }
 function saveTrades() { try { localStorage.setItem('au_trades', JSON.stringify(ownedTrades)); } catch(e){} }
+
+// Market Value localStorage model
+let marketValues = {};
+try { marketValues = JSON.parse(localStorage.getItem('au_market_values') || '{}'); } catch(e) { marketValues = {}; }
+function saveMarketValues() { try { localStorage.setItem('au_market_values', JSON.stringify(marketValues)); } catch(e){} }
+function setMarketValue(key, val) { var v = parseFloat(val); if (v > 0) marketValues[key] = v; else delete marketValues[key]; saveMarketValues(); }
+function getMarketValue(key) {
+  if (marketValues[key]) return marketValues[key];
+  if (_priceGuideData && _priceGuideData.issues && _priceGuideData.issues[key]) return _priceGuideData.issues[key].market;
+  return null;
+}
+
+// Variant Market Value localStorage model
+let variantMarketValues = {};
+try { variantMarketValues = JSON.parse(localStorage.getItem('au_variant_market_values') || '{}'); } catch(e) { variantMarketValues = {}; }
+function saveVariantMarketValues() { try { localStorage.setItem('au_variant_market_values', JSON.stringify(variantMarketValues)); } catch(e){} }
+function setVariantMarketValue(issueKey, variantIdx, val) {
+  var v = parseFloat(val);
+  if (!variantMarketValues[issueKey]) variantMarketValues[issueKey] = {};
+  if (v > 0) variantMarketValues[issueKey][variantIdx] = v;
+  else { delete variantMarketValues[issueKey][variantIdx]; if (Object.keys(variantMarketValues[issueKey]).length === 0) delete variantMarketValues[issueKey]; }
+  saveVariantMarketValues();
+}
+function getVariantMarketValue(issueKey, variantIdx) {
+  if (variantMarketValues[issueKey] && variantMarketValues[issueKey][variantIdx]) return variantMarketValues[issueKey][variantIdx];
+  if (_priceGuideData && _priceGuideData.variants && _priceGuideData.variants[issueKey] && _priceGuideData.variants[issueKey][variantIdx]) return _priceGuideData.variants[issueKey][variantIdx];
+  return null;
+}
+function getTotalVariantValue(issueKey) {
+  if (!variantMarketValues[issueKey]) return 0;
+  return Object.values(variantMarketValues[issueKey]).reduce(function(sum, v) { return sum + v; }, 0);
+}
 
 // Pull List & Spending Tracker Functions
 let pullSeries = {};
@@ -1960,6 +2034,14 @@ fetch('variants.json').then(r => r.json()).then(d => {
   if (typeof renderCollection === 'function') renderCollection(currentFilter, currentSearch);
 }).catch(() => {});
 
+// Load price guide data
+let _priceGuideData = null;
+fetch('prices.json').then(r => r.json()).then(d => {
+  _priceGuideData = d;
+  renderStats();
+  renderAnalytics();
+}).catch(() => {});
+
 function issueKey(issue) { return issue.series + '|' + issue.issue; }
 function makeSlug(name) { return name.toLowerCase().replace(/[:#]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''); }
 
@@ -1993,6 +2075,17 @@ function renderStats() {
     if (price) totalSpent += price;
   });
 
+  // Calculate estimated collection value (main + variants)
+  let collectionValue = 0;
+  ALL_ISSUES.forEach(i => {
+    const k = issueKey(i);
+    if (owned[k]) {
+      const mv = getMarketValue(k);
+      collectionValue += mv ? mv : getCoverPrice(k);
+    }
+    collectionValue += getTotalVariantValue(k);
+  });
+
   document.getElementById('statOwned').textContent = ownedCount;
   document.getElementById('statReleased').textContent = released;
   document.getElementById('statPercent').textContent = pct + '%';
@@ -2000,6 +2093,7 @@ function renderStats() {
   document.getElementById('statSeries').textContent = series.size;
   document.getElementById('statPull').textContent = pullCount;
   document.getElementById('statSpent').textContent = '$' + totalSpent.toFixed(2);
+  document.getElementById('statValue').textContent = '$' + collectionValue.toFixed(2);
 
   // Dynamic page title with collection count
   document.title = ownedCount + '/' + released + ' — DC Absolute Universe Collection Tracker';
@@ -2102,6 +2196,11 @@ function renderCollection(filter, search) {
         ? `<input class="price-input" type="number" step="0.01" min="0" placeholder="$" value="${priceValue}" data-issue-key="${key}" title="Price paid for this issue">`
         : '';
 
+      const mvValue = getMarketValue(key) || '';
+      const marketInputHTML = isOwned
+        ? `<input class="market-input" type="number" step="0.01" min="0" placeholder="MV$" value="${mvValue}" data-issue-key="${key}" title="Estimated market value">`
+        : '';
+
       card.innerHTML = `
         <div class="issue-checkbox">${checkSvg}</div>
         <div class="issue-info">
@@ -2111,6 +2210,7 @@ function renderCollection(filter, search) {
         ${variantBadgeHTML}
         ${pullIconHTML}
         ${priceInputHTML}
+        ${marketInputHTML}
         <div class="issue-badge ${badgeClass}">${badgeText}</div>
       `;
 
@@ -2157,6 +2257,29 @@ function renderCollection(filter, search) {
           if (e.key === 'Enter') {
             e.target.blur();
           }
+          e.stopPropagation();
+        });
+      }
+
+      // Market value input handler for owned issues
+      const marketInput = card.querySelector('.market-input');
+      if (marketInput) {
+        marketInput.addEventListener('click', (e) => e.stopPropagation());
+        marketInput.addEventListener('focus', (e) => e.stopPropagation());
+        marketInput.addEventListener('blur', (e) => {
+          const val = parseFloat(e.target.value);
+          if (e.target.value && val > 0) {
+            setMarketValue(key, val);
+          } else {
+            delete marketValues[key];
+            saveMarketValues();
+            e.target.value = '';
+          }
+          renderStats();
+          renderAnalytics();
+        });
+        marketInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') e.target.blur();
           e.stopPropagation();
         });
       }
@@ -2778,6 +2901,84 @@ function renderAnalytics() {
   spendingHtml += '</div>';
   spendingCard.innerHTML = spendingHtml;
   grid.appendChild(spendingCard);
+
+  // === Price Guide Card ===
+  const pgCard = document.createElement('div');
+  pgCard.className = 'analytics-card';
+  let coverTotal = 0, mvTotal = 0, mvCount = 0, variantTotal = 0, variantValued = 0;
+  const seriesCover = {}, seriesMV = {};
+  ALL_ISSUES.forEach(i => {
+    const k = issueKey(i);
+    if (owned[k]) {
+      const cp = getCoverPrice(k);
+      coverTotal += cp;
+      if (!seriesCover[i.series]) seriesCover[i.series] = 0;
+      seriesCover[i.series] += cp;
+      const mv = getMarketValue(k);
+      if (mv) {
+        mvTotal += mv;
+        mvCount++;
+        if (!seriesMV[i.series]) seriesMV[i.series] = 0;
+        seriesMV[i.series] += mv;
+      }
+    }
+    // Add variant values
+    const vv = getTotalVariantValue(k);
+    if (vv > 0) {
+      variantTotal += vv;
+      variantValued++;
+      if (!seriesMV[i.series]) seriesMV[i.series] = 0;
+      seriesMV[i.series] += vv;
+    }
+  });
+  const grandTotal = (mvCount > 0 ? mvTotal : coverTotal) + variantTotal;
+  const roi = coverTotal > 0 ? ((grandTotal - coverTotal) / coverTotal * 100).toFixed(1) : '0.0';
+  const roiClass = parseFloat(roi) < 0 ? ' negative' : '';
+
+  let pgHtml = '<h3>Price Guide</h3><div class="price-guide-summary">';
+  pgHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">Cover Price Total</span><span class="price-guide-stat-value">$${coverTotal.toFixed(2)}</span></div>`;
+  if (mvCount > 0) {
+    pgHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">Market Value Total</span><span class="price-guide-stat-value">$${mvTotal.toFixed(2)}</span></div>`;
+    pgHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">ROI vs Cover</span><span class="price-guide-stat-value${roiClass}">${roi}%</span></div>`;
+    pgHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">Issues Valued</span><span class="price-guide-stat-value">${mvCount} / ${ownedCount}</span></div>`;
+  }
+  if (variantTotal > 0) {
+    pgHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">Variant Value</span><span class="price-guide-stat-value">$${variantTotal.toFixed(2)}</span></div>`;
+    pgHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">Grand Total</span><span class="price-guide-stat-value">$${grandTotal.toFixed(2)}</span></div>`;
+  }
+  pgHtml += '</div>';
+  if (_priceGuideData && _priceGuideData._meta) {
+    pgHtml += `<div style="font-size:11px;color:var(--text-muted);margin-top:12px;">Prices last updated: ${_priceGuideData._meta.lastUpdated}</div>`;
+  }
+
+  // Series value bars
+  const seriesNames = Object.keys(seriesCover).sort((a,b) => (seriesMV[b]||seriesCover[b]) - (seriesMV[a]||seriesCover[a]));
+  if (seriesNames.length > 0) {
+    const maxVal = Math.max(...seriesNames.map(s => seriesMV[s] || seriesCover[s]));
+    pgHtml += '<div class="value-bar-container"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">Value by Series</div>';
+    seriesNames.forEach(s => {
+      const val = seriesMV[s] || seriesCover[s];
+      const pct = maxVal > 0 ? (val / maxVal * 100) : 0;
+      const color = typeof SERIES_COLORS !== 'undefined' ? (SERIES_COLORS[s] || '#555') : '#555';
+      pgHtml += `<div class="value-bar-row">
+        <span class="value-bar-label">${s.replace('Absolute ', '')}</span>
+        <div class="value-bar-track"><div class="value-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span class="value-bar-amount">$${val.toFixed(2)}</span>
+      </div>`;
+    });
+    pgHtml += '</div>';
+  }
+
+  // External links
+  pgHtml += '<div class="price-guide-links">';
+  pgHtml += '<a class="price-guide-link" href="https://gocollect.com/comics" target="_blank" rel="noopener">GoCollect</a>';
+  pgHtml += '<a class="price-guide-link" href="https://www.pricecharting.com/brand/comic-books/dc" target="_blank" rel="noopener">PriceCharting</a>';
+  pgHtml += '<a class="price-guide-link" href="https://covrprice.com/" target="_blank" rel="noopener">CovrPrice</a>';
+  pgHtml += '<a class="price-guide-link" href="https://comicspriceguide.com/publishers/dc" target="_blank" rel="noopener">ComicsPriceGuide</a>';
+  pgHtml += '</div>';
+
+  pgCard.innerHTML = pgHtml;
+  grid.appendChild(pgCard);
 
   container.appendChild(grid);
 }
@@ -3935,7 +4136,7 @@ renderAchievements();
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=2" defer></script>
 <script src="auth-integration.js?v=4" defer></script>
-<script src="theme-switcher.js?v=11" defer></script>
+<script src="theme-switcher.js?v=12" defer></script>
 <script>
 // What's New toggle
 (function() {

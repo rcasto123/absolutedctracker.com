@@ -1406,7 +1406,11 @@ window.addEventListener('popstate', render);
         h += '<div class="variant-card' + ownedClass + '" data-vidx="' + i + '"' + d + '>';
         h += '<div class="variant-checkbox' + checkedClass + '" data-vidx="' + i + '">' + checkSvg + '</div>';
         h += '<img src="' + vs[i].url + '" loading=lazy onerror="this.parentElement.style.display=\'none\'">';
-        h += '<div class="variant-name">' + sn + '</div></div>';
+        h += '<div class="variant-name">' + sn;
+        if (isOwned) {
+          h += '<input class="variant-market-input" type="number" step="0.01" min="0" placeholder="MV$" data-vidx="' + i + '" style="width:60px;padding:4px 8px;font-size:11px;margin-top:4px;border:1px solid rgba(255,255,255,0.3);border-radius:3px;background:rgba(34,197,94,0.15);color:inherit;" />';
+        }
+        h += '</div></div>';
       }
       h += "</div>";
       if (vs.length > n) h += "<div style=text-align:center;margin-top:0.75rem><button class=show-more-variants id=showMoreBtn>Show All " + vs.length + " Variants</button></div>";
@@ -1460,6 +1464,16 @@ window.addEventListener('popstate', render);
           if (img) { mi.src = img.src; modal.classList.add('active'); }
         }
       };
+
+      // Change handler for variant market value inputs
+      sec.addEventListener('change', function(e) {
+        var input = e.target.closest('.variant-market-input');
+        if (input && _issueKey && typeof setVariantMarketValue === 'function') {
+          var idx = input.dataset.vidx;
+          var val = input.value;
+          setVariantMarketValue(_issueKey, idx, val);
+        }
+      });
     }).catch(function(){});
   })();
   </script>
