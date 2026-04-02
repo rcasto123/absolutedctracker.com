@@ -355,6 +355,32 @@
     border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
   }
 
+  .series-variant-progress {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+  }
+  .variant-progress-bar {
+    width: 80px;
+    height: 6px;
+    background: rgba(212,168,68,0.12);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .variant-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #d4a844, var(--accent-green));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+  .variant-progress-text {
+    font-size: 11px;
+    color: #d4a844;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
   .series-meta {
     font-size: 13px;
     color: var(--text-muted);
@@ -1181,6 +1207,7 @@
     .series-header { flex-wrap: wrap; }
     .series-meta { margin-left: 0; text-align: left; }
     .series-progress { margin-left: 0; }
+    .series-variant-progress { margin-left: 0; }
     .filter-bar { flex-direction: column; align-items: stretch; }
     .search-input { min-width: unset; }
     .nav-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -1402,6 +1429,9 @@
   .light-mode .variant-tracker-label { color: #92700a; }
   .light-mode .variant-tracker-bar { background: rgba(180,130,30,0.12); }
   .light-mode .variant-tracker-fill { background: linear-gradient(90deg, #b8860b, #16a34a); }
+  .light-mode .variant-progress-bar { background: rgba(180,130,30,0.1); }
+  .light-mode .variant-progress-fill { background: linear-gradient(90deg, #b8860b, #16a34a); }
+  .light-mode .variant-progress-text { color: #92700a; }
 
   /* --- Release Badges --- */
   .light-mode .badge-released { background: rgba(34,197,94,0.1); color: #16a34a; border-color: rgba(34,197,94,0.25); }
@@ -2601,6 +2631,29 @@ function renderCollection(filter, search) {
     const isCollapsed = accState[sName] === true;
 
     const isSeriesSubscribed = isSeriesOnPull(sName);
+
+    // Calculate total variants for this series
+    let seriesVariantTotal = 0;
+    let seriesVariantOwned = 0;
+    issues.forEach(issue => {
+      const slug = makeSlug(issue.title);
+      const k = issueKey(issue);
+      const variants = _variantData[slug];
+      if (variants && variants.length > 0) {
+        seriesVariantTotal += variants.length;
+        if (typeof countOwnedVariants === 'function') {
+          seriesVariantOwned += countOwnedVariants(k);
+        }
+      }
+    });
+    const varPct = seriesVariantTotal > 0 ? Math.round((seriesVariantOwned / seriesVariantTotal) * 100) : 0;
+    const variantBarHTML = seriesVariantTotal > 0
+      ? `<div class="series-variant-progress" title="${seriesVariantOwned}/${seriesVariantTotal} variants owned">
+          <div class="variant-progress-bar"><div class="variant-progress-fill" style="width:${varPct}%"></div></div>
+          <span class="variant-progress-text">${seriesVariantOwned}/${seriesVariantTotal} variants</span>
+        </div>`
+      : '';
+
     block.innerHTML = `
       <div class="series-header${isCollapsed ? ' collapsed' : ''}" style="--accent-color:${color}" role="button" tabindex="0" aria-expanded="${!isCollapsed}" aria-controls="grid-${sName.replace(/\s+/g, '-')}">
         <svg class="series-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -2610,6 +2663,7 @@ function renderCollection(filter, search) {
           <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
           <div class="progress-text">${ownedInSeries}/${allInSeries.length}</div>
         </div>
+        ${variantBarHTML}
         <div class="series-meta"><strong>${pct}%</strong> collected</div>
         <button class="series-subscribe${isSeriesSubscribed ? ' subscribed' : ''}" title="Toggle series subscription on pull list" aria-pressed="${isSeriesSubscribed}">Subscribe</button>
       </div>
