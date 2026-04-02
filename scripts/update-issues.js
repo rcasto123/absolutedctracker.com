@@ -1,322 +1,515 @@
 #!/usr/bin/env node
 // ============================================================
-// Absolute Universe Data Pipeline
+// Absolute Universe Data Pipeline  v2.0
 // ============================================================
-// Fetches issue data from League of Comic Geeks / Comic Vine
-// and updates ALL_ISSUES, coverMap, and SERIES_INFO in index.html.
+// Discovers new Absolute Universe issues via the Comic Vine API
+// (free key from comicvine.gamespot.com) and merges them into
+// data/issues.json.  Falls back to manual addition when no key
+// is available.
 //
 // Usage:
-//   node scripts/update-issues.js                    # dry run (show changes)
-//   node scripts/update-issues.js --apply            # apply changes to index.html
-//   COMIC_VINE_API_KEY=xxx node scripts/update-issues.js --apply  # with Comic Vine covers
+//   node scripts/update-issues.js                          # dry run
+//   node scripts/update-issues.js --apply                  # write changes
+//   node scripts/update-issues.js --apply --covers         # + fetch covers
+//   node scripts/update-issues.js --add "Title|#N|YYYY-MM-DD|Writer|Artist|Price|UPC"
+//   node scripts/update-issues.js --sync-from-html         # bootstrap from index.html
+//   node scripts/update-issues.js --validate               # check data integrity
 //
-// Data sources:
-//   1. League of Comic Geeks (LOCG) — primary for release dates
-//   2. Comic Vine API — supplemental for covers and metadata
-//   3. DC.com — fallback for announcements
+// Environment:
+//   COMIC_VINE_API_KEY — API key from comicvine.gamespot.com (free)
 // ============================================================
 
-const fs = require('fs');
+const fs   = require('fs');
 const path = require('path');
 const https = require('https');
 
-const INDEX_PATH = path.resolve(__dirname, '..', 'index.html');
-const DRY_RUN = !process.argv.includes('--apply');
-const COMIC_VINE_KEY = process.env.COMIC_VINE_API_KEY || '';
+// ── Paths ──
+const ROOT_DIR     = path.resolve(__dirname, '..');
+const DATA_DIR     = path.join(ROOT_DIR, 'data');
+const ISSUES_JSON  = path.join(DATA_DIR, 'issues.json');
+const INDEX_HTML   = path.join(ROOT_DIR, 'index.html');
 
-// Absolute Universe series we track
-const SERIES_SEARCH_TERMS = [
-  'Absolute Batman',
-  'Absolute Wonder Woman',
-  'Absolute Superman',
-  'Absolute Flash',
-  'Absolute Martian Manhunter',
-  'Absolute Green Lantern',
-  'Absolute Green Arrow',
-  'Absolute Catwoman',
-  'Absolute Evil',
-  'DC All In Special',
+// ── CLI flags ──
+const DRY_RUN     = !process.argv.includes('--apply');
+const WITH_COVERS = process.argv.includes('--covers');
+const VALIDATE    = process.argv.includes('--validate');
+const SYNC_HTML   = process.argv.includes('--sync-from-html');
+const ADD_ARG     = process.argv.find(a => a.startsWith('--add='));
+const ADD_INLINE  = ADD_ARG ? ADD_ARG.split('=').slice(1).join('=') : null;
+
+// ── Comic Vine config ──
+const CV_KEY = process.env.COMIC_VINE_API_KEY || '';
+const CV_BASE = 'https://comicvine.gamespot.com/api';
+
+// Absolute Universe series — map our name to Comic Vine volume IDs
+// These IDs are stable and findable at comicvine.gamespot.com
+const CV_VOLUMES = {
+  'Absolute Batman':            148078,
+  'Absolute Wonder Woman':      148079,
+  'Absolute Superman':          148080,
+  'Absolute Flash':             150391,
+  'Absolute Martian Manhunter': 149320,
+  'Absolute Green Lantern':     149321,
+  'Absolute Green Arrow':       152050,
+  'Absolute Catwoman':          152051,
+  // One-shots don't have persistent volume IDs — handled separately
+};
+
+// Series we track that aren't standard volumes
+const SPECIAL_TITLES = [
+  { series: 'DC All In', searchTerm: 'DC All In Special' },
+  { series: 'Absolute Evil', searchTerm: 'Absolute Evil' },
 ];
 
+// Default pricing
+const PRICE_MAP = { Annual: 5.99, Special: 9.99, FCBD: 0, default: 4.99 };
+
 // ── HTTP helper ──
-function fetch(url, headers = {}) {
+function httpGet(url, headers = {}) {
   return new Promise((resolve, reject) => {
-    const opts = new URL(url);
+    const u = new URL(url);
     const req = https.get({
-      hostname: opts.hostname,
-      path: opts.pathname + opts.search,
+      hostname: u.hostname,
+      path: u.pathname + u.search,
       headers: {
-        'User-Agent': 'AbsoluteDCTracker-Pipeline/1.0',
-        ...headers
-      }
+        'User-Agent': 'AbsoluteDCTracker-Pipeline/2.0',
+        Accept: 'application/json',
+        ...headers,
+      },
+      timeout: 20000,
     }, (res) => {
-      let data = '';
-      res.on('data', chunk => { data += chunk; });
+      // Follow redirects
+      if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location) {
+        return resolve(httpGet(res.headers.location, headers));
+      }
+      let body = '';
+      res.on('data', c => { body += c; });
       res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(data);
-        } else {
-          reject(new Error(`HTTP ${res.statusCode}: ${data.slice(0, 200)}`));
-        }
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve(body);
+        else reject(new Error(`HTTP ${res.statusCode}: ${body.slice(0, 200)}`));
       });
     });
     req.on('error', reject);
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Timeout')); });
+    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
   });
 }
 
-// ── Parse existing issues from index.html ──
-function parseExistingIssues(html) {
-  const match = html.match(/const ALL_ISSUES = \[([\s\S]*?)\];/);
-  if (!match) throw new Error('Could not find ALL_ISSUES in index.html');
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── Load / save data ──
+function loadData() {
+  if (!fs.existsSync(ISSUES_JSON)) {
+    return { _meta: {}, issues: [], coverMap: {}, seriesColors: {} };
+  }
+  return JSON.parse(fs.readFileSync(ISSUES_JSON, 'utf8'));
+}
+
+function saveData(data) {
+  data._meta = {
+    lastUpdated: new Date().toISOString().split('T')[0],
+    source: 'Automated pipeline v2.0',
+    issueCount: data.issues.length,
+    coverCount: Object.keys(data.coverMap).length,
+  };
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(ISSUES_JSON, JSON.stringify(data, null, 2), 'utf8');
+
+  // Append to run log
+  const logPath = path.join(DATA_DIR, 'pipeline-log.json');
+  const log = fs.existsSync(logPath) ? JSON.parse(fs.readFileSync(logPath, 'utf8')) : { runs: [] };
+  log.runs.push({
+    ts: new Date().toISOString(),
+    issues: data.issues.length,
+    covers: Object.keys(data.coverMap).length,
+  });
+  if (log.runs.length > 100) log.runs = log.runs.slice(-100);
+  fs.writeFileSync(logPath, JSON.stringify(log, null, 2), 'utf8');
+
+  console.log(`\n✓ Saved ${data.issues.length} issues, ${Object.keys(data.coverMap).length} covers`);
+}
+
+// ── Issue key for dedup ──
+function ikey(series, issue) { return `${series}||${issue}`; }
+
+// ── Parse issue string from Comic Vine result ──
+function cvIssueNumber(num) {
+  if (!num) return null;
+  const n = String(num).trim();
+  if (/^\d+$/.test(n)) return `#${n}`;
+  return n;
+}
+
+// ── Guess price ──
+function guessPrice(issueStr) {
+  if (!issueStr) return PRICE_MAP.default;
+  if (/annual/i.test(issueStr)) return PRICE_MAP.Annual;
+  if (/special/i.test(issueStr)) return PRICE_MAP.Special;
+  if (/fcbd/i.test(issueStr)) return PRICE_MAP.FCBD;
+  return PRICE_MAP.default;
+}
+
+// ── Fetch issues for a Comic Vine volume ──
+async function fetchCVVolume(seriesName, volumeId) {
+  if (!CV_KEY) return [];
+  const url = `${CV_BASE}/issues/?api_key=${CV_KEY}&format=json&filter=volume:${volumeId}&sort=store_date:asc&limit=100&field_list=id,issue_number,name,store_date,cover_date,image,person_credits,volume`;
+  console.log(`  [CV] ${seriesName} (volume ${volumeId})`);
+  try {
+    const raw = await httpGet(url);
+    const json = JSON.parse(raw);
+    if (json.status_code !== 1 || !json.results) {
+      console.log(`       API error: ${json.error || 'unknown'}`);
+      return [];
+    }
+    console.log(`       Found ${json.results.length} issues`);
+    return json.results.map(r => ({
+      series: seriesName,
+      issue: cvIssueNumber(r.issue_number),
+      title: `${seriesName} #${r.issue_number}`,
+      date: r.store_date || r.cover_date || null,
+      coverUrl: r.image ? (r.image.medium_url || r.image.small_url || null) : null,
+      cvId: r.id,
+      // person_credits would need a separate fetch per issue — skip for now
+    }));
+  } catch (e) {
+    console.log(`       Error: ${e.message}`);
+    return [];
+  }
+}
+
+// ── Search Comic Vine for special titles ──
+async function fetchCVSearch(searchTerm) {
+  if (!CV_KEY) return [];
+  const q = encodeURIComponent(searchTerm);
+  const url = `${CV_BASE}/search/?api_key=${CV_KEY}&format=json&resources=issue&query=${q}&limit=20&field_list=id,issue_number,name,store_date,cover_date,image,volume`;
+  console.log(`  [CV] Searching: "${searchTerm}"`);
+  try {
+    const raw = await httpGet(url);
+    const json = JSON.parse(raw);
+    if (json.status_code !== 1 || !json.results) return [];
+    console.log(`       Found ${json.results.length} results`);
+    return json.results.filter(r => {
+      const vol = r.volume ? r.volume.name : '';
+      const name = r.name || '';
+      return (vol + ' ' + name).toLowerCase().includes(searchTerm.toLowerCase().split(' ')[0]);
+    }).map(r => ({
+      series: r.volume ? r.volume.name : searchTerm,
+      issue: cvIssueNumber(r.issue_number) || 'Special #1',
+      title: (r.volume ? r.volume.name : searchTerm) + (r.issue_number ? ` #${r.issue_number}` : ''),
+      date: r.store_date || r.cover_date || null,
+      coverUrl: r.image ? (r.image.medium_url || null) : null,
+      cvId: r.id,
+    }));
+  } catch (e) {
+    console.log(`       Error: ${e.message}`);
+    return [];
+  }
+}
+
+// ── Sync from index.html (bootstrap) ──
+function syncFromHTML() {
+  console.log('── Syncing from index.html ──\n');
+  const html = fs.readFileSync(INDEX_HTML, 'utf8');
+
+  // Extract ALL_ISSUES
+  const issuesMatch = html.match(/const ALL_ISSUES = \[([\s\S]*?)\];/);
+  if (!issuesMatch) throw new Error('Cannot find ALL_ISSUES in index.html');
 
   const issues = [];
-  const issueRegex = /\{\s*series:'([^']*)',\s*issue:'([^']*)',\s*title:'([^']*)',\s*date:'([^']*)',\s*writer:'([^']*)',\s*artist:'([^']*)'\s*\}/g;
+  // This regex handles all fields including price and barcodes
+  const re = /\{\s*series:'([^']*)',\s*issue:'([^']*)',\s*title:'([^']*)',\s*date:'([^']*)',\s*writer:'([^']*)',\s*artist:'([^']*)'(?:,\s*price:([\d.]+))?(?:,\s*barcodes:\{\s*upc:'([^']*)'\s*\})?\s*\}/g;
   let m;
-  while ((m = issueRegex.exec(match[1])) !== null) {
-    issues.push({
+  while ((m = re.exec(issuesMatch[1])) !== null) {
+    const issue = {
       series: m[1],
       issue: m[2],
       title: m[3],
       date: m[4],
       writer: m[5],
-      artist: m[6]
-    });
+      artist: m[6],
+      price: m[7] ? parseFloat(m[7]) : guessPrice(m[2]),
+    };
+    if (m[8]) issue.upc = m[8];
+    issues.push(issue);
   }
-  return issues;
-}
 
-// ── Parse existing coverMap from index.html ──
-function parseCoverMap(html) {
-  const match = html.match(/var coverMap = \{([\s\S]*?)\};/);
-  if (!match) return {};
-  const map = {};
-  const entryRegex = /'([^']+)':\s*'([^']+)'/g;
-  let m;
-  while ((m = entryRegex.exec(match[1])) !== null) {
-    map[m[1]] = m[2];
-  }
-  return map;
-}
-
-// ── Fetch from League of Comic Geeks ──
-async function fetchLOCG(seriesName) {
-  try {
-    const query = encodeURIComponent(seriesName + ' DC Comics');
-    const url = `https://leagueofcomicgeeks.com/api/search?query=${query}`;
-    console.log(`  [LOCG] Searching: ${seriesName}`);
-    const data = await fetch(url);
-    // LOCG may not have a public API — this is a best-effort attempt
-    return JSON.parse(data);
-  } catch (e) {
-    console.log(`  [LOCG] ${seriesName}: ${e.message}`);
-    return null;
-  }
-}
-
-// ── Fetch from Comic Vine API ──
-async function fetchComicVine(seriesName) {
-  if (!COMIC_VINE_KEY) {
-    console.log(`  [ComicVine] No API key, skipping`);
-    return [];
-  }
-  try {
-    const query = encodeURIComponent(seriesName);
-    const url = `https://comicvine.gamespot.com/api/search/?api_key=${COMIC_VINE_KEY}&format=json&resources=issue&query=${query}&limit=50`;
-    console.log(`  [ComicVine] Searching: ${seriesName}`);
-    const data = await fetch(url);
-    const json = JSON.parse(data);
-    if (json.results) {
-      return json.results.filter(r =>
-        r.volume && r.volume.name && r.volume.name.includes('Absolute')
-      ).map(r => ({
-        title: r.volume.name + ' #' + r.issue_number,
-        date: r.store_date || r.cover_date,
-        coverUrl: r.image ? r.image.medium_url : null,
-        description: r.description ? r.description.replace(/<[^>]+>/g, '').slice(0, 200) : ''
-      }));
+  // Extract coverMap
+  const coverMatch = html.match(/var coverMap = \{([\s\S]*?)\};/);
+  const coverMap = {};
+  if (coverMatch) {
+    const cre = /'([^']+)':\s*'([^']+)'/g;
+    while ((m = cre.exec(coverMatch[1])) !== null) {
+      coverMap[m[1]] = m[2];
     }
-    return [];
-  } catch (e) {
-    console.log(`  [ComicVine] ${seriesName}: ${e.message}`);
-    return [];
   }
+
+  // Extract SERIES_COLORS
+  const colorMatch = html.match(/const SERIES_COLORS = \{([\s\S]*?)\};/);
+  const seriesColors = {};
+  if (colorMatch) {
+    const ccre = /'([^']+)':\s*'([^']+)'/g;
+    while ((m = ccre.exec(colorMatch[1])) !== null) {
+      seriesColors[m[1]] = m[2];
+    }
+  }
+
+  console.log(`Extracted ${issues.length} issues, ${Object.keys(coverMap).length} covers, ${Object.keys(seriesColors).length} series colors`);
+
+  return {
+    _meta: { lastUpdated: new Date().toISOString().split('T')[0], source: 'Synced from index.html' },
+    issues,
+    coverMap,
+    seriesColors,
+  };
 }
 
-// ── Fetch from DC.com upcoming comics ──
-async function fetchDCUpcoming() {
-  try {
-    console.log(`  [DC.com] Fetching upcoming Absolute Universe comics...`);
-    const url = 'https://www.dc.com/comics?seriesid=absolute';
-    const html = await fetch(url);
-    // Parse basic issue info from DC.com HTML
-    const issues = [];
-    const cardRegex = /data-title="([^"]+)"[\s\S]*?data-date="([^"]+)"/g;
-    let m;
-    while ((m = cardRegex.exec(html)) !== null) {
-      if (m[1].includes('Absolute')) {
-        issues.push({ title: m[1], date: m[2] });
+// ── Add issue from CLI string ──
+function parseAddString(str) {
+  // Format: "Series Name|#N|YYYY-MM-DD|Writer|Artist|Price|UPC"
+  const parts = str.split('|').map(s => s.trim());
+  if (parts.length < 5) {
+    throw new Error('Add format: "Series|Issue|Date|Writer|Artist[|Price][|UPC]"');
+  }
+  const issue = {
+    series: parts[0],
+    issue: parts[1],
+    title: `${parts[0]} ${parts[1]}`,
+    date: parts[2],
+    writer: parts[3],
+    artist: parts[4],
+    price: parts[5] ? parseFloat(parts[5]) : guessPrice(parts[1]),
+  };
+  if (parts[6]) issue.upc = parts[6];
+  return issue;
+}
+
+// ── Validate data integrity ──
+function validateData(data) {
+  console.log('── Validating data integrity ──\n');
+  let errors = 0;
+  const seen = new Set();
+
+  for (let i = 0; i < data.issues.length; i++) {
+    const iss = data.issues[i];
+    const key = ikey(iss.series, iss.issue);
+
+    // Required fields
+    for (const f of ['series', 'issue', 'title', 'date', 'writer', 'artist']) {
+      if (!iss[f]) {
+        console.log(`  [ERROR] Issue ${i}: missing '${f}' — ${JSON.stringify(iss)}`);
+        errors++;
       }
     }
-    console.log(`  [DC.com] Found ${issues.length} upcoming issues`);
-    return issues;
-  } catch (e) {
-    console.log(`  [DC.com] ${e.message}`);
-    return [];
+
+    // Date format
+    if (iss.date && !/^\d{4}-\d{2}-\d{2}$/.test(iss.date)) {
+      console.log(`  [WARN]  Issue ${i}: bad date format '${iss.date}' in ${iss.title}`);
+    }
+
+    // Duplicates
+    if (seen.has(key)) {
+      console.log(`  [ERROR] Duplicate: ${key}`);
+      errors++;
+    }
+    seen.add(key);
+
+    // Price sanity
+    if (typeof iss.price === 'number' && (iss.price < 0 || iss.price > 50)) {
+      console.log(`  [WARN]  Unusual price ${iss.price} for ${iss.title}`);
+    }
   }
+
+  // Check covers reference real issues
+  const issueTitles = new Set(data.issues.map(i => i.title));
+  for (const title of Object.keys(data.coverMap)) {
+    if (!issueTitles.has(title)) {
+      console.log(`  [WARN]  Cover for unknown issue: ${title}`);
+    }
+  }
+
+  // Check for issues without covers
+  let missingCovers = 0;
+  for (const iss of data.issues) {
+    if (!data.coverMap[iss.title]) missingCovers++;
+  }
+
+  console.log(`\nTotal issues:   ${data.issues.length}`);
+  console.log(`Total covers:   ${Object.keys(data.coverMap).length}`);
+  console.log(`Missing covers: ${missingCovers}`);
+  console.log(`Errors:         ${errors}`);
+  console.log(`Status:         ${errors === 0 ? '✓ PASS' : '✗ FAIL'}`);
+
+  return errors === 0;
 }
 
-// ── Generate the updated ALL_ISSUES block ──
-function generateIssuesBlock(issues) {
-  const lines = issues.map(i => {
-    const writer = i.writer.replace(/'/g, "\\'");
-    const artist = i.artist.replace(/'/g, "\\'");
-    return `  { series:'${i.series}', issue:'${i.issue}', title:'${i.title}', date:'${i.date}', writer:'${writer}', artist:'${artist}' },`;
-  });
-  return 'const ALL_ISSUES = [\n' + lines.join('\n') + '\n];';
-}
-
-// ── Generate the updated coverMap block ──
-function generateCoverMapBlock(coverMap) {
-  const entries = Object.entries(coverMap).map(([title, url]) => {
-    return `    '${title}': '${url}',`;
-  });
-  return '  var coverMap = {\n' + entries.join('\n') + '\n  };';
-}
-
-// ── Main pipeline ──
+// ── Main ──
 async function main() {
-  console.log('=== Absolute Universe Data Pipeline ===');
-  console.log(`Mode: ${DRY_RUN ? 'DRY RUN (use --apply to write changes)' : 'APPLY'}`);
-  console.log(`Comic Vine API: ${COMIC_VINE_KEY ? 'configured' : 'not configured'}`);
-  console.log('');
+  console.log('╔══════════════════════════════════════════════════╗');
+  console.log('║  Absolute Universe Data Pipeline  v2.0          ║');
+  console.log('╚══════════════════════════════════════════════════╝\n');
 
-  // Read current state
-  const html = fs.readFileSync(INDEX_PATH, 'utf8');
-  const existingIssues = parseExistingIssues(html);
-  const existingCoverMap = parseCoverMap(html);
+  // Ensure data dir
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-  console.log(`Current issues in index.html: ${existingIssues.length}`);
-  console.log(`Current covers in coverMap: ${Object.keys(existingCoverMap).length}`);
-  console.log('');
-
-  // Build a lookup for existing issues
-  const existingMap = {};
-  existingIssues.forEach(i => {
-    existingMap[i.title] = i;
-  });
-
-  // Fetch data from sources
-  let newIssues = [];
-  let newCovers = {};
-
-  // Try Comic Vine for each series
-  for (const series of SERIES_SEARCH_TERMS) {
-    const cvResults = await fetchComicVine(series);
-    for (const cv of cvResults) {
-      if (!existingMap[cv.title]) {
-        console.log(`  [NEW] ${cv.title} — ${cv.date}`);
-        newIssues.push(cv);
-      }
-      if (cv.coverUrl && !existingCoverMap[cv.title]) {
-        newCovers[cv.title] = cv.coverUrl;
-      }
+  // ── Mode: sync from HTML ──
+  if (SYNC_HTML) {
+    const data = syncFromHTML();
+    if (!DRY_RUN) {
+      saveData(data);
+    } else {
+      console.log('\n[DRY RUN] Would save synced data');
     }
-  }
-
-  // Try DC.com
-  const dcResults = await fetchDCUpcoming();
-  for (const dc of dcResults) {
-    if (!existingMap[dc.title]) {
-      console.log(`  [DC.com NEW] ${dc.title} — ${dc.date}`);
-    }
-  }
-
-  console.log('');
-  console.log('=== Summary ===');
-  console.log(`Existing issues: ${existingIssues.length}`);
-  console.log(`New issues found: ${newIssues.length}`);
-  console.log(`New covers found: ${Object.keys(newCovers).length}`);
-
-  if (newIssues.length === 0 && Object.keys(newCovers).length === 0) {
-    console.log('No changes needed.');
     return;
   }
 
-  // Merge new issues into existing
-  const mergedIssues = [...existingIssues];
-  for (const ni of newIssues) {
-    // Try to parse series and issue number from title
-    const match = ni.title.match(/^(Absolute \w[\w\s]*?)(?:\s+#(\d+))?$/);
-    if (match) {
-      mergedIssues.push({
-        series: match[1],
-        issue: match[2] ? `#${match[2]}` : 'Special #1',
-        title: ni.title,
-        date: ni.date,
-        writer: 'TBA',
-        artist: 'TBA'
-      });
-    }
+  // ── Mode: validate ──
+  if (VALIDATE) {
+    const data = loadData();
+    const ok = validateData(data);
+    process.exit(ok ? 0 : 1);
   }
 
-  // Sort by date, then series, then issue
-  mergedIssues.sort((a, b) => {
-    if (a.series !== b.series) return a.series.localeCompare(b.series);
-    return a.date.localeCompare(b.date);
-  });
+  // ── Mode: add single issue ──
+  if (ADD_INLINE) {
+    const data = loadData();
+    const newIssue = parseAddString(ADD_INLINE);
+    const key = ikey(newIssue.series, newIssue.issue);
+    const exists = data.issues.find(i => ikey(i.series, i.issue) === key);
+    if (exists) {
+      console.log(`Issue already exists: ${newIssue.title}`);
+      return;
+    }
+    data.issues.push(newIssue);
+    data.issues.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    console.log(`Added: ${newIssue.title}`);
+    if (!DRY_RUN) {
+      saveData(data);
+    } else {
+      console.log('[DRY RUN] Would save');
+    }
+    return;
+  }
 
-  // Merge covers
-  const mergedCoverMap = { ...existingCoverMap, ...newCovers };
+  // ── Mode: full pipeline ──
+  console.log(`Mode:      ${DRY_RUN ? 'DRY RUN' : 'APPLY'}`);
+  console.log(`Covers:    ${WITH_COVERS ? 'yes' : 'no'}`);
+  console.log(`CV API:    ${CV_KEY ? 'configured ✓' : 'not set (set COMIC_VINE_API_KEY)'}\n`);
+
+  const data = loadData();
+  const startCount = data.issues.length;
+  console.log(`Current:   ${startCount} issues, ${Object.keys(data.coverMap).length} covers\n`);
+
+  if (!CV_KEY) {
+    console.log('╔══════════════════════════════════════════════════╗');
+    console.log('║  No Comic Vine API key set.                     ║');
+    console.log('║                                                  ║');
+    console.log('║  Get a free key at:                              ║');
+    console.log('║  https://comicvine.gamespot.com/api/             ║');
+    console.log('║                                                  ║');
+    console.log('║  Then run:                                       ║');
+    console.log('║  COMIC_VINE_API_KEY=xxx node scripts/update-issues.js ║');
+    console.log('║                                                  ║');
+    console.log('║  Or add as --add="Series|#N|Date|Writer|Artist"  ║');
+    console.log('╚══════════════════════════════════════════════════╝');
+    console.log('\nRunning validation on existing data instead...\n');
+    validateData(data);
+    return;
+  }
+
+  // Build dedup set
+  const existing = new Set();
+  data.issues.forEach(i => existing.add(ikey(i.series, i.issue)));
+
+  const discovered = [];
+  const newCovers = {};
+
+  // Fetch each series volume
+  console.log('── Fetching from Comic Vine ──\n');
+
+  for (const [seriesName, volumeId] of Object.entries(CV_VOLUMES)) {
+    const results = await fetchCVVolume(seriesName, volumeId);
+    for (const r of results) {
+      if (!r.issue || !r.date) continue;
+      const key = ikey(r.series, r.issue);
+      if (existing.has(key)) {
+        // Already have it — maybe grab cover
+        if (WITH_COVERS && r.coverUrl && !data.coverMap[r.title]) {
+          newCovers[r.title] = r.coverUrl;
+        }
+        continue;
+      }
+      discovered.push({
+        series: r.series,
+        issue: r.issue,
+        title: r.title,
+        date: r.date,
+        writer: 'TBA',
+        artist: 'TBA',
+        price: guessPrice(r.issue),
+      });
+      existing.add(key);
+      if (r.coverUrl) newCovers[r.title] = r.coverUrl;
+    }
+    // Rate limit: CV allows 200 req/15min but let's be polite
+    await sleep(2000);
+  }
+
+  // Search for special titles
+  for (const sp of SPECIAL_TITLES) {
+    const results = await fetchCVSearch(sp.searchTerm);
+    for (const r of results) {
+      const key = ikey(r.series, r.issue);
+      if (existing.has(key)) continue;
+      discovered.push({
+        series: sp.series,
+        issue: r.issue,
+        title: r.title,
+        date: r.date || 'TBD',
+        writer: 'TBA',
+        artist: 'TBA',
+        price: guessPrice(r.issue),
+      });
+      existing.add(key);
+      if (r.coverUrl) newCovers[r.title] = r.coverUrl;
+    }
+    await sleep(2000);
+  }
+
+  // ── Results ──
+  console.log('\n╔══════════════════════════════════════════════════╗');
+  console.log('║  Results                                         ║');
+  console.log('╚══════════════════════════════════════════════════╝');
+  console.log(`New issues:  ${discovered.length}`);
+  console.log(`New covers:  ${Object.keys(newCovers).length}`);
+
+  if (discovered.length > 0) {
+    console.log('\n── New Issues ──');
+    discovered.forEach(d => console.log(`  + ${d.title} (${d.date})`));
+  }
+
+  if (Object.keys(newCovers).length > 0) {
+    console.log('\n── New Covers ──');
+    Object.entries(newCovers).forEach(([t, u]) => console.log(`  + ${t}: ${u.slice(0, 60)}...`));
+  }
+
+  if (discovered.length === 0 && Object.keys(newCovers).length === 0) {
+    console.log('\nNo changes needed — data is up to date.');
+    return;
+  }
+
+  // Merge
+  for (const d of discovered) data.issues.push(d);
+  data.issues.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+  Object.assign(data.coverMap, newCovers);
 
   if (DRY_RUN) {
-    console.log('\n=== Dry Run — Changes that would be made ===');
-    for (const ni of newIssues) {
-      console.log(`  ADD: ${ni.title} (${ni.date})`);
-    }
-    for (const [title, url] of Object.entries(newCovers)) {
-      console.log(`  COVER: ${title} → ${url.slice(0, 60)}...`);
-    }
-    console.log('\nRun with --apply to write changes to index.html');
+    console.log(`\n[DRY RUN] Total would be: ${data.issues.length} issues, ${Object.keys(data.coverMap).length} covers`);
+    console.log('Run with --apply to write.');
   } else {
-    // Apply changes
-    let updatedHtml = html;
-
-    // Replace ALL_ISSUES block
-    const newBlock = generateIssuesBlock(mergedIssues);
-    updatedHtml = updatedHtml.replace(
-      /const ALL_ISSUES = \[[\s\S]*?\];/,
-      newBlock
-    );
-
-    // Replace coverMap block
-    const newCoverBlock = generateCoverMapBlock(mergedCoverMap);
-    updatedHtml = updatedHtml.replace(
-      /  var coverMap = \{[\s\S]*?\};/,
-      newCoverBlock
-    );
-
-    fs.writeFileSync(INDEX_PATH, updatedHtml, 'utf8');
-    console.log('\nChanges written to index.html');
-
-    // Write a data snapshot for reference
-    const snapshot = {
-      lastUpdated: new Date().toISOString(),
-      issueCount: mergedIssues.length,
-      coverCount: Object.keys(mergedCoverMap).length,
-      issues: mergedIssues,
-      coverMap: mergedCoverMap
-    };
-    fs.writeFileSync(
-      path.resolve(__dirname, '..', 'data-snapshot.json'),
-      JSON.stringify(snapshot, null, 2),
-      'utf8'
-    );
-    console.log('Data snapshot saved to data-snapshot.json');
+    saveData(data);
   }
 }
 
 main().catch(err => {
-  console.error('Pipeline error:', err);
+  console.error('\n✗ Pipeline error:', err);
   process.exit(1);
 });

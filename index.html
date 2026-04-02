@@ -2350,7 +2350,7 @@ window.addEventListener('unhandledrejection', function(e) {
 
 function getToday() { return new Date(); }
 
-const SERIES_COLORS = {
+let SERIES_COLORS = {
   'Absolute Batman':            '#5b8fbe',
   'Absolute Wonder Woman':      '#b91c1c',
   'Absolute Superman':          '#1a7aff',
@@ -2363,7 +2363,7 @@ const SERIES_COLORS = {
   'Absolute Evil':              '#6b21a8',
 };
 
-const ALL_ISSUES = [
+let ALL_ISSUES = [
   { series:'DC All In', issue:'Special #1', title:'DC All In Special', date:'2024-10-02', writer:'Scott Snyder & Joshua Williamson', artist:'Daniel Sampere & Wes Craig', price:9.99, barcodes:{ upc:'76194138569900111' } },
   { series:'Absolute Batman', issue:'#1', title:'Absolute Batman #1', date:'2024-10-09', writer:'Scott Snyder', artist:'Nick Dragotta', price:4.99, barcodes:{ upc:'76194138632100111' } },
   { series:'Absolute Batman', issue:'#2', title:'Absolute Batman #2', date:'2024-11-13', writer:'Scott Snyder', artist:'Nick Dragotta', price:4.99, barcodes:{ upc:'76194138632100211' } },
@@ -4493,21 +4493,26 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
 // (firebase-config.js, auth-integration.js) have loaded their globals
 // (getTotalVariantSpent, countOwnedVariants, etc.) before we use them.
 document.addEventListener('DOMContentLoaded', () => {
-  renderStats();
-  renderCollection('all', '');
-  renderCalendar(false);
+  function _renderAll() {
+    renderStats();
+    renderCollection('all', '');
+    renderCalendar(false);
 
-  // Restore tab from URL hash
-  if (location.hash) {
-    const hashTab = location.hash.slice(1);
-    const target = document.querySelector('.nav-tab[data-tab="' + hashTab + '"]');
-    if (target) switchTab(target);
+    // Restore tab from URL hash
+    if (location.hash) {
+      const hashTab = location.hash.slice(1);
+      const target = document.querySelector('.nav-tab[data-tab="' + hashTab + '"]');
+      if (target) switchTab(target);
+    }
+    renderSeriesGuide();
+    renderTrades();
+    renderArcs();
+    renderAnalytics();
+    renderAchievements();
   }
-  renderSeriesGuide();
-  renderTrades();
-  renderArcs();
-  renderAnalytics();
-  renderAchievements();
+
+  // Try loading external data first, then render (falls back to inline data)
+  _loadExternalData().then(_renderAll).catch(_renderAll);
 });
 </script>
 
@@ -5396,6 +5401,60 @@ document.addEventListener('DOMContentLoaded', () => {
     'Absolute Catwoman #4': 'https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg',
     'Absolute Evil #1': 'https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-evil-1-one-shot-cover-a-giussepe-camuncoli-stefano-nesi-4517323.jpg'
   };
+
+  // ── External data loader ──
+  // Try to load fresh data from data/issues.json (written by the pipeline).
+  // Falls back to the inline data above if the fetch fails or is offline.
+  var _dataLoaded = false;
+  function _loadExternalData() {
+    return fetch('data/issues.json?v=' + Date.now())
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(json) {
+        if (!json.issues || !Array.isArray(json.issues) || json.issues.length === 0) {
+          console.log('[data] External JSON empty or invalid — using inline data');
+          return;
+        }
+        // Replace inline data with external data
+        var newIssues = json.issues.map(function(i) {
+          var obj = {
+            series: i.series,
+            issue: i.issue,
+            title: i.title,
+            date: i.date,
+            writer: i.writer,
+            artist: i.artist,
+            price: typeof i.price === 'number' ? i.price : 4.99,
+          };
+          if (i.upc) obj.barcodes = { upc: i.upc };
+          return obj;
+        });
+        ALL_ISSUES = newIssues;
+
+        if (json.coverMap && typeof json.coverMap === 'object') {
+          // Merge — external covers take priority
+          var keys = Object.keys(json.coverMap);
+          for (var k = 0; k < keys.length; k++) {
+            coverMap[keys[k]] = json.coverMap[keys[k]];
+          }
+        }
+
+        if (json.seriesColors && typeof json.seriesColors === 'object') {
+          var cKeys = Object.keys(json.seriesColors);
+          for (var c = 0; c < cKeys.length; c++) {
+            SERIES_COLORS[cKeys[c]] = json.seriesColors[cKeys[c]];
+          }
+        }
+
+        _dataLoaded = true;
+        console.log('[data] Loaded ' + newIssues.length + ' issues from external JSON (updated ' + (json._meta ? json._meta.lastUpdated : 'unknown') + ')');
+      })
+      .catch(function(err) {
+        console.log('[data] External JSON unavailable (' + err.message + ') — using inline data');
+      });
+  }
 
   // Lazy-load cover art with IntersectionObserver + blur-up effect
   var _coverObserver = new IntersectionObserver(function(entries) {

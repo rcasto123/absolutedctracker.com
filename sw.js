@@ -6,7 +6,7 @@
 // their collection.
 // ============================================================
 
-var CACHE_NAME = 'au-tracker-v33';
+var CACHE_NAME = 'au-tracker-v34';
 
 // App shell — files to pre-cache on install
 var APP_SHELL = [
@@ -19,7 +19,8 @@ var APP_SHELL = [
   '/firebase-config.js',
   '/scanner.js',
   '/variants.json',
-  '/prices.json'
+  '/prices.json',
+  '/data/issues.json'
 ];
 
 // Skip caching these patterns
