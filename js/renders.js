@@ -1400,6 +1400,24 @@ document.getElementById('markAllOwned').addEventListener('click', () => {
   }
 });
 
+// Unmark All Owned
+document.getElementById('unmarkAllOwned').addEventListener('click', () => {
+  const ownedKeys = Object.keys(owned);
+  if (ownedKeys.length === 0) {
+    alert('You don\u2019t have any issues marked as owned.');
+    return;
+  }
+  if (confirm('Are you sure you want to unmark all ' + ownedKeys.length + ' owned issues? This cannot be undone.')) {
+    ownedKeys.forEach(k => { delete owned[k]; });
+    saveOwned();
+    renderCollection(currentFilter, currentSearch);
+    renderStats();
+    renderArcs();
+    renderAnalytics();
+    renderAchievements();
+  }
+});
+
 document.querySelectorAll('[data-calendar-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-calendar-filter]').forEach(b => {
