@@ -474,6 +474,10 @@
   .badge-released { background: rgba(34,197,94,0.12); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
   .variant-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 3px; white-space: nowrap; background: rgba(212,168,68,0.12); color: #d4a844; border: 1px solid rgba(212,168,68,0.25); flex-shrink: 0; }
   .variant-badge .vb-owned { color: var(--accent-green); font-weight: 700; }
+  .variant-tracker { display: flex; align-items: center; gap: 6px; width: 100%; }
+  .variant-tracker-label { font-size: 10px; font-weight: 600; color: #d4a844; white-space: nowrap; min-width: fit-content; }
+  .variant-tracker-bar { flex: 1; height: 6px; background: rgba(212,168,68,0.15); border-radius: 3px; overflow: hidden; min-width: 40px; }
+  .variant-tracker-fill { height: 100%; background: linear-gradient(90deg, #d4a844, var(--accent-green)); border-radius: 3px; transition: width 0.3s ease; }
   .badge-upcoming { background: rgba(212,168,68,0.12); color: var(--accent-gold); border: 1px solid rgba(212,168,68,0.3); }
   .badge-announced { background: rgba(139,92,246,0.12); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
 
@@ -1395,6 +1399,9 @@
   /* --- Variant Badge (on cards) --- */
   .light-mode .variant-badge { background: rgba(180,130,30,0.1); color: #92700a; border-color: rgba(180,130,30,0.25); }
   .light-mode .variant-badge .vb-owned { color: #16a34a; }
+  .light-mode .variant-tracker-label { color: #92700a; }
+  .light-mode .variant-tracker-bar { background: rgba(180,130,30,0.12); }
+  .light-mode .variant-tracker-fill { background: linear-gradient(90deg, #b8860b, #16a34a); }
 
   /* --- Release Badges --- */
   .light-mode .badge-released { background: rgba(34,197,94,0.1); color: #16a34a; border-color: rgba(34,197,94,0.25); }
@@ -2631,9 +2638,15 @@ function renderCollection(filter, search) {
       const variants = _variantData[slug];
       const variantCount = variants ? variants.length : 0;
       const variantOwnedCount = (variantCount > 0 && typeof countOwnedVariants === 'function') ? countOwnedVariants(key) : 0;
-      const variantBadgeHTML = variantCount > 0
-        ? `<span class="variant-badge">${variantOwnedCount > 0 ? '<span class="vb-owned">' + variantOwnedCount + '</span>/' : ''}${variantCount} variants</span>`
-        : '';
+      // Variant progress bar
+      let variantBarHTML = '';
+      if (variantCount > 0) {
+        const varPct = Math.round((variantOwnedCount / variantCount) * 100);
+        variantBarHTML = `<div class="variant-tracker" title="${variantOwnedCount}/${variantCount} variants owned">
+          <span class="variant-tracker-label">${variantOwnedCount}/${variantCount} variants</span>
+          <div class="variant-tracker-bar"><div class="variant-tracker-fill" style="width:${varPct}%"></div></div>
+        </div>`;
+      }
 
       const isOnPull = isOnPullList(key, sName);
       const pullIconHTML = !released
@@ -2641,14 +2654,10 @@ function renderCollection(filter, search) {
         : '';
 
       const priceValue = getPrice(key) || '';
-      const priceInputHTML = isOwned
-        ? `<span class="price-group"><span class="price-label">Paid</span><input class="price-input" type="number" step="0.01" min="0" placeholder="0.00" value="${priceValue}" data-issue-key="${key}" title="Price paid for this issue"></span>`
-        : '';
+      const priceInputHTML = `<span class="price-group"><span class="price-label">Paid</span><input class="price-input" type="number" step="0.01" min="0" placeholder="0.00" value="${priceValue}" data-issue-key="${key}" title="Price paid for this issue"></span>`;
 
       const mvValue = getMarketValue(key) || '';
-      const marketInputHTML = isOwned
-        ? `<span class="price-group"><span class="price-label">Value</span><input class="market-input" type="number" step="0.01" min="0" placeholder="0.00" value="${mvValue}" data-issue-key="${key}" title="Estimated market value"></span>`
-        : '';
+      const marketInputHTML = `<span class="price-group"><span class="price-label">Value</span><input class="market-input" type="number" step="0.01" min="0" placeholder="0.00" value="${mvValue}" data-issue-key="${key}" title="Estimated market value"></span>`;
 
       card.innerHTML = `
         <div class="issue-checkbox">${checkSvg}</div>
@@ -2658,7 +2667,7 @@ function renderCollection(filter, search) {
         </div>
         <div class="issue-badge ${badgeClass}">${badgeText}</div>
         <div class="card-meta">
-          ${variantBadgeHTML}
+          ${variantBarHTML}
           ${pullIconHTML}
           ${priceInputHTML}
           ${marketInputHTML}
