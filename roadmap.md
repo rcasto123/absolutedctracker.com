@@ -1,6 +1,6 @@
 # Absolute DC Universe Collection Tracker — Feature Roadmap
 
-**Updated:** April 1, 2026
+**Updated:** April 2, 2026
 **Site:** [absolutedctracker.com](https://www.absolutedctracker.com)
 **Repo:** github.com/rcasto123/absolutedctracker.com
 
@@ -41,6 +41,7 @@ The site is a polished single-page app (~5000 lines in index.html) with 8 main t
 
 ### Big Bets ✅
 21. Price guide / market value — cover prices, market values, ROI, prices.json pipeline
+22. Barcode scanner (Phases 1–3) — camera-based UPC scanning via Html5-QRCode, manual entry, prefix matching for variant covers, batch scan mode with auto-own, scan history log, trade paperback ISBN support, "Mark as Owned" buttons in scanner + issue.html sidebar
 - Themed hero backgrounds — per-hero cover art + CSS animation overlays
 
 ---
@@ -58,10 +59,6 @@ Let two signed-in users compare collections side by side — see gaps, overlaps,
 ### 20. Automated Data Pipeline
 **Effort:** Large | **Impact:** High
 Auto-fetch new issue data, cover art, and release dates from external sources instead of manual updates.
-
-### 22. Native Mobile (Barcode Scan)
-**Effort:** Large | **Impact:** Medium
-Scan comic barcodes with phone camera to auto-add issues to collection.
 
 ### 23. Personal Collection Journal
 **Effort:** Large | **Impact:** Medium
