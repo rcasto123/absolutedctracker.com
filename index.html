@@ -1994,6 +1994,31 @@
     </button>
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
       <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Variant collection analytics</div>
+        <div class="changelog-desc">New Variant Collection card in Analytics showing total variants, owned count, completion percentage, and per-series variant breakdown bars.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Variant achievements</div>
+        <div class="changelog-desc">7 new variant cover achievements — from Art Appreciator (first variant) to Variant Master (own them all). Track your variant collecting milestones alongside your regular achievements.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Variant progress bars</div>
+        <div class="changelog-desc">Every issue card and series accordion header now shows a variant progress tracker with owned/total count and completion percentage. See at a glance how your variant collection is growing.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Variant cover pricing</div>
+        <div class="changelog-desc">Track what you paid and the estimated market value for each variant cover on issue detail pages. Variant spending is included in your total spent and analytics breakdowns.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Universal price inputs</div>
+        <div class="changelog-desc">Paid and Value input fields now appear on every issue card — not just owned ones — so you can pre-fill prices before marking issues as collected.</div>
+      </div>
+      <div class="changelog-entry">
         <time datetime="2026-04-01" class="changelog-date">April 1, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Collection sharing</div>
         <div class="changelog-desc">Share your collection as formatted text or a downloadable PNG image card showing your completion stats and per-series progress. Hit the Share button in the Collection tab.</div>
@@ -3285,6 +3310,19 @@ function renderAchievements() {
   const seriesWithOwned = Object.values(seriesStats).filter(s => s.owned > 0).length;
   const distinctMonths = ownedMonths.size;
 
+  // Variant collection data
+  let totalVariants = 0, ownedVariants = 0;
+  ALL_ISSUES.forEach(i => {
+    const slug = makeSlug(i.title);
+    const variants = _variantData[slug];
+    if (variants && variants.length > 0) {
+      totalVariants += variants.length;
+      const k = issueKey(i);
+      ownedVariants += window.countOwnedVariants(k);
+    }
+  });
+  const variantPct = totalVariants > 0 ? Math.round((ownedVariants / totalVariants) * 100) : 0;
+
   const BADGES = [
     { id: 'first_issue', icon: '\u2B50', name: 'First Issue', desc: 'Add your first issue to the collection', check: () => ownedCount >= 1, progress: () => Math.min(ownedCount, 1), max: 1 },
     { id: 'getting_started', icon: '\uD83D\uDCDA', name: 'Getting Started', desc: 'Collect 5 issues', check: () => ownedCount >= 5, progress: () => Math.min(ownedCount, 5), max: 5 },
@@ -3301,6 +3339,13 @@ function renderAchievements() {
     { id: 'diverse', icon: '\uD83C\uDF0D', name: 'Diverse Taste', desc: 'Own at least one issue from every series', check: () => seriesWithOwned === totalSeries && totalSeries > 0, progress: () => Math.min(seriesWithOwned, totalSeries), max: Math.max(totalSeries, 1) },
     { id: 'monthly', icon: '\uD83D\uDCC5', name: 'Dedicated Subscriber', desc: 'Own issues from 3 different months', check: () => distinctMonths >= 3, progress: () => Math.min(distinctMonths, 3), max: 3 },
     { id: 'veteran', icon: '\uD83C\uDF93', name: 'Veteran Collector', desc: 'Own issues from 6 different months', check: () => distinctMonths >= 6, progress: () => Math.min(distinctMonths, 6), max: 6 },
+    { id: 'variant_first', icon: '🎨', name: 'Art Appreciator', desc: 'Own your first variant cover', check: () => ownedVariants >= 1, progress: () => Math.min(ownedVariants, 1), max: 1 },
+    { id: 'variant_10', icon: '🖼️', name: 'Variant Hunter', desc: 'Own 10 variant covers', check: () => ownedVariants >= 10, progress: () => Math.min(ownedVariants, 10), max: 10 },
+    { id: 'variant_25', icon: '🃏', name: 'Cover Connoisseur', desc: 'Own 25 variant covers', check: () => ownedVariants >= 25, progress: () => Math.min(ownedVariants, 25), max: 25 },
+    { id: 'variant_50', icon: '💎', name: 'Variant Vault', desc: 'Own 50 variant covers', check: () => ownedVariants >= 50, progress: () => Math.min(ownedVariants, 50), max: 50 },
+    { id: 'variant_100', icon: '👑', name: 'Variant Royalty', desc: 'Own 100 variant covers', check: () => ownedVariants >= 100, progress: () => Math.min(ownedVariants, 100), max: 100 },
+    { id: 'variant_quarter', icon: '🌅', name: 'Quarter Covered', desc: 'Own 25% of all variant covers', check: () => variantPct >= 25, progress: () => variantPct, max: 100 },
+    { id: 'variant_complete', icon: '🏅', name: 'Variant Master', desc: 'Own every variant cover', check: () => variantPct === 100 && totalVariants > 0, progress: () => variantPct, max: 100 },
   ];
 
   const unlockedCount = BADGES.filter(b => b.check()).length;
@@ -3614,6 +3659,65 @@ function renderAnalytics() {
 
   pgCard.innerHTML = pgHtml;
   grid.appendChild(pgCard);
+
+  // === Variant Collection Card ===
+  const variantCard = document.createElement('div');
+  variantCard.className = 'analytics-card';
+
+  let totalVariants = 0, ownedVariants = 0;
+  const variantSeriesStats = {};
+
+  ALL_ISSUES.forEach(i => {
+    const slug = makeSlug(i.title);
+    const variants = _variantData[slug];
+    if (variants && variants.length > 0) {
+      totalVariants += variants.length;
+      if (!variantSeriesStats[i.series]) variantSeriesStats[i.series] = { total: 0, owned: 0 };
+      variantSeriesStats[i.series].total += variants.length;
+      const k = issueKey(i);
+      const ov = window.countOwnedVariants(k);
+      ownedVariants += ov;
+      variantSeriesStats[i.series].owned += ov;
+    }
+  });
+
+  const variantPct = totalVariants > 0 ? Math.round((ownedVariants / totalVariants) * 100) : 0;
+
+  let variantHtml = '<h3>Variant Collection</h3>';
+  variantHtml += '<div class="price-guide-summary">';
+  variantHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">Total Variants Available</span><span class="price-guide-stat-value">${totalVariants}</span></div>`;
+  variantHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">Variants Owned</span><span class="price-guide-stat-value">${ownedVariants}</span></div>`;
+  variantHtml += `<div class="price-guide-stat"><span class="price-guide-stat-label">Completion</span><span class="price-guide-stat-value">${variantPct}%</span></div>`;
+  variantHtml += '</div>';
+
+  // Variant completion bar
+  variantHtml += '<div style="margin:12px 0;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">Overall Progress</div>';
+  variantHtml += `<div style="height:8px;background:var(--bg-secondary);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${variantPct}%;background:var(--accent-purple);transition:width 0.3s ease;"></div></div>`;
+  variantHtml += '</div>';
+
+  // Per-series variant breakdown
+  const variantSeriesNames = Object.keys(variantSeriesStats).sort((a,b) => variantSeriesStats[b].owned - variantSeriesStats[a].owned);
+  if (variantSeriesNames.length > 0) {
+    const topSeries = variantSeriesNames[0];
+    variantHtml += `<div style="font-size:11px;color:var(--text-muted);margin:12px 0 6px 0;">Top Series: ${topSeries.replace('Absolute ', '')} (${variantSeriesStats[topSeries].owned} / ${variantSeriesStats[topSeries].total})</div>`;
+
+    variantHtml += '<div class="variant-series-breakdown">';
+    variantSeriesNames.forEach(s => {
+      const stats = variantSeriesStats[s];
+      const seriesPct = stats.total > 0 ? Math.round((stats.owned / stats.total) * 100) : 0;
+      variantHtml += `<div class="variant-series-row">
+        <span class="variant-series-label">${s.replace('Absolute ', '')}</span>
+        <div style="flex:1;display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;height:6px;background:var(--bg-secondary);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${seriesPct}%;background:var(--accent-cyan);"></div></div>
+          <span style="font-size:10px;color:var(--text-muted);min-width:45px;text-align:right;">${stats.owned} / ${stats.total}</span>
+        </div>
+      </div>`;
+    });
+    variantHtml += '</div>';
+  }
+
+  variantCard.innerHTML = variantHtml;
+  grid.appendChild(variantCard);
 
   container.appendChild(grid);
 }
