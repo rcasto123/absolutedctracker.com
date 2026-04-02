@@ -69,6 +69,18 @@
     align-items: flex-end;
   }
 
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.5;
+    transition: opacity 0.8s ease;
+  }
+  .hero-video.hidden { opacity: 0; pointer-events: none; }
+
   .hero-bg {
     position: absolute;
     inset: 0;
@@ -1305,6 +1317,9 @@
 
 <!-- ââ Hero ââ -->
 <section class="hero" role="banner">
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline preload="metadata" aria-label="DC Absolute Universe background animation">
+    <source src="dc_absolute_universe_bg.mp4" type="video/mp4">
+  </video>
   <div class="hero-bg entering" id="heroBg"></div>
   <div class="hero-anim anim-default" id="heroAnim"></div>
   <div class="hero-overlay"></div>

@@ -268,13 +268,24 @@
     var hero = document.querySelector('.hero');
     if (!hero) return;
 
+    var videoEl = document.getElementById('heroVideo');
     var overlayEl = hero.querySelector('.hero-overlay');
     var animEl = hero.querySelector('.hero-anim');
 
-    // Resolve which cover to use — light themes reuse their base dark theme's cover
+    // Resolve which cover to use — light themes and default use the video
+    var useVideo = (themeId === 'default' || isLight);
     var coverKey = themeId;
-    if (isLight) coverKey = 'default'; // light themes use the default cover
-    var imgUrl = heroCoverArt[coverKey] || heroCoverArt['default'];
+    if (isLight) coverKey = 'default';
+
+    // Toggle video vs cover art
+    if (videoEl) {
+      if (useVideo) {
+        videoEl.classList.remove('hidden');
+      } else {
+        videoEl.classList.add('hidden');
+      }
+    }
+
     var ov = heroOverlays[coverKey] || heroOverlays['default'];
     var animCls = heroAnimClass[coverKey] || 'anim-default';
 
@@ -288,14 +299,25 @@
       animEl.className = 'hero-anim ' + animCls;
     }
 
-    // Crossfade the background image
+    // If using video, fade out any cover art bg
+    if (useVideo) {
+      var existingBg = hero.querySelector('.hero-bg');
+      if (existingBg) {
+        existingBg.classList.remove('entering');
+        existingBg.classList.add('exiting');
+      }
+      return;
+    }
+
+    // Crossfade the background image for hero themes
+    var imgUrl = heroCoverArt[coverKey] || heroCoverArt['default'];
     var oldBg = hero.querySelector('.hero-bg');
-    if (!oldBg) return; // first load is handled by init
+    if (!oldBg) return;
 
     var newBg = document.createElement('div');
     newBg.className = 'hero-bg exiting';
     newBg.style.backgroundImage = 'url(' + imgUrl + ')';
-    hero.insertBefore(newBg, hero.firstChild);
+    hero.insertBefore(newBg, videoEl ? videoEl.nextSibling : hero.firstChild);
 
     // Force reflow so browser registers the hidden state
     newBg.getBoundingClientRect();
@@ -665,20 +687,39 @@
     createPicker();
   }
 
-  // Set the hero background image for initial page load (no crossfade needed)
+  // Set the hero background for initial page load (no crossfade needed)
   function _initHeroBackground(themeId) {
     var hero = document.querySelector('.hero');
     if (!hero) return;
-    var bg = hero.querySelector('.hero-bg');
-    if (!bg) return;
 
     var isLight = themes[themeId] && themes[themeId].light;
+    var useVideo = (themeId === 'default' || isLight);
     var coverKey = isLight ? 'default' : themeId;
-    var imgUrl = heroCoverArt[coverKey] || heroCoverArt['default'];
+
+    var videoEl = document.getElementById('heroVideo');
+    var bg = hero.querySelector('.hero-bg');
     var ov = heroOverlays[coverKey] || heroOverlays['default'];
     var animCls = heroAnimClass[coverKey] || 'anim-default';
 
-    bg.style.backgroundImage = 'url(' + imgUrl + ')';
+    // Show video for default/light, hide for hero themes
+    if (videoEl) {
+      if (useVideo) {
+        videoEl.classList.remove('hidden');
+      } else {
+        videoEl.classList.add('hidden');
+      }
+    }
+
+    // Set cover art for hero themes
+    if (bg) {
+      if (useVideo) {
+        bg.classList.remove('entering');
+        bg.classList.add('exiting');
+      } else {
+        var imgUrl = heroCoverArt[coverKey] || heroCoverArt['default'];
+        bg.style.backgroundImage = 'url(' + imgUrl + ')';
+      }
+    }
 
     var overlayEl = hero.querySelector('.hero-overlay');
     if (overlayEl) {
