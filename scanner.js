@@ -84,6 +84,15 @@
         var entry = { slug: slug, title: issue.title, key: key, variant: null, type: 'issue', price: issue.price || 4.99 };
         if (issue.barcodes.upc) {
           barcodeIndex[issue.barcodes.upc] = entry;
+          // DC UPCs are 17 digits (12-digit UPC-A + 5-digit add-on).
+          // Cameras usually only read the 12-digit part, so index that too.
+          if (issue.barcodes.upc.length >= 12) {
+            var upc12 = issue.barcodes.upc.substring(0, 12);
+            if (!barcodeIndex[upc12]) barcodeIndex[upc12] = entry;
+            // Also index the EAN-13 form (UPC-A with leading 0)
+            var ean13 = '0' + upc12;
+            if (!barcodeIndex[ean13]) barcodeIndex[ean13] = entry;
+          }
           if (issue.barcodes.upc.length === 12) {
             barcodeIndex[issue.barcodes.upc.substring(0, 11)] = entry;
           }
@@ -116,16 +125,31 @@
   }
 
   // ── Lookup ──
+  // DC comics have a 12-digit UPC-A main barcode + a 5-digit add-on (issue/print).
+  // Cameras typically only read the 12-digit UPC-A portion, but our index stores the
+  // full 17-digit composite (e.g. "76194138632100111"). So we need prefix matching.
   function lookupBarcode(code) {
     code = code.trim().replace(/[-\s]/g, '');
+    // 1. Exact match
     if (barcodeIndex[code]) return barcodeIndex[code];
+    // 2. Strip leading zeros
     var stripped = code.replace(/^0+/, '');
     if (barcodeIndex[stripped]) return barcodeIndex[stripped];
-    if (code.length >= 15) {
-      var prefix15 = code.substring(0, 15);
+    // 3. Prefix match — camera scanned 12-digit UPC-A, index has 17-digit composite
+    //    Also handles 13-digit EAN-13 scans (UPC-A with leading 0)
+    if (code.length >= 10 && code.length <= 14) {
       var keys = Object.keys(barcodeIndex);
       for (var i = 0; i < keys.length; i++) {
-        if (keys[i].length >= 15 && keys[i].substring(0, 15) === prefix15) return barcodeIndex[keys[i]];
+        if (keys[i].indexOf(code) === 0) return barcodeIndex[keys[i]];
+        if (keys[i].indexOf(stripped) === 0) return barcodeIndex[keys[i]];
+      }
+    }
+    // 4. Long code — try matching first 15 or 12 chars
+    if (code.length >= 15) {
+      var prefix15 = code.substring(0, 15);
+      var keys2 = Object.keys(barcodeIndex);
+      for (var j = 0; j < keys2.length; j++) {
+        if (keys2[j].length >= 15 && keys2[j].substring(0, 15) === prefix15) return barcodeIndex[keys2[j]];
       }
     }
     if (code.length >= 11) {
