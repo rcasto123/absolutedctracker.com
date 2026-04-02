@@ -2020,6 +2020,41 @@ window.addEventListener('unhandledrejection', function(e) {
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
       <div class="changelog-entry">
         <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Mobile scanner access</div>
+        <div class="changelog-desc">The barcode scanner is now accessible directly from the mobile bottom navigation bar — tap the Scan icon to open it instantly. No more hunting for the floating button on small screens.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Mobile card layout</div>
+        <div class="changelog-desc">Issue cards are now better formatted on mobile — tighter spacing, smaller price inputs, and properly scaled typography so nothing overflows or looks cramped on phone screens.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Auto dark/light mode</div>
+        <div class="changelog-desc">First-time visitors now automatically get a light or dark theme based on their system preference. Existing users keep their saved theme choice.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Light theme accessibility</div>
+        <div class="changelog-desc">Muted text colors on all three light themes (Clean Light, Warm Light, DC Blue Light) now meet WCAG AA contrast requirements for better readability.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag fix">Fix</span> Comprehensive bug fixes</div>
+        <div class="changelog-desc">43-bug audit sweep: fixed calendar not rendering, timezone date parsing, cloud sync race conditions, import validation, popup block detection, search debounce, touch targets, accessibility attributes, and more. Full details in the changelog below.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Sync status indicator</div>
+        <div class="changelog-desc">Cloud sync now shows a spinning indicator while syncing and categorized error messages (offline, permission denied, etc.) instead of generic "Sync failed" text.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag improve">Improve</span> Security hardening</div>
+        <div class="changelog-desc">Added Subresource Integrity hashes on all CDN scripts, removed unsafe-eval from CSP, sanitized user photo URLs to prevent XSS, and added a global error boundary for graceful failure handling.</div>
+      </div>
+      <div class="changelog-entry">
+        <time datetime="2026-04-02" class="changelog-date">April 2, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Barcode scanner</div>
         <div class="changelog-desc">Scan comic barcodes with your phone camera to instantly look up issues. Supports UPC, ISBN, and QR codes. Manual entry fallback for when camera isn't available. Look for the scan icon in the top-right corner.</div>
       </div>
@@ -2209,6 +2244,11 @@ window.addEventListener('unhandledrejection', function(e) {
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Enriched media tab</div><span class="roadmap-tag complete">Done</span></div>
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Batch import / export</div><span class="roadmap-tag complete">Done</span></div>
         <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Reading order enhancements</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Collection analytics dashboard</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Barcode scanner on mobile nav</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">Auto dark/light mode detection</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">WCAG AA light theme contrast</div><span class="roadmap-tag complete">Done</span></div>
+        <div class="roadmap-item"><div class="roadmap-check done">✓</div><div class="roadmap-label done">43-bug security &amp; stability audit</div><span class="roadmap-tag complete">Done</span></div>
       </div>
       <div class="roadmap-group">
         <div class="roadmap-group-title">Up Next (Quick Wins)</div>
@@ -2220,7 +2260,6 @@ window.addEventListener('unhandledrejection', function(e) {
       </div>
       <div class="roadmap-group">
         <div class="roadmap-group-title">Medium Features</div>
-        <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Collection analytics dashboard</div><span class="roadmap-tag medium">Medium</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Series tier list / ranking</div><span class="roadmap-tag medium">Medium</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Collector's notes per issue</div><span class="roadmap-tag medium">Medium</span></div>
         <div class="roadmap-item"><div class="roadmap-check pending">◇</div><div class="roadmap-label">Smart series recommendations</div><span class="roadmap-tag medium">Medium</span></div>
