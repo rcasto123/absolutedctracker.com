@@ -380,6 +380,12 @@
     font-weight: 500;
     white-space: nowrap;
   }
+  .variant-progress-pct {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
 
   .series-meta {
     font-size: 13px;
@@ -417,6 +423,12 @@
     color: var(--accent-color);
     font-weight: 500;
     min-width: 36px;
+  }
+  .progress-pct {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    white-space: nowrap;
   }
 
   /* ââ Issue Grid ââ */
@@ -1408,6 +1420,8 @@
   .light-mode .series-count { background: color-mix(in srgb, var(--accent-color) 12%, transparent); color: color-mix(in srgb, var(--accent-color) 85%, #000); }
   .light-mode .series-meta { color: var(--text-secondary); }
   .light-mode .series-meta strong { color: var(--text-primary); }
+  .light-mode .progress-pct { color: var(--text-primary); }
+  .light-mode .variant-progress-pct { color: var(--text-primary); }
   .light-mode .series-chevron { stroke: var(--text-muted); }
   .light-mode .progress-bar { background: var(--border); }
   .light-mode .progress-text { color: var(--text-secondary); }
@@ -2651,6 +2665,7 @@ function renderCollection(filter, search) {
       ? `<div class="series-variant-progress" title="${seriesVariantOwned}/${seriesVariantTotal} variants owned">
           <div class="variant-progress-bar"><div class="variant-progress-fill" style="width:${varPct}%"></div></div>
           <span class="variant-progress-text">${seriesVariantOwned}/${seriesVariantTotal} variants</span>
+          <span class="variant-progress-pct">${varPct}%</span>
         </div>`
       : '';
 
@@ -2662,9 +2677,9 @@ function renderCollection(filter, search) {
         <div class="series-progress">
           <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
           <div class="progress-text">${ownedInSeries}/${allInSeries.length}</div>
+          <div class="progress-pct">${pct}%</div>
         </div>
         ${variantBarHTML}
-        <div class="series-meta"><strong>${pct}%</strong> collected</div>
         <button class="series-subscribe${isSeriesSubscribed ? ' subscribed' : ''}" title="Toggle series subscription on pull list" aria-pressed="${isSeriesSubscribed}">Subscribe</button>
       </div>
       <div class="issue-grid" id="grid-${sName.replace(/\s+/g, '-')}"${isCollapsed ? ' style="display:none"' : ''}></div>
