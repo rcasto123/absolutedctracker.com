@@ -682,9 +682,14 @@
       btn.innerHTML = '<span>' + match.title + '</span>' + ownedIcon;
       btn.onclick = function() {
         picker.remove();
-        // Set this match as the exact result for this code so re-lookup works
-        barcodeIndex[code] = match;
-        handleScanResult(code);
+        // Check if this issue has variants — if so, show variant picker
+        var issueVariants = variantData ? variantData[match.slug] : null;
+        if (issueVariants && issueVariants.length > 0) {
+          showVariantPicker(match, issueVariants, code);
+        } else {
+          barcodeIndex[code] = match;
+          handleScanResult(code);
+        }
       };
       picker.appendChild(btn);
     });
@@ -697,6 +702,79 @@
 
     resultEl.style.display = 'flex';
     document.getElementById('scannerHint').textContent = 'Select an issue (' + matches.length + ' in series)';
+  }
+
+  // ── Variant Picker (shown after issue selection when variants exist) ──
+  function showVariantPicker(issueResult, variants, code) {
+    var resultEl = document.getElementById('scannerResult');
+    var titleEl = document.getElementById('scannerResultTitle');
+    var codeEl = document.getElementById('scannerResultCode');
+    var viewBtn = document.getElementById('scannerViewBtn');
+    var ownedBtn = document.getElementById('scannerOwnedBtn');
+    var priceEl = document.getElementById('scannerResultPrice');
+
+    titleEl.innerHTML = '<span style="color:var(--accent-gold,#eab308);">📖</span> ' + issueResult.title + ' — Select cover:';
+    codeEl.textContent = 'Barcode: ' + code;
+    priceEl.style.display = 'none';
+    viewBtn.style.display = 'none';
+    ownedBtn.style.display = 'none';
+
+    // Remove any old picker
+    var oldPicker = document.getElementById('scannerMultiPicker');
+    if (oldPicker) oldPicker.remove();
+
+    var picker = document.createElement('div');
+    picker.id = 'scannerMultiPicker';
+    picker.style.cssText = 'max-height:260px;overflow-y:auto;margin-top:8px;display:flex;flex-direction:column;gap:6px;';
+
+    // Cover A (standard) button first
+    var coverABtn = document.createElement('button');
+    var coverAOwned = isOwned(issueResult.key, 'issue');
+    coverABtn.className = 'scanner-result-btn' + (coverAOwned ? ' owned' : '');
+    coverABtn.style.cssText = 'width:100%;text-align:left;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;';
+    coverABtn.innerHTML = '<span>Cover A (Standard)</span>' + (coverAOwned ? '<span style="color:var(--accent-green,#22c55e);margin-left:8px;">✓ Owned</span>' : '');
+    coverABtn.onclick = function() {
+      picker.remove();
+      // Use the base issue result as-is (Cover A)
+      barcodeIndex[code] = issueResult;
+      handleScanResult(code);
+    };
+    picker.appendChild(coverABtn);
+
+    // Variant buttons
+    variants.forEach(function(v, idx) {
+      var btn = document.createElement('button');
+      var variantId = String(idx);
+      var vOwned = (typeof isVariantOwned === 'function') ? isVariantOwned(issueResult.key, variantId) : false;
+      btn.className = 'scanner-result-btn' + (vOwned ? ' owned' : '');
+      btn.style.cssText = 'width:100%;text-align:left;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;';
+      var coverName = v.cover || v.name || ('Variant #' + (idx + 1));
+      btn.innerHTML = '<span style="color:var(--accent-gold,#eab308);">' + coverName + '</span>' + (vOwned ? '<span style="color:var(--accent-green,#22c55e);margin-left:8px;">✓ Owned</span>' : '');
+      btn.onclick = function() {
+        picker.remove();
+        var variantEntry = {
+          slug: issueResult.slug,
+          title: issueResult.title,
+          key: issueResult.key,
+          variant: variantId,
+          variantName: v.cover || coverName,
+          variantFullName: v.name || coverName,
+          type: 'issue',
+          price: issueResult.price || 4.99
+        };
+        barcodeIndex[code] = variantEntry;
+        handleScanResult(code);
+      };
+      picker.appendChild(btn);
+    });
+
+    var inner = resultEl.querySelector('.scanner-result-inner');
+    if (inner) {
+      inner.appendChild(picker);
+    }
+
+    resultEl.style.display = 'flex';
+    document.getElementById('scannerHint').textContent = 'Select cover variant (' + (variants.length + 1) + ' covers)';
   }
 
   // ── Handle Scan Result ──
