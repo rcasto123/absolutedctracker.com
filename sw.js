@@ -6,7 +6,7 @@
 // their collection.
 // ============================================================
 
-var CACHE_NAME = 'au-tracker-v29';
+var CACHE_NAME = 'au-tracker-v30';
 
 // App shell — files to pre-cache on install
 var APP_SHELL = [
@@ -38,7 +38,7 @@ var SKIP_PATTERNS = [
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      console.log('[SW] Pre-caching app shell');
+      // console.log('[SW] Pre-caching app shell');
       return cache.addAll(APP_SHELL);
     }).then(function() {
       // Activate immediately without waiting for existing tabs to close
@@ -55,7 +55,7 @@ self.addEventListener('activate', function(event) {
         cacheNames.filter(function(name) {
           return name !== CACHE_NAME;
         }).map(function(name) {
-          console.log('[SW] Deleting old cache:', name);
+          // console.log('[SW] Deleting old cache:', name);
           return caches.delete(name);
         })
       );

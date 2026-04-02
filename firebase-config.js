@@ -124,7 +124,8 @@
     var user = auth.currentUser;
     if (!user) return Promise.resolve();
     var raw = localStorage.getItem("au_owned");
-    var owned = raw ? JSON.parse(raw) : {};
+    var owned = {};
+    try { owned = raw ? JSON.parse(raw) : {}; } catch(e) { owned = {}; }
     var ownedVariants = getOwnedVariants();
     return db.collection("users").doc(user.uid).set({
       owned: owned,

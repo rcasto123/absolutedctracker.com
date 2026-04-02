@@ -203,8 +203,9 @@
     if (_previewClickHandler) return;
 
     _previewClickHandler = function(e) {
-      // Only block when signed out
+      // Only block when signed out, and only left clicks (allow middle-click/ctrl-click)
       if (auth.currentUser) return;
+      if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return;
 
       // Issue cards: navigate to the issue detail page instead of toggling ownership
       var card = e.target.closest('.issue-card');
