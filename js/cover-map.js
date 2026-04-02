@@ -232,4 +232,9 @@
   });
   _bgObserver.observe(document.body, { childList: true, subtree: true });
   applyCoverBackgrounds();
+
+  // Expose to global scope for init.js and renders.js
+  window.coverMap = coverMap;
+  window._loadExternalData = _loadExternalData;
+  window.applyCoverBackgrounds = applyCoverBackgrounds;
 })()
