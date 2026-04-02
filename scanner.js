@@ -74,8 +74,11 @@
   var barcodeIndex = {};
   var variantData = null; // loaded from variants.json
 
+  var seriesIndex = {}; // maps 12-digit UPC-A base to array of entries
+
   function buildBarcodeIndex() {
     barcodeIndex = {};
+    seriesIndex = {};
     // Index individual issues
     if (typeof ALL_ISSUES !== 'undefined') {
       ALL_ISSUES.forEach(function(issue) {
@@ -86,16 +89,15 @@
         if (issue.barcodes.upc) {
           barcodeIndex[issue.barcodes.upc] = entry;
           // DC UPCs are 17 digits (12-digit UPC-A + 5-digit add-on).
-          // Cameras usually only read the 12-digit part, so index that too.
+          // Cameras usually only read the 12-digit part, so build a series index.
           if (issue.barcodes.upc.length >= 12) {
             var upc12 = issue.barcodes.upc.substring(0, 12);
-            if (!barcodeIndex[upc12]) barcodeIndex[upc12] = entry;
-            // Also index the EAN-13 form (UPC-A with leading 0)
+            if (!seriesIndex[upc12]) seriesIndex[upc12] = [];
+            seriesIndex[upc12].push(entry);
+            // Also index EAN-13 form (leading 0 + 12-digit UPC-A)
             var ean13 = '0' + upc12;
-            if (!barcodeIndex[ean13]) barcodeIndex[ean13] = entry;
-          }
-          if (issue.barcodes.upc.length === 12) {
-            barcodeIndex[issue.barcodes.upc.substring(0, 11)] = entry;
+            if (!seriesIndex[ean13]) seriesIndex[ean13] = [];
+            seriesIndex[ean13].push(entry);
           }
         }
         if (issue.barcodes.isbn) {
@@ -166,16 +168,31 @@
   // DC comics have a 12-digit UPC-A main barcode + a 5-digit add-on (issue/print).
   // Cameras typically only read the 12-digit UPC-A portion, but our index stores the
   // full 17-digit composite (e.g. "76194138632100111"). So we need prefix matching.
+  // When a 12-digit scan matches multiple issues in a series, returns a multi-match
+  // object so the UI can show a picker.
   function lookupBarcode(code) {
     code = code.trim().replace(/[-\s]/g, '');
-    // 1. Exact match
+    // 1. Exact match (full 17-digit UPC, ISBN, etc.)
     if (barcodeIndex[code]) return barcodeIndex[code];
     // 2. Strip leading zeros
     var stripped = code.replace(/^0+/, '');
     if (barcodeIndex[stripped]) return barcodeIndex[stripped];
-    // 3. Prefix match — camera scanned 12-digit UPC-A, index has 17-digit composite
-    //    Also handles 13-digit EAN-13 scans (UPC-A with leading 0)
+    // 3. Series index match — camera scanned 12 or 13 digit code
     if (code.length >= 10 && code.length <= 14) {
+      // Check series index for multi-match
+      if (seriesIndex[code] && seriesIndex[code].length === 1) {
+        return seriesIndex[code][0];
+      }
+      if (seriesIndex[code] && seriesIndex[code].length > 1) {
+        return { multiMatch: true, matches: seriesIndex[code], code: code };
+      }
+      if (seriesIndex[stripped] && seriesIndex[stripped].length === 1) {
+        return seriesIndex[stripped][0];
+      }
+      if (seriesIndex[stripped] && seriesIndex[stripped].length > 1) {
+        return { multiMatch: true, matches: seriesIndex[stripped], code: stripped };
+      }
+      // Fallback: prefix match against full barcodeIndex keys
       var keys = Object.keys(barcodeIndex);
       for (var i = 0; i < keys.length; i++) {
         if (keys[i].indexOf(code) === 0) return barcodeIndex[keys[i]];
@@ -618,9 +635,79 @@
     }
   }
 
+  // ── Multi-match picker (when camera reads 12-digit UPC shared by a series) ──
+  function showMultiMatchPicker(matches, code) {
+    // Pause camera
+    if (scanner && isScanning) {
+      try { scanner.pause(true); } catch(e) {}
+    }
+    playBeep('success');
+    vibrate([50, 30, 50]);
+
+    var resultEl = document.getElementById('scannerResult');
+    var titleEl = document.getElementById('scannerResultTitle');
+    var codeEl = document.getElementById('scannerResultCode');
+    var viewBtn = document.getElementById('scannerViewBtn');
+    var ownedBtn = document.getElementById('scannerOwnedBtn');
+    var priceEl = document.getElementById('scannerResultPrice');
+
+    titleEl.innerHTML = '<span style="color:var(--accent-gold,#eab308);">📚</span> Multiple issues found';
+    codeEl.textContent = 'Barcode: ' + code + ' — Select your issue:';
+    priceEl.style.display = 'none';
+    viewBtn.style.display = 'none';
+    ownedBtn.style.display = 'none';
+
+    // Remove any old picker
+    var oldPicker = document.getElementById('scannerMultiPicker');
+    if (oldPicker) oldPicker.remove();
+
+    // Build picker list
+    var picker = document.createElement('div');
+    picker.id = 'scannerMultiPicker';
+    picker.style.cssText = 'max-height:260px;overflow-y:auto;margin-top:8px;display:flex;flex-direction:column;gap:6px;';
+
+    // Sort matches by issue number
+    var sorted = matches.slice().sort(function(a, b) {
+      var numA = parseInt((a.key || '').split('|')[1]) || 0;
+      var numB = parseInt((b.key || '').split('|')[1]) || 0;
+      return numA - numB;
+    });
+
+    sorted.forEach(function(match) {
+      var btn = document.createElement('button');
+      var ownedNow = isOwned(match.key, match.type);
+      btn.className = 'scanner-result-btn' + (ownedNow ? ' owned' : '');
+      btn.style.cssText = 'width:100%;text-align:left;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;';
+      var ownedIcon = ownedNow ? '<span style="color:var(--accent-green,#22c55e);margin-left:8px;">✓ Owned</span>' : '';
+      btn.innerHTML = '<span>' + match.title + '</span>' + ownedIcon;
+      btn.onclick = function() {
+        picker.remove();
+        // Set this match as the exact result for this code so re-lookup works
+        barcodeIndex[code] = match;
+        handleScanResult(code);
+      };
+      picker.appendChild(btn);
+    });
+
+    // Insert picker after the code element
+    var inner = resultEl.querySelector('.scanner-result-inner');
+    if (inner) {
+      inner.appendChild(picker);
+    }
+
+    resultEl.style.display = 'flex';
+    document.getElementById('scannerHint').textContent = 'Select an issue (' + matches.length + ' in series)';
+  }
+
   // ── Handle Scan Result ──
   function handleScanResult(code) {
     var result = lookupBarcode(code);
+
+    // Handle multi-match (camera read 12-digit UPC shared by a series)
+    if (result && result.multiMatch) {
+      showMultiMatchPicker(result.matches, code);
+      return;
+    }
 
     // Sound & haptics
     if (result) {
