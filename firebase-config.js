@@ -134,7 +134,7 @@
       displayName: user.displayName || "",
       photoURL: user.photoURL || "",
       lastSync: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+    }, { mergeFields: ['owned', 'ownedVariants', 'email', 'displayName', 'photoURL', 'lastSync'] });
   };
 
   window.loadOwnedFromCloud = function () {

@@ -590,25 +590,17 @@
         // Support both old format (flat object) and new format ({ owned, ownedVariants })
         var cloudOwned = cloudData.owned || cloudData;
         var cloudVariants = cloudData.ownedVariants || {};
+        var hasLocal = Object.keys(localOwned).length > 0 || Object.keys(localVariants).length > 0;
 
-        // Merge local + cloud (union)
-        var merged = _mergeOwned(
-          { owned: localOwned, ownedVariants: localVariants },
-          { owned: cloudOwned, ownedVariants: cloudVariants }
-        );
-        var mergedOwned = merged.owned || merged;
-        var mergedVariants = merged.ownedVariants || {};
-
-        localStorage.setItem('au_owned', JSON.stringify(mergedOwned));
-        if (typeof setOwnedVariants === 'function') setOwnedVariants(mergedVariants);
-
-        // Push merged back to cloud
-        await _syncOwnedToCloud();
-        showSyncStatus('Synced');
-
-        // Reload if there were changes
-        if (JSON.stringify(localOwned) !== JSON.stringify(mergedOwned) ||
-            JSON.stringify(localVariants) !== JSON.stringify(mergedVariants)) {
+        if (hasLocal) {
+          // Local has data — local wins (preserves un-owns), push to cloud
+          await _syncOwnedToCloud();
+          showSyncStatus('Synced');
+        } else {
+          // Empty local (new device / cleared cache) — pull cloud data down
+          localStorage.setItem('au_owned', JSON.stringify(cloudOwned));
+          if (typeof setOwnedVariants === 'function') setOwnedVariants(cloudVariants);
+          showSyncStatus('Synced');
           location.reload();
         }
       } else {
