@@ -177,7 +177,7 @@ function renderCollection(filter, search) {
       card.innerHTML = `
         <div class="issue-checkbox">${checkSvg}</div>
         <div class="issue-info">
-          <div class="issue-name"><a href="issue.html?id=${slug}" onclick="event.stopPropagation()">${issue.title}</a></div>
+          <div class="issue-name"><a href="issue.html?id=${slug}" onclick="event.stopPropagation()">${issue.series} <span class="issue-num">${issue.issue}</span></a></div>
           <div class="issue-date">${dateStr} · ${issue.writer}</div>
         </div>
         <div class="issue-badge ${badgeClass}">${badgeText}</div>

@@ -469,6 +469,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .issue-num {
+    color: var(--accent-cyan);
+    font-weight: 700;
+    font-size: 15px;
+  }
 
   .issue-date {
     font-size: 12px;
@@ -1220,6 +1225,7 @@
     .issue-card { padding: 10px; gap: 6px; }
     .issue-info { min-width: 0; flex: 1 1 0; }
     .issue-name { font-size: 13px; }
+    .issue-num { font-size: 14px; }
     .issue-date { font-size: 11px; }
     .card-meta { padding-left: 28px; gap: 4px; }
     .price-group { gap: 2px; }
@@ -1426,6 +1432,7 @@
   .light-mode .issue-name { color: var(--text-primary); }
   .light-mode .issue-name a { color: var(--text-primary); }
   .light-mode .issue-name a:hover { color: #2563eb; }
+  .light-mode .issue-num { color: #0891b2; }
   .light-mode .issue-date { color: var(--text-secondary); }
   .light-mode .issue-checkbox svg { color: var(--border); }
   .light-mode .issue-card.owned .issue-checkbox svg { color: #22c55e; }
