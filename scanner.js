@@ -20,6 +20,9 @@
   var lastScannedCode = ''; // Debounce duplicate scans
   var lastScanTime = 0;
   var batchMode = false;    // Rapid batch scanning
+  var cartMode = false;     // Shopping cart mode — scans add to cart, not owned
+  var cart = [];            // Cart items: { key, title, slug, type, variant, variantName, price, alreadyOwned }
+  var CART_KEY = 'au_scanner_cart';
   var scanHistory = [];     // Session scan log
   var sessionValue = 0;     // Running $ value scanned this session
 
@@ -307,6 +310,238 @@
   window.addEventListener('online', function() {
     syncOfflineQueue();
   });
+
+  // ── Shopping Cart ──
+  function loadCart() {
+    try { cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch(e) { cart = []; }
+  }
+
+  function saveCart() {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    updateCartBadge();
+  }
+
+  function addToCart(result) {
+    // Check for duplicates in cart
+    var isDupe = false;
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].key === result.key && cart[i].variant === (result.variant || null)) {
+        isDupe = true;
+        break;
+      }
+    }
+    if (isDupe) return 'duplicate';
+
+    var isVariant = !!(result.variantName && result.variantName !== 'Cover A');
+    var alreadyOwned = false;
+    if (isVariant && typeof isVariantOwned === 'function') {
+      alreadyOwned = isVariantOwned(result.key, result.variant);
+    } else {
+      alreadyOwned = isOwned(result.key, result.type);
+    }
+
+    cart.push({
+      key: result.key,
+      title: result.title,
+      slug: result.slug,
+      type: result.type || 'issue',
+      variant: result.variant || null,
+      variantName: isVariant ? result.variantName : null,
+      variantFullName: result.variantFullName || null,
+      price: result.price || 4.99,
+      alreadyOwned: alreadyOwned
+    });
+    saveCart();
+    return alreadyOwned ? 'owned' : 'added';
+  }
+
+  function removeFromCart(index) {
+    cart.splice(index, 1);
+    saveCart();
+  }
+
+  function clearCart() {
+    cart = [];
+    saveCart();
+  }
+
+  function getCartTotal() {
+    var total = 0;
+    for (var i = 0; i < cart.length; i++) {
+      total += cart[i].price || 0;
+    }
+    return total;
+  }
+
+  function checkoutCart() {
+    var count = 0;
+    for (var i = 0; i < cart.length; i++) {
+      var item = cart[i];
+      if (item.variant && item.variant !== null && typeof toggleVariantOwned === 'function') {
+        if (typeof isVariantOwned === 'function' && !isVariantOwned(item.key, item.variant)) {
+          toggleVariantOwned(item.key, item.variant);
+        }
+        // Also mark base issue as owned
+        if (!isOwned(item.key, 'issue')) {
+          setOwnedState(item.key, true, 'issue');
+        }
+      } else {
+        if (!isOwned(item.key, item.type)) {
+          if (isOnline()) {
+            setOwnedState(item.key, true, item.type);
+          } else {
+            var sk = (item.type === 'trade') ? 'au_trades' : 'au_owned';
+            var st;
+            try { st = JSON.parse(localStorage.getItem(sk) || '{}'); } catch(e) { st = {}; }
+            st[item.key] = true;
+            localStorage.setItem(sk, JSON.stringify(st));
+            queueOfflineScan(item.key, item.type);
+          }
+        }
+      }
+      count++;
+    }
+    clearCart();
+    return count;
+  }
+
+  function updateCartBadge() {
+    var badge = document.getElementById('scannerCartBadge');
+    if (badge) {
+      if (cart.length > 0) {
+        badge.textContent = cart.length;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  }
+
+  function toggleCartMode() {
+    if (batchMode) {
+      // Turn off batch mode first
+      batchMode = false;
+      var batchBtn = document.getElementById('scannerBatchBtn');
+      batchBtn.style.color = '#aaa';
+      batchBtn.style.background = 'rgba(255,255,255,0.06)';
+      batchBtn.style.borderColor = 'rgba(255,255,255,0.12)';
+      batchBtn.title = 'Batch mode: auto-add on scan';
+    }
+    cartMode = !cartMode;
+    var btn = document.getElementById('scannerCartBtn');
+    btn.style.color = cartMode ? '#06b6d4' : '#aaa';
+    btn.style.background = cartMode ? 'rgba(6,182,212,0.15)' : 'rgba(255,255,255,0.06)';
+    btn.style.borderColor = cartMode ? 'rgba(6,182,212,0.3)' : 'rgba(255,255,255,0.12)';
+    btn.title = cartMode ? 'Cart mode ON: scans add to cart' : 'Cart mode: scan to cart';
+    var hint = document.getElementById('scannerHint');
+    if (cartMode) {
+      hint.textContent = 'Cart mode — scan to add to cart';
+      document.getElementById('scannerResult').style.display = 'none';
+      lastScannedCode = '';
+      resumeScanning();
+      renderCartTray();
+    } else {
+      hint.textContent = 'Point your camera at a barcode';
+      hideCartTray();
+    }
+  }
+
+  function renderCartTray() {
+    var tray = document.getElementById('scannerCartTray');
+    if (!tray) return;
+
+    if (!cartMode && cart.length === 0) {
+      tray.style.display = 'none';
+      return;
+    }
+
+    if (cart.length === 0) {
+      tray.style.display = 'flex';
+      tray.innerHTML = '<div class="cart-tray-header">'
+        + '<span class="cart-tray-title">🛒 Cart empty</span>'
+        + '</div>'
+        + '<div class="cart-tray-hint">Scan comics to add them to your cart</div>';
+      return;
+    }
+
+    var total = getCartTotal();
+    var ownedCount = 0;
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].alreadyOwned) ownedCount++;
+    }
+
+    var html = '<div class="cart-tray-header">'
+      + '<span class="cart-tray-title">🛒 Cart: ' + cart.length + ' issue' + (cart.length !== 1 ? 's' : '') + ' · $' + total.toFixed(2) + '</span>'
+      + '<button class="cart-checkout-btn" id="cartCheckoutBtn">Checkout</button>'
+      + '</div>';
+
+    if (ownedCount > 0) {
+      html += '<div class="cart-tray-warning">⚠️ ' + ownedCount + ' item' + (ownedCount !== 1 ? 's' : '') + ' already owned</div>';
+    }
+
+    html += '<div class="cart-tray-list">';
+    for (var j = 0; j < cart.length; j++) {
+      var item = cart[j];
+      var variantTag = item.variantName ? ' <span class="cart-variant-tag">' + item.variantName + '</span>' : '';
+      var ownedTag = item.alreadyOwned ? '<span class="cart-owned-tag">⚠️ owned</span>' : '';
+      html += '<div class="cart-tray-item' + (item.alreadyOwned ? ' already-owned' : '') + '" data-idx="' + j + '">'
+        + '<div class="cart-item-info">'
+        + '<span class="cart-item-title">' + item.title + variantTag + '</span>'
+        + '<span class="cart-item-price">' + formatPrice(item.price) + ' ' + ownedTag + '</span>'
+        + '</div>'
+        + '<button class="cart-item-remove" data-idx="' + j + '">✕</button>'
+        + '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="cart-tray-footer">'
+      + '<button class="cart-clear-btn" id="cartClearBtn">Clear Cart</button>'
+      + '</div>';
+
+    tray.style.display = 'flex';
+    tray.innerHTML = html;
+
+    // Bind events
+    var checkoutBtn = document.getElementById('cartCheckoutBtn');
+    if (checkoutBtn) {
+      checkoutBtn.onclick = function() {
+        var count = checkoutCart();
+        playBeep('success');
+        vibrate([50, 30, 50, 30, 50]);
+        showToast('<span style="color:#22c55e;">✓</span> Checked out <strong>' + count + ' item' + (count !== 1 ? 's' : '') + '</strong> — marked as owned!', 3000);
+        renderCartTray();
+        updateCartBadge();
+        // Refresh main UI if possible
+        if (typeof renderAll === 'function') try { renderAll(); } catch(e) {}
+      };
+    }
+
+    var clearBtn = document.getElementById('cartClearBtn');
+    if (clearBtn) {
+      clearBtn.onclick = function() {
+        clearCart();
+        renderCartTray();
+        showToast('🛒 Cart cleared', 2000);
+      };
+    }
+
+    var removeBtns = tray.querySelectorAll('.cart-item-remove');
+    for (var k = 0; k < removeBtns.length; k++) {
+      removeBtns[k].onclick = function() {
+        var idx = parseInt(this.getAttribute('data-idx'));
+        removeFromCart(idx);
+        renderCartTray();
+        playBeep('error');
+      };
+    }
+  }
+
+  function hideCartTray() {
+    var tray = document.getElementById('scannerCartTray');
+    if (tray && cart.length === 0) {
+      tray.style.display = 'none';
+    }
+  }
 
   // ── Cover Fingerprint Matching ──
   // Computes an 8x8 RGB color fingerprint from a video element's current frame.
@@ -616,6 +851,10 @@
       +   '<button class="scanner-batch-btn" id="scannerBatchBtn" aria-label="Toggle batch mode" title="Batch mode: auto-add on scan">'
       +     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>'
       +   '</button>'
+      +   '<button class="scanner-cart-btn" id="scannerCartBtn" aria-label="Toggle cart mode" title="Cart mode: scan to cart" style="position:relative;">'
+      +     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>'
+      +     '<span class="cart-badge" id="scannerCartBadge" style="display:none;">0</span>'
+      +   '</button>'
       +   '<button class="scanner-torch-btn" id="scannerTorchBtn" aria-label="Toggle flashlight" title="Toggle flashlight" style="display:none;">'
       +     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
       +   '</button>'
@@ -638,6 +877,7 @@
       +   '<span>Offline — scans will sync when reconnected</span>'
       +   '<span class="offline-badge" id="scannerOfflineBadge" style="display:none;">0</span>'
       + '</div>'
+      + '<div class="scanner-cart-tray" id="scannerCartTray" style="display:none;"></div>'
       + '<div class="scanner-footer">'
       +   '<div class="scanner-manual">'
       +     '<input type="text" id="manualBarcodeInput" class="scanner-manual-input" placeholder="Or enter UPC / ISBN manually..." maxlength="20">'
@@ -662,6 +902,7 @@
     // Event listeners
     document.getElementById('scannerCloseBtn').addEventListener('click', closeScanner);
     document.getElementById('scannerBatchBtn').addEventListener('click', toggleBatchMode);
+    document.getElementById('scannerCartBtn').addEventListener('click', toggleCartMode);
     document.getElementById('scannerHistoryClear').addEventListener('click', clearHistory);
     document.getElementById('scannerRescanBtn').addEventListener('click', function() {
       document.getElementById('scannerResult').style.display = 'none';
@@ -686,6 +927,16 @@
 
   // ── Batch Mode ──
   function toggleBatchMode() {
+    if (cartMode) {
+      // Turn off cart mode first
+      cartMode = false;
+      var cartBtn = document.getElementById('scannerCartBtn');
+      cartBtn.style.color = '#aaa';
+      cartBtn.style.background = 'rgba(255,255,255,0.06)';
+      cartBtn.style.borderColor = 'rgba(255,255,255,0.12)';
+      cartBtn.title = 'Cart mode: scan to cart';
+      hideCartTray();
+    }
     batchMode = !batchMode;
     var btn = document.getElementById('scannerBatchBtn');
     btn.style.color = batchMode ? '#ffc107' : '#aaa';
@@ -792,10 +1043,13 @@
     document.getElementById('scannerHint').textContent = batchMode ? 'Batch mode — scanning...' : 'Point your camera at a barcode';
     document.getElementById('manualBarcodeInput').value = '';
     lastScannedCode = '';
+    loadCart();
     renderHistory();
     updateSessionValue();
     updateOfflineBar();
     updateOfflineBadge();
+    updateCartBadge();
+    if (cartMode) renderCartTray();
     // Try to sync any pending offline scans
     if (isOnline()) syncOfflineQueue();
     startCamera();
@@ -1127,6 +1381,28 @@
       return;
     }
 
+    if (cartMode && result) {
+      // Cart mode: add to cart, show toast, keep scanning
+      var cartStatus = addToCart(result);
+      var isCartVariant = !!(result.variantName && result.variantName !== 'Cover A');
+      var cartVariantTag = isCartVariant ? ' <span style="color:#eab308;font-size:0.8em;">' + result.variantName + '</span>' : '';
+      var cartPriceTag = (result.price || result.price === 0) ? ' <span style="color:#06b6d4;font-size:0.8em;">' + formatPrice(result.price) + '</span>' : '';
+      if (cartStatus === 'duplicate') {
+        showToast('<span style="color:#eab308;">↻</span> <strong>' + result.title + '</strong>' + cartVariantTag + ' already in cart', 2000);
+      } else if (cartStatus === 'owned') {
+        showToast('<span style="color:#eab308;">⚠️</span> <strong>' + result.title + '</strong>' + cartVariantTag + cartPriceTag + ' added <span style="color:#eab308;font-size:0.8em;">(already owned!)</span>', 2500);
+      } else {
+        showToast('<span style="color:#06b6d4;">🛒</span> <strong>' + result.title + '</strong>' + cartVariantTag + cartPriceTag + ' added to cart', 2000);
+      }
+      renderCartTray();
+      return;
+    }
+
+    if (cartMode && !result) {
+      showToast('<span style="color:#eab308;">?</span> Unknown barcode: ' + code, 2500);
+      return;
+    }
+
     // Normal mode: pause and show result card
     if (scanner && isScanning) {
       try { scanner.pause(true); } catch(e) {}
@@ -1409,13 +1685,94 @@
       + '.light-mode .sh-title { color:#1a1a2e; }'
       + '.light-mode .sh-code { color:rgba(0,0,0,0.35); }'
       + '.light-mode .scanner-offline-bar { background:rgba(234,179,8,0.08);border-top-color:rgba(234,179,8,0.15); }'
-      + '.light-mode .scanner-session-value { background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.15); }';
+      + '.light-mode .scanner-session-value { background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.15); }'
+      // Cart mode button
+      + '.scanner-cart-btn {'
+      +   'width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);'
+      +   'background:rgba(255,255,255,0.06);cursor:pointer;display:flex;align-items:center;'
+      +   'justify-content:center;color:#aaa;transition:all 0.15s;flex-shrink:0;position:relative;'
+      + '}'
+      + '.scanner-cart-btn:hover { background:rgba(255,255,255,0.12);color:#fff; }'
+      + '.cart-badge {'
+      +   'position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;'
+      +   'background:#06b6d4;color:#fff;font-size:0.6rem;font-weight:700;display:flex;'
+      +   'align-items:center;justify-content:center;padding:0 4px;'
+      + '}'
+      // Cart tray
+      + '.scanner-cart-tray {'
+      +   'display:none;flex-direction:column;border-top:1px solid rgba(6,182,212,0.2);'
+      +   'background:rgba(6,182,212,0.06);flex-shrink:0;max-height:240px;overflow:hidden;'
+      + '}'
+      + '.cart-tray-header {'
+      +   'display:flex;align-items:center;justify-content:space-between;padding:8px 16px;'
+      + '}'
+      + '.cart-tray-title {'
+      +   'font-size:0.82rem;font-weight:600;color:#06b6d4;'
+      +   'font-family:"Oswald",sans-serif;letter-spacing:0.03em;'
+      + '}'
+      + '.cart-tray-hint {'
+      +   'font-size:0.78rem;color:rgba(255,255,255,0.4);padding:4px 16px 12px;'
+      + '}'
+      + '.cart-tray-warning {'
+      +   'font-size:0.72rem;color:#eab308;padding:0 16px 6px;'
+      + '}'
+      + '.cart-checkout-btn {'
+      +   'padding:6px 16px;border-radius:6px;border:none;background:#22c55e;color:#fff;'
+      +   'font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.15s;'
+      +   'font-family:"Oswald",sans-serif;letter-spacing:0.04em;text-transform:uppercase;'
+      + '}'
+      + '.cart-checkout-btn:hover { filter:brightness(1.15); }'
+      + '.cart-tray-list {'
+      +   'overflow-y:auto;flex:1;padding:0 12px;'
+      + '}'
+      + '.cart-tray-item {'
+      +   'display:flex;align-items:center;gap:8px;padding:6px 4px;'
+      +   'border-bottom:1px solid rgba(255,255,255,0.04);'
+      + '}'
+      + '.cart-tray-item.already-owned {'
+      +   'background:rgba(234,179,8,0.06);border-radius:4px;'
+      + '}'
+      + '.cart-item-info { flex:1;min-width:0; }'
+      + '.cart-item-title {'
+      +   'display:block;font-size:0.8rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'
+      + '}'
+      + '.cart-variant-tag {'
+      +   'font-size:0.7rem;color:#eab308;font-weight:500;'
+      + '}'
+      + '.cart-item-price {'
+      +   'display:block;font-size:0.7rem;color:#06b6d4;font-weight:600;'
+      + '}'
+      + '.cart-owned-tag {'
+      +   'color:#eab308;font-size:0.65rem;font-weight:600;margin-left:4px;'
+      + '}'
+      + '.cart-item-remove {'
+      +   'width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,255,255,0.06);'
+      +   'color:rgba(255,255,255,0.4);font-size:0.7rem;cursor:pointer;display:flex;'
+      +   'align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;'
+      + '}'
+      + '.cart-item-remove:hover { background:rgba(239,68,68,0.2);color:#ef4444; }'
+      + '.cart-tray-footer {'
+      +   'padding:6px 16px 8px;display:flex;justify-content:center;'
+      + '}'
+      + '.cart-clear-btn {'
+      +   'background:none;border:none;color:rgba(255,255,255,0.3);font-size:0.7rem;cursor:pointer;'
+      +   'text-transform:uppercase;letter-spacing:0.05em;'
+      + '}'
+      + '.cart-clear-btn:hover { color:#ef4444; }'
+      // Light mode cart styles
+      + '.light-mode .scanner-cart-btn { border-color:rgba(0,0,0,0.1);background:rgba(0,0,0,0.04);color:#555; }'
+      + '.light-mode .scanner-cart-tray { background:rgba(6,182,212,0.04);border-top-color:rgba(6,182,212,0.15); }'
+      + '.light-mode .cart-tray-hint { color:rgba(0,0,0,0.4); }'
+      + '.light-mode .cart-item-title { color:#1a1a2e; }'
+      + '.light-mode .cart-item-remove { background:rgba(0,0,0,0.04);color:rgba(0,0,0,0.3); }'
+      + '.light-mode .cart-clear-btn { color:rgba(0,0,0,0.3); }';
     document.head.appendChild(css);
   }
 
   // ── Init ──
   function init() {
     injectStyles();
+    loadCart();
     buildBarcodeIndex();
     createScannerButton();
     // Expose openScanner globally so mobile bottom nav can call it
