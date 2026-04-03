@@ -1999,12 +1999,21 @@
 .variant-pick-card.vp-owned { border-color: var(--accent-green); }
 .variant-pick-card.vp-in-cart { border-color: var(--accent-cyan); opacity: 0.6; }
 
-.variant-pick-img {
+.variant-pick-img-wrap {
+  position: relative;
   width: 100%;
-  aspect-ratio: 2/3;
+  padding-top: 150%; /* 2:3 aspect ratio via padding hack — works everywhere */
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+.variant-pick-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
-  background: var(--bg-primary);
 }
 
 .variant-pick-img[alt]::after {
@@ -2104,9 +2113,14 @@
 .light-mode .variant-pick-check { border-color: rgba(0,0,0,0.3); background: rgba(255,255,255,0.7); }
 
 @media (max-width: 600px) {
-  .variant-picker { width: 98vw; max-height: 92vh; }
-  .variant-picker-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
+  .variant-picker { width: 98vw; max-height: 94vh; border-radius: 6px; }
+  .variant-picker-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 8px; }
   .variant-pick-info { font-size: 10px; padding: 4px 6px; }
   .variant-picker-header { padding: 10px 14px; }
+  .variant-picker-title { font-size: 16px; }
   .variant-picker-footer { padding: 10px 14px; }
+}
+@media (max-width: 400px) {
+  .variant-picker-grid { grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; }
+  .variant-pick-info { font-size: 9px; padding: 3px 5px; }
 }

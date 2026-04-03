@@ -235,7 +235,7 @@ function openVariantPicker(issue) {
   var baseBadge = '';
   if (baseOwned) baseBadge = '<span class="variant-pick-badge vpb-owned">Owned</span>';
   else if (baseInCart) baseBadge = '<span class="variant-pick-badge vpb-cart">In Cart</span>';
-  baseCard.innerHTML = '<img class="variant-pick-img" src="' + baseCover + '" alt="Cover A" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#1e293b,#334155)\';this.style.objectFit=\'contain\';this.alt=\'Cover A (No Image)\'">' +
+  baseCard.innerHTML = '<div class="variant-pick-img-wrap"><img class="variant-pick-img" src="' + baseCover + '" alt="Cover A" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#1e293b,#334155)\';this.style.objectFit=\'contain\';this.alt=\'Cover A (No Image)\'"></div>' +
     '<div class="variant-pick-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
     baseBadge +
     '<div class="variant-pick-info">Cover A (Base)</div>';
@@ -258,7 +258,7 @@ function openVariantPicker(issue) {
       else if (vInCart) badge = '<span class="variant-pick-badge vpb-cart">In Cart</span>';
 
       var shortName = v.cover || v.name.replace(/^.*#\d+\s*/, '').replace(/\s*Variant\s*$/i, '') || 'Cover ' + String.fromCharCode(66 + idx);
-      card.innerHTML = '<img class="variant-pick-img" src="' + v.url + '" alt="' + shortName + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#1e293b,#334155)\';this.style.objectFit=\'contain\'">' +
+      card.innerHTML = '<div class="variant-pick-img-wrap"><img class="variant-pick-img" src="' + v.url + '" alt="' + shortName + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#1e293b,#334155)\';this.style.objectFit=\'contain\'"></div>' +
         '<div class="variant-pick-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
         badge +
         '<div class="variant-pick-info" title="' + v.name + '">' + shortName + '</div>';
