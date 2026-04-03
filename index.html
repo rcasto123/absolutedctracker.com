@@ -28,7 +28,7 @@ window.addEventListener('unhandledrejection', function(e) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com">
 <title>DC Absolute Universe — Collection Tracker</title>
-<link rel="stylesheet" href="js/styles.css?v=14">
+<link rel="stylesheet" href="js/styles.css?v=15">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -572,11 +572,13 @@ window.addEventListener('unhandledrejection', function(e) {
   <!-- ——— SHOP MODE TAB ——— -->
   <div class="tab-content" id="tab-shop" role="tabpanel">
     <div class="shop-header">
-      <div class="shop-stats" id="shopStats"></div>
-      <div class="shop-filters" role="toolbar" aria-label="Shop mode filters">
-        <button class="shop-filter-btn active" data-shop-filter="missing">Missing</button>
-        <button class="shop-filter-btn" data-shop-filter="all">All</button>
-        <button class="shop-filter-btn" data-shop-filter="owned">Owned</button>
+      <div class="shop-top-row">
+        <div class="shop-stats" id="shopStats"></div>
+        <div class="shop-filters" role="toolbar" aria-label="Shop mode filters">
+          <button class="shop-filter-btn active" data-shop-filter="missing">Missing</button>
+          <button class="shop-filter-btn" data-shop-filter="all">All</button>
+          <button class="shop-filter-btn" data-shop-filter="owned">Owned</button>
+        </div>
       </div>
       <input class="shop-search" type="text" id="shopSearch" placeholder="Search issues..." aria-label="Search issues">
     </div>

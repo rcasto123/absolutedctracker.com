@@ -1239,25 +1239,30 @@
 
   /* ── Shop Mode ── */
   .shop-header {
-    padding: 12px 16px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
     position: sticky;
     top: 0;
     z-index: 10;
     background: var(--bg-primary, #0f1923);
   }
+  .shop-top-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .shop-stats {
     display: flex;
-    gap: 12px;
-    justify-content: center;
+    gap: 6px;
+    flex: 1;
   }
   .shop-stat {
-    font-size: 14px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
     background: rgba(255,255,255,0.06);
   }
   .shop-stat.owned-stat { color: var(--accent-green, #22c55e); }
@@ -1265,21 +1270,19 @@
   .shop-stat.total-stat { color: var(--text-muted, #8b92a8); }
   .shop-filters {
     display: flex;
-    gap: 6px;
-    justify-content: center;
+    gap: 4px;
   }
   .shop-filter-btn {
     background: rgba(255,255,255,0.06);
-    border: 1.5px solid rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.1);
     color: var(--text-secondary, #a0aab8);
-    padding: 8px 20px;
-    border-radius: 20px;
-    font-size: 14px;
+    padding: 4px 14px;
+    border-radius: 14px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s;
     font-family: inherit;
-    min-width: 70px;
   }
   .shop-filter-btn.active {
     background: var(--accent-cyan, #06b6d4);
@@ -1288,69 +1291,67 @@
   }
   .shop-search {
     width: 100%;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1.5px solid rgba(255,255,255,0.12);
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.06);
     color: var(--text-primary, #e8eaf0);
-    font-size: 15px;
+    font-size: 13px;
     font-family: inherit;
     outline: none;
     transition: border-color 0.15s;
   }
   .shop-search:focus { border-color: var(--accent-cyan, #06b6d4); }
   .shop-search::placeholder { color: var(--text-muted, #8b92a8); }
-  .shop-series-group { margin-bottom: 8px; }
+  .shop-series-group { margin-bottom: 2px; }
   .shop-series-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
-    border-left: 4px solid #555;
+    padding: 6px 12px;
+    border-left: 3px solid #555;
     background: rgba(255,255,255,0.04);
     position: sticky;
-    top: 110px;
+    top: 72px;
     z-index: 5;
   }
   .shop-series-name {
     font-weight: 700;
-    font-size: 15px;
+    font-size: 13px;
     color: var(--text-primary, #e8eaf0);
   }
   .shop-series-count {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--text-muted, #8b92a8);
     background: rgba(255,255,255,0.08);
-    padding: 2px 10px;
-    border-radius: 12px;
+    padding: 1px 8px;
+    border-radius: 10px;
   }
   .shop-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px 12px 20px;
-    border-left: 4px solid #555;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 6px 10px 6px 15px;
+    border-left: 3px solid #555;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
     cursor: pointer;
     transition: background 0.1s;
-    min-height: 52px;
+    min-height: 40px;
     -webkit-tap-highlight-color: transparent;
   }
   .shop-row:active { background: rgba(255,255,255,0.08); }
-  .shop-row.shop-owned {
-    opacity: 0.55;
-  }
+  .shop-row.shop-owned { opacity: 0.5; }
   .shop-issue-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     flex: 1;
     min-width: 0;
   }
   .shop-issue-num {
     font-weight: 700;
-    font-size: 16px;
+    font-size: 14px;
     color: var(--text-primary, #e8eaf0);
     white-space: nowrap;
   }
@@ -1359,14 +1360,14 @@
     text-decoration-color: rgba(255,255,255,0.3);
   }
   .shop-issue-price {
-    font-size: 13px;
+    font-size: 11px;
     color: var(--text-muted, #8b92a8);
   }
   .shop-own-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    border: 2.5px solid rgba(255,255,255,0.2);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.18);
     background: rgba(255,255,255,0.04);
     color: var(--text-muted, #8b92a8);
     display: flex;
@@ -1378,14 +1379,14 @@
     -webkit-tap-highlight-color: transparent;
   }
   .shop-own-btn svg {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     stroke: currentColor;
     fill: none;
     stroke-width: 3;
   }
   .shop-plus {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 300;
     line-height: 1;
   }
@@ -1394,25 +1395,23 @@
     border-color: var(--accent-green, #22c55e);
     color: #fff;
   }
-  .shop-own-btn:active {
-    transform: scale(0.9);
-  }
+  .shop-own-btn:active { transform: scale(0.9); }
   .shop-empty {
     text-align: center;
-    padding: 60px 20px;
+    padding: 40px 16px;
     color: var(--text-muted, #8b92a8);
-    font-size: 16px;
+    font-size: 14px;
   }
 
   /* Light mode */
   .light-mode .shop-header { background: var(--bg-primary, #f8f9fa); }
   .light-mode .shop-stat { background: rgba(0,0,0,0.05); }
-  .light-mode .shop-filter-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.12); color: #555; }
+  .light-mode .shop-filter-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #555; }
   .light-mode .shop-filter-btn.active { background: var(--accent-cyan, #06b6d4); color: #fff; border-color: var(--accent-cyan); }
-  .light-mode .shop-search { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: #1a1a2e; }
+  .light-mode .shop-search { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: #1a1a2e; }
   .light-mode .shop-series-header { background: rgba(0,0,0,0.03); }
   .light-mode .shop-row:active { background: rgba(0,0,0,0.06); }
-  .light-mode .shop-own-btn { border-color: rgba(0,0,0,0.15); background: rgba(0,0,0,0.03); }
+  .light-mode .shop-own-btn { border-color: rgba(0,0,0,0.12); background: rgba(0,0,0,0.03); }
 
   /* ── Mobile Bottom Nav ── */
   .mobile-bottom-nav {
