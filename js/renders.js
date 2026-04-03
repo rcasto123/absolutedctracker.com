@@ -1280,6 +1280,130 @@ let currentFilter = 'all';
 let currentSearch = '';
 let calendarShowAll = false;
 
+// ── Shop Mode ──
+let shopFilter = 'missing';
+let shopSearch = '';
+
+function renderShop() {
+  const container = document.getElementById('shopContainer');
+  const statsEl = document.getElementById('shopStats');
+  if (!container) return;
+
+  const released = ALL_ISSUES.filter(i => isReleased(i.date));
+  const ownedCount = released.filter(i => owned[issueKey(i)]).length;
+  const missingCount = released.length - ownedCount;
+
+  // Stats summary
+  if (statsEl) {
+    statsEl.innerHTML = '<span class="shop-stat owned-stat">' + ownedCount + ' owned</span>' +
+      '<span class="shop-stat missing-stat">' + missingCount + ' missing</span>' +
+      '<span class="shop-stat total-stat">' + released.length + ' released</span>';
+  }
+
+  // Apply filter
+  let issues = released.slice();
+  if (shopFilter === 'owned') issues = issues.filter(i => owned[issueKey(i)]);
+  else if (shopFilter === 'missing') issues = issues.filter(i => !owned[issueKey(i)]);
+
+  // Apply search
+  if (shopSearch) {
+    const q = shopSearch.toLowerCase();
+    issues = issues.filter(i => i.title.toLowerCase().includes(q) || i.series.toLowerCase().includes(q) || i.issue.toLowerCase().includes(q));
+  }
+
+  // Group by series
+  const groups = {};
+  const seriesOrder = [];
+  issues.forEach(i => {
+    if (!groups[i.series]) { groups[i.series] = []; seriesOrder.push(i.series); }
+    groups[i.series].push(i);
+  });
+
+  if (issues.length === 0) {
+    container.innerHTML = '<div class="shop-empty">' +
+      (shopFilter === 'missing' ? 'You own everything that\'s been released — nice!' : 'No issues match your search.') +
+      '</div>';
+    return;
+  }
+
+  let html = '';
+  seriesOrder.forEach(sName => {
+    const sIssues = groups[sName];
+    const color = SERIES_COLORS[sName] || '#555';
+    const allInSeries = released.filter(i => i.series === sName);
+    const ownedInSeries = allInSeries.filter(i => owned[issueKey(i)]).length;
+
+    html += '<div class="shop-series-group">';
+    html += '<div class="shop-series-header" style="border-left-color:' + color + '">';
+    html += '<span class="shop-series-name">' + sName + '</span>';
+    html += '<span class="shop-series-count">' + ownedInSeries + '/' + allInSeries.length + '</span>';
+    html += '</div>';
+
+    sIssues.forEach(issue => {
+      const key = issueKey(issue);
+      const isOwned = !!owned[key];
+      html += '<div class="shop-row' + (isOwned ? ' shop-owned' : '') + '" data-key="' + key + '" style="border-left-color:' + color + '">';
+      html += '<div class="shop-issue-info">';
+      html += '<span class="shop-issue-num">' + issue.issue + '</span>';
+      html += '<span class="shop-issue-price">$' + (issue.price || 0).toFixed(2) + '</span>';
+      html += '</div>';
+      html += '<button class="shop-own-btn' + (isOwned ? ' active' : '') + '" aria-label="' + (isOwned ? 'Unmark' : 'Mark') + ' ' + issue.title + ' as owned">';
+      html += isOwned ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' : '<span class="shop-plus">+</span>';
+      html += '</button>';
+      html += '</div>';
+    });
+
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+
+  // Attach click handlers for own buttons
+  container.querySelectorAll('.shop-own-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const row = btn.closest('.shop-row');
+      const key = row.dataset.key;
+      if (owned[key]) delete owned[key];
+      else owned[key] = true;
+      saveOwned();
+      renderShop();
+      renderStats();
+    });
+  });
+
+  // Also allow tapping the entire row
+  container.querySelectorAll('.shop-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const key = row.dataset.key;
+      if (owned[key]) delete owned[key];
+      else owned[key] = true;
+      saveOwned();
+      renderShop();
+      renderStats();
+    });
+  });
+}
+
+// Shop filter buttons
+document.querySelectorAll('.shop-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.shop-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    shopFilter = btn.dataset.shopFilter;
+    renderShop();
+  });
+});
+
+// Shop search
+const shopSearchInput = document.getElementById('shopSearch');
+if (shopSearchInput) {
+  shopSearchInput.addEventListener('input', (e) => {
+    shopSearch = e.target.value.trim();
+    renderShop();
+  });
+}
+
 // Tab switching with keyboard navigation (arrow keys)
 function switchTab(tab) {
   if (!tab || !tab.dataset || !tab.dataset.tab) return;
@@ -1305,10 +1429,11 @@ function switchTab(tab) {
   else if (tab.dataset.tab === 'analytics') renderAnalytics();
   else if (tab.dataset.tab === 'achievements') renderAchievements();
   else if (tab.dataset.tab === 'arcs') renderArcs();
+  else if (tab.dataset.tab === 'shop') renderShop();
 }
 
 // ── Mobile Bottom Nav ──
-const primaryBnavTabs = ['collection', 'calendar', 'analytics', 'achievements'];
+const primaryBnavTabs = ['collection', 'calendar', 'analytics', 'shop'];
 function syncBottomNav(tabName) {
   document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
   const overlay = document.getElementById('moreMenuOverlay');
