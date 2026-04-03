@@ -87,7 +87,10 @@ function setPrice(issueKey, price) {
 }
 
 function getPrice(issueKey) {
-  return prices[issueKey] || null;
+  if (prices[issueKey]) return prices[issueKey];
+  // Default to cover price for owned issues (most are $4.99)
+  if (owned[issueKey] && typeof getCoverPrice === 'function') return getCoverPrice(issueKey);
+  return null;
 }
 
 // Variant cover data cache — loaded once from variants.json
