@@ -96,20 +96,29 @@ function getPrice(issueKey) {
 // Variant cover data cache — loaded once from variants.json
 let _variantData = {};
 let _variantDataLoaded = false;
-fetch('variants.json?v=2').then(r => r.json()).then(d => {
+let _variantLoadFailed = false;
+fetch('variants.json?v=2').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => {
   _variantData = d;
   _variantDataLoaded = true;
   // Re-render collection to show variant badges now that data is loaded
   if (typeof renderCollection === 'function') renderCollection(currentFilter, currentSearch);
-}).catch(() => { _variantDataLoaded = true; console.warn('[variants] Failed to load variant data — variant features will be unavailable'); });
+}).catch(e => {
+  _variantDataLoaded = true;
+  _variantLoadFailed = true;
+  console.warn('[variants] Failed to load variant data:', e);
+});
 
 // Load price guide data
 let _priceGuideData = null;
-fetch('prices.json?v=2').then(r => r.json()).then(d => {
+let _priceGuideLoadFailed = false;
+fetch('prices.json?v=2').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => {
   _priceGuideData = d;
   renderStats();
   renderAnalytics();
-}).catch(() => {});
+}).catch(e => {
+  _priceGuideLoadFailed = true;
+  console.warn('[prices] Failed to load price guide:', e);
+});
 
 function issueKey(issue) { return issue.series + '|' + issue.issue; }
 function makeSlug(name) { return name.toLowerCase().replace(/[:#]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''); }

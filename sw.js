@@ -6,7 +6,7 @@
 // their collection.
 // ============================================================
 
-var CACHE_NAME = 'au-tracker-v65';
+var CACHE_NAME = 'au-tracker-v66';
 
 // App shell — files to pre-cache on install
 var APP_SHELL = [
@@ -79,14 +79,16 @@ self.addEventListener('activate', function(event) {
 
 // Helper: trim a cache to a max number of entries (FIFO)
 function trimCache(cacheName, maxItems) {
-  caches.open(cacheName).then(function(cache) {
-    cache.keys().then(function(keys) {
+  return caches.open(cacheName).then(function(cache) {
+    return cache.keys().then(function(keys) {
       if (keys.length > maxItems) {
-        cache.delete(keys[0]).then(function() {
-          if (keys.length - 1 > maxItems) trimCache(cacheName, maxItems);
+        return cache.delete(keys[0]).then(function() {
+          if (keys.length - 1 > maxItems) return trimCache(cacheName, maxItems);
         });
       }
     });
+  }).catch(function(err) {
+    console.warn('[SW] trimCache error:', err);
   });
 }
 

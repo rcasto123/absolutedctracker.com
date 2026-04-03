@@ -486,17 +486,11 @@
     }
   }
 
+  // Use shared _escHtml from state.js; fallback if not loaded yet
   function escapeHtml(str) {
+    if (typeof _escHtml === 'function') return _escHtml(str);
     if (str == null) return '';
-    var s = String(str);
-    // Belt-and-suspenders: manual replacement is faster and doesn't
-    // rely on DOM behaviour that varies across engines.
-    return s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   // Show sync status with optional spinner for in-progress states (M3)
@@ -546,13 +540,13 @@
           }
           try {
             var start = Date.now();
-            _lastSyncTime = start;
             _syncOwnedToCloud().then(function() {
+              _lastSyncTime = Date.now();
               _lastSyncDuration = Date.now() - start;
               showSyncStatus('Synced');
             }).catch(function(e) {
               console.warn('[auth] Cloud sync failed:', e);
-              var hint = (e && e.code === 'unavailable') ? 'Sync failed — offline' :
+              var hint = !navigator.onLine ? 'Sync failed — you are offline' :
                          (e && e.code === 'permission-denied') ? 'Sync failed — access denied' :
                          'Sync failed — will retry';
               showSyncStatus(hint, true);
@@ -651,7 +645,8 @@
       location.reload();
     } catch(e) {
       console.error('Manual sync error:', e);
-      var hint = !navigator.onLine ? 'Sync failed — offline' :
+      var hint = !navigator.onLine ? 'Sync failed — you are offline' :
+                 (e && e.code === 'permission-denied') ? 'Sync failed — access denied' :
                  'Sync failed — please try again';
       showSyncStatus(hint, true);
     }
