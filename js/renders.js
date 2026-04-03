@@ -170,6 +170,10 @@ function renderCollection(filter, search) {
       const mvValue = getMarketValue(key) || '';
       const marketInputHTML = `<span class="price-group"><span class="price-label">Value</span><input class="market-input" type="number" step="0.01" min="0" placeholder="0.00" value="${mvValue}" data-issue-key="${key}" title="Estimated market value"></span>`;
 
+      const inCart = typeof isInCart === 'function' && isInCart(key);
+      if (inCart) card.classList.add('in-cart');
+      const cartCbClass = 'cart-cb' + (inCart ? ' in-cart' : '');
+
       card.innerHTML = `
         <div class="issue-checkbox">${checkSvg}</div>
         <div class="issue-info">
@@ -177,6 +181,7 @@ function renderCollection(filter, search) {
           <div class="issue-date">${dateStr} · ${issue.writer}</div>
         </div>
         <div class="issue-badge ${badgeClass}">${badgeText}</div>
+        <div class="${cartCbClass}" title="${inCart ? 'In cart — click to remove' : 'Add to cart'}">${checkSvg}<span class="mini-cart">🛒</span></div>
         <div class="card-meta">
           ${variantBarHTML}
           ${pullIconHTML}
@@ -195,6 +200,21 @@ function renderCollection(filter, search) {
         renderAnalytics();
         renderAchievements();
       };
+
+      // Cart checkbox handler
+      const cartCb = card.querySelector('.cart-cb');
+      if (cartCb) {
+        cartCb.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (typeof toggleCartItem === 'function') {
+            const added = toggleCartItem(issue);
+            cartCb.classList.toggle('in-cart', added);
+            cartCb.title = added ? 'In cart — click to remove' : 'Add to cart';
+            card.classList.toggle('in-cart', added);
+            if (typeof updateCartSummaryBar === 'function') updateCartSummaryBar();
+          }
+        });
+      }
 
       // Pull icon handler for upcoming issues
       const pullIcon = card.querySelector('.pull-icon');

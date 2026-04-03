@@ -124,3 +124,74 @@ function getSeriesNames() {
   return [...s];
 }
 
+// ── Shopping Cart (shared with scanner) ──
+let collectionCart = [];
+const COLLECTION_CART_KEY = 'au_scanner_cart'; // Same key as scanner to share state
+
+function loadCollectionCart() {
+  try { collectionCart = JSON.parse(localStorage.getItem(COLLECTION_CART_KEY) || '[]'); } catch(e) { collectionCart = []; }
+}
+function saveCollectionCart() {
+  localStorage.setItem(COLLECTION_CART_KEY, JSON.stringify(collectionCart));
+}
+
+function isInCart(issueKey) {
+  for (var i = 0; i < collectionCart.length; i++) {
+    if (collectionCart[i].key === issueKey && !collectionCart[i].variant) return true;
+  }
+  return false;
+}
+
+function toggleCartItem(issue) {
+  var key = issueKey(issue);
+  // Check if already in cart
+  for (var i = 0; i < collectionCart.length; i++) {
+    if (collectionCart[i].key === key && !collectionCart[i].variant) {
+      collectionCart.splice(i, 1);
+      saveCollectionCart();
+      return false; // removed
+    }
+  }
+  // Add to cart
+  collectionCart.push({
+    key: key,
+    title: issue.title,
+    slug: makeSlug(issue.title),
+    type: 'issue',
+    variant: null,
+    variantName: null,
+    price: 4.99,
+    alreadyOwned: !!owned[key]
+  });
+  saveCollectionCart();
+  return true; // added
+}
+
+function getCollectionCartTotal() {
+  var total = 0;
+  for (var i = 0; i < collectionCart.length; i++) total += collectionCart[i].price || 0;
+  return total;
+}
+
+function checkoutCollectionCart() {
+  var count = 0;
+  for (var i = 0; i < collectionCart.length; i++) {
+    var item = collectionCart[i];
+    if (!owned[item.key]) {
+      owned[item.key] = true;
+      count++;
+    }
+  }
+  if (count > 0) saveOwned();
+  collectionCart = [];
+  saveCollectionCart();
+  return count;
+}
+
+function clearCollectionCart() {
+  collectionCart = [];
+  saveCollectionCart();
+}
+
+// Load cart on startup
+loadCollectionCart();

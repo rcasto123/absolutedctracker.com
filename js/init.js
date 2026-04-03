@@ -374,6 +374,48 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 
+// ── Cart Summary Bar ──
+function updateCartSummaryBar() {
+  if (typeof loadCollectionCart === 'function') loadCollectionCart(); // refresh from localStorage (scanner may have changed it)
+  var bar = document.getElementById('cartSummaryBar');
+  if (!bar) return;
+  var count = collectionCart.length;
+  var total = typeof getCollectionCartTotal === 'function' ? getCollectionCartTotal() : 0;
+  document.getElementById('cartBarCount').textContent = count;
+  document.getElementById('cartBarTotal').textContent = total.toFixed(2);
+  bar.classList.toggle('visible', count > 0);
+}
+
+document.getElementById('cartBarCheckout')?.addEventListener('click', function() {
+  if (typeof checkoutCollectionCart === 'function') {
+    var count = checkoutCollectionCart();
+    renderCollection(currentFilter, currentSearch);
+    renderStats();
+    renderAnalytics();
+    renderAchievements();
+    updateCartSummaryBar();
+  }
+});
+
+document.getElementById('cartBarClear')?.addEventListener('click', function() {
+  if (typeof clearCollectionCart === 'function') {
+    clearCollectionCart();
+    renderCollection(currentFilter, currentSearch);
+    updateCartSummaryBar();
+  }
+});
+
+// Initial cart bar render
+updateCartSummaryBar();
+
+// Listen for storage changes from scanner (in case scanner is open in another tab)
+window.addEventListener('storage', function(e) {
+  if (e.key === 'au_scanner_cart') {
+    loadCollectionCart();
+    updateCartSummaryBar();
+  }
+});
+
 // Register Service Worker for offline support
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

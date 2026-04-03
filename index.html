@@ -28,7 +28,7 @@ window.addEventListener('unhandledrejection', function(e) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com">
 <title>DC Absolute Universe — Collection Tracker</title>
-<link rel="stylesheet" href="js/styles.css?v=2">
+<link rel="stylesheet" href="js/styles.css?v=3">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -127,6 +127,17 @@ window.addEventListener('unhandledrejection', function(e) {
       <button class="filter-btn" id="importExport" style="border-color:var(--text-muted);color:var(--text-muted);" title="Import or export collection data">Import/Export</button>
       <button class="filter-btn" id="markAllOwned" style="margin-left:auto;border-color:var(--accent-green);color:var(--accent-green);" title="Mark all released issues as owned">Mark All Owned</button>
       <button class="filter-btn" id="unmarkAllOwned" style="border-color:var(--accent-red, #ef4444);color:var(--accent-red, #ef4444);" title="Unmark all owned issues">Unmark All</button>
+    </div>
+    <div class="cart-summary-bar" id="cartSummaryBar">
+      <div class="cart-summary-left">
+        <span style="font-size:1rem">🛒</span>
+        <span class="cart-summary-text">Cart: <span id="cartBarCount">0</span> issues · $<span id="cartBarTotal">0.00</span></span>
+        <span class="cart-summary-detail">tap checkout to mark all as owned</span>
+      </div>
+      <div class="cart-summary-actions">
+        <button class="cart-clear-btn" id="cartBarClear">Clear</button>
+        <button class="cart-checkout-btn" id="cartBarCheckout">Checkout</button>
+      </div>
     </div>
     <div id="collectionContainer" aria-live="polite"></div>
   </div>
@@ -589,8 +600,8 @@ window.addEventListener('unhandledrejection', function(e) {
 </div>
 
 <script src="js/data.js?v=3" defer></script>
-<script src="js/state.js?v=2" defer></script>
-<script src="js/renders.js?v=2" defer></script>
+<script src="js/state.js?v=3" defer></script>
+<script src="js/renders.js?v=3" defer></script>
 <script src="js/cover-map.js?v=2" defer></script>
 <script src="js/features/export.js?v=2" defer></script>
 <script src="js/features/share.js?v=2" defer></script>
@@ -603,7 +614,7 @@ window.addEventListener('unhandledrejection', function(e) {
 <script src="theme-switcher.js?v=12" defer></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" integrity="sha384-c9d8RFSL+u3exBOJ4Yp3HUJXS4znl9f+z66d1y54ig+ea249SpqR+w1wyvXz/lk+" crossorigin="anonymous" defer></script>
 <script src="scanner.js?v=14" defer></script>
-<script src="js/init.js?v=2" defer></script>
+<script src="js/init.js?v=3" defer></script>
 <div class="share-overlay" id="shareOverlay">
   <div class="share-modal">
     <button class="share-modal-close" id="shareModalClose" aria-label="Close modal">×</button>
