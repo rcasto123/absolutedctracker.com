@@ -195,3 +195,159 @@ function clearCollectionCart() {
 
 // Load cart on startup
 loadCollectionCart();
+
+// ── Variant Picker for Cart ──
+var _pickerIssue = null;      // current issue object
+var _pickerKey = null;         // issueKey of current issue
+var _pickerSlug = null;        // slug for variant lookup
+var _pickerSelected = {};      // { "base": true, "0": true, "1": true, ... }
+
+function isVariantInCart(iKey, variantId) {
+  for (var i = 0; i < collectionCart.length; i++) {
+    if (collectionCart[i].key === iKey && collectionCart[i].variant === variantId) return true;
+  }
+  return false;
+}
+
+function openVariantPicker(issue) {
+  _pickerIssue = issue;
+  _pickerKey = issueKey(issue);
+  _pickerSlug = makeSlug(issue.title);
+  _pickerSelected = {};
+
+  var overlay = document.getElementById('variantPickerOverlay');
+  var grid = document.getElementById('variantPickerGrid');
+  var title = document.getElementById('variantPickerTitle');
+  if (!overlay || !grid) return;
+
+  title.textContent = issue.title;
+  grid.innerHTML = '';
+
+  var variants = _variantData[_pickerSlug] || [];
+  var baseCover = (typeof coverMap !== 'undefined' && coverMap[issue.title]) ? coverMap[issue.title] : '';
+  var baseOwned = !!owned[_pickerKey];
+  var baseInCart = isInCart(_pickerKey);
+
+  // Base cover card
+  var baseCard = document.createElement('div');
+  baseCard.className = 'variant-pick-card' + (baseInCart ? ' vp-in-cart' : '');
+  baseCard.dataset.vid = 'base';
+  var baseBadge = '';
+  if (baseOwned) baseBadge = '<span class="variant-pick-badge vpb-owned">Owned</span>';
+  else if (baseInCart) baseBadge = '<span class="variant-pick-badge vpb-cart">In Cart</span>';
+  baseCard.innerHTML = '<img class="variant-pick-img" src="' + baseCover + '" alt="Cover A" loading="lazy">' +
+    '<div class="variant-pick-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+    baseBadge +
+    '<div class="variant-pick-info">Cover A (Base)</div>';
+  if (!baseInCart) {
+    baseCard.addEventListener('click', function() { togglePickerSelection('base', this); });
+  }
+  grid.appendChild(baseCard);
+
+  // Variant cards
+  for (var i = 0; i < variants.length; i++) {
+    (function(idx, v) {
+      var vid = String(idx);
+      var vOwned = typeof isVariantOwned === 'function' && isVariantOwned(_pickerKey, vid);
+      var vInCart = isVariantInCart(_pickerKey, vid);
+      var card = document.createElement('div');
+      card.className = 'variant-pick-card' + (vInCart ? ' vp-in-cart' : '');
+      card.dataset.vid = vid;
+      var badge = '';
+      if (vOwned) badge = '<span class="variant-pick-badge vpb-owned">Owned</span>';
+      else if (vInCart) badge = '<span class="variant-pick-badge vpb-cart">In Cart</span>';
+
+      var shortName = v.cover || v.name.replace(/^.*#\d+\s*/, '').replace(/\s*Variant\s*$/i, '') || 'Cover ' + String.fromCharCode(66 + idx);
+      card.innerHTML = '<img class="variant-pick-img" src="' + v.url + '" alt="' + shortName + '" loading="lazy">' +
+        '<div class="variant-pick-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        badge +
+        '<div class="variant-pick-info" title="' + v.name + '">' + shortName + '</div>';
+      if (!vInCart) {
+        card.addEventListener('click', function() { togglePickerSelection(vid, this); });
+      }
+      grid.appendChild(card);
+    })(i, variants[i]);
+  }
+
+  updatePickerCount();
+  overlay.classList.add('open');
+}
+
+function closeVariantPicker() {
+  var overlay = document.getElementById('variantPickerOverlay');
+  if (overlay) overlay.classList.remove('open');
+  _pickerIssue = null;
+  _pickerKey = null;
+  _pickerSlug = null;
+  _pickerSelected = {};
+}
+
+function togglePickerSelection(vid, cardEl) {
+  if (_pickerSelected[vid]) {
+    delete _pickerSelected[vid];
+    cardEl.classList.remove('vp-selected');
+  } else {
+    _pickerSelected[vid] = true;
+    cardEl.classList.add('vp-selected');
+  }
+  updatePickerCount();
+}
+
+function updatePickerCount() {
+  var count = Object.keys(_pickerSelected).length;
+  var countEl = document.getElementById('variantPickerCount');
+  var addBtn = document.getElementById('variantPickerAdd');
+  if (countEl) countEl.innerHTML = '<strong>' + count + '</strong> selected';
+  if (addBtn) addBtn.disabled = (count === 0);
+}
+
+function addPickerSelectionToCart() {
+  if (!_pickerIssue || !_pickerKey) return;
+  var variants = _variantData[_pickerSlug] || [];
+  var added = 0;
+
+  Object.keys(_pickerSelected).forEach(function(vid) {
+    if (vid === 'base') {
+      // Add base issue
+      if (!isInCart(_pickerKey)) {
+        collectionCart.push({
+          key: _pickerKey,
+          title: _pickerIssue.title,
+          slug: _pickerSlug,
+          type: 'issue',
+          variant: null,
+          variantName: null,
+          price: 4.99,
+          alreadyOwned: !!owned[_pickerKey]
+        });
+        added++;
+      }
+    } else {
+      // Add variant
+      var idx = parseInt(vid, 10);
+      var v = variants[idx];
+      if (v && !isVariantInCart(_pickerKey, vid)) {
+        var shortName = v.cover || v.name.replace(/^.*#\d+\s*/, '').replace(/\s*Variant\s*$/i, '') || 'Cover ' + String.fromCharCode(66 + idx);
+        collectionCart.push({
+          key: _pickerKey,
+          title: _pickerIssue.title,
+          slug: _pickerSlug,
+          type: 'issue',
+          variant: vid,
+          variantName: shortName,
+          variantFullName: v.name,
+          price: 4.99,
+          alreadyOwned: typeof isVariantOwned === 'function' && isVariantOwned(_pickerKey, vid)
+        });
+        added++;
+      }
+    }
+  });
+
+  if (added > 0) {
+    saveCollectionCart();
+    if (typeof updateCartSummaryBar === 'function') updateCartSummaryBar();
+    if (typeof renderCollection === 'function') renderCollection(currentFilter, currentSearch);
+  }
+  closeVariantPicker();
+}

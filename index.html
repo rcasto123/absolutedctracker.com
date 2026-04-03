@@ -28,7 +28,7 @@ window.addEventListener('unhandledrejection', function(e) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com">
 <title>DC Absolute Universe — Collection Tracker</title>
-<link rel="stylesheet" href="js/styles.css?v=3">
+<link rel="stylesheet" href="js/styles.css?v=4">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -140,6 +140,20 @@ window.addEventListener('unhandledrejection', function(e) {
       </div>
     </div>
     <div id="collectionContainer" aria-live="polite"></div>
+    <!-- Variant Picker Modal -->
+    <div class="variant-picker-overlay" id="variantPickerOverlay">
+      <div class="variant-picker">
+        <div class="variant-picker-header">
+          <span class="variant-picker-title" id="variantPickerTitle">Select Covers</span>
+          <button class="variant-picker-close" id="variantPickerClose">&times;</button>
+        </div>
+        <div class="variant-picker-grid" id="variantPickerGrid"></div>
+        <div class="variant-picker-footer">
+          <span class="variant-picker-count" id="variantPickerCount">0 selected</span>
+          <button class="variant-picker-add" id="variantPickerAdd" disabled>Add to Cart</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- âââ CALENDAR TAB âââ -->
@@ -600,8 +614,8 @@ window.addEventListener('unhandledrejection', function(e) {
 </div>
 
 <script src="js/data.js?v=3" defer></script>
-<script src="js/state.js?v=3" defer></script>
-<script src="js/renders.js?v=3" defer></script>
+<script src="js/state.js?v=4" defer></script>
+<script src="js/renders.js?v=4" defer></script>
 <script src="js/cover-map.js?v=2" defer></script>
 <script src="js/features/export.js?v=2" defer></script>
 <script src="js/features/share.js?v=2" defer></script>
@@ -614,7 +628,7 @@ window.addEventListener('unhandledrejection', function(e) {
 <script src="theme-switcher.js?v=12" defer></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" integrity="sha384-c9d8RFSL+u3exBOJ4Yp3HUJXS4znl9f+z66d1y54ig+ea249SpqR+w1wyvXz/lk+" crossorigin="anonymous" defer></script>
 <script src="scanner.js?v=14" defer></script>
-<script src="js/init.js?v=3" defer></script>
+<script src="js/init.js?v=4" defer></script>
 <div class="share-overlay" id="shareOverlay">
   <div class="share-modal">
     <button class="share-modal-close" id="shareModalClose" aria-label="Close modal">×</button>

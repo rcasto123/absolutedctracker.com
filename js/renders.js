@@ -206,12 +206,22 @@ function renderCollection(filter, search) {
       if (cartCb) {
         cartCb.addEventListener('click', (e) => {
           e.stopPropagation();
-          if (typeof toggleCartItem === 'function') {
-            const added = toggleCartItem(issue);
-            cartCb.classList.toggle('in-cart', added);
-            cartCb.title = added ? 'In cart — click to remove' : 'Add to cart';
-            card.classList.toggle('in-cart', added);
-            if (typeof updateCartSummaryBar === 'function') updateCartSummaryBar();
+          const slug = makeSlug(issue.title);
+          const variants = _variantData[slug];
+          const hasVariants = variants && variants.length > 0;
+
+          if (hasVariants && typeof openVariantPicker === 'function') {
+            // Has variants — open the picker modal
+            openVariantPicker(issue);
+          } else {
+            // No variants — toggle base issue in cart directly
+            if (typeof toggleCartItem === 'function') {
+              const added = toggleCartItem(issue);
+              cartCb.classList.toggle('in-cart', added);
+              cartCb.title = added ? 'In cart — click to remove' : 'Add to cart';
+              card.classList.toggle('in-cart', added);
+              if (typeof updateCartSummaryBar === 'function') updateCartSummaryBar();
+            }
           }
         });
       }

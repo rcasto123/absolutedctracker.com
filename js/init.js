@@ -416,6 +416,27 @@ window.addEventListener('storage', function(e) {
   }
 });
 
+// ── Variant Picker Events ──
+document.getElementById('variantPickerClose')?.addEventListener('click', function() {
+  if (typeof closeVariantPicker === 'function') closeVariantPicker();
+});
+
+document.getElementById('variantPickerOverlay')?.addEventListener('click', function(e) {
+  if (e.target === this && typeof closeVariantPicker === 'function') closeVariantPicker();
+});
+
+document.getElementById('variantPickerAdd')?.addEventListener('click', function() {
+  if (typeof addPickerSelectionToCart === 'function') addPickerSelectionToCart();
+});
+
+// Close picker on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && typeof closeVariantPicker === 'function') {
+    var overlay = document.getElementById('variantPickerOverlay');
+    if (overlay && overlay.classList.contains('open')) closeVariantPicker();
+  }
+});
+
 // Register Service Worker for offline support
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
