@@ -1938,6 +1938,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  min-height: 0; /* flexbox overflow fix */
 }
 
 .variant-picker-header {
@@ -1975,7 +1976,14 @@
   padding: 16px 20px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0; /* flexbox overflow fix */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-cyan) var(--bg-primary);
 }
+.variant-picker-grid::-webkit-scrollbar { width: 8px; }
+.variant-picker-grid::-webkit-scrollbar-track { background: var(--bg-primary); border-radius: 4px; }
+.variant-picker-grid::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.4); border-radius: 4px; }
+.variant-picker-grid::-webkit-scrollbar-thumb:hover { background: rgba(6,182,212,0.6); }
 
 .variant-pick-card {
   position: relative;
