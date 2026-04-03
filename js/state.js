@@ -92,15 +92,17 @@ function getPrice(issueKey) {
 
 // Variant cover data cache — loaded once from variants.json
 let _variantData = {};
+let _variantDataLoaded = false;
 fetch('variants.json?v=2').then(r => r.json()).then(d => {
   _variantData = d;
+  _variantDataLoaded = true;
   // Re-render collection to show variant badges now that data is loaded
   if (typeof renderCollection === 'function') renderCollection(currentFilter, currentSearch);
-}).catch(() => { console.warn('[variants] Failed to load variant data — variant features will be unavailable'); });
+}).catch(() => { _variantDataLoaded = true; console.warn('[variants] Failed to load variant data — variant features will be unavailable'); });
 
 // Load price guide data
 let _priceGuideData = null;
-fetch('prices.json').then(r => r.json()).then(d => {
+fetch('prices.json?v=2').then(r => r.json()).then(d => {
   _priceGuideData = d;
   renderStats();
   renderAnalytics();
@@ -118,6 +120,12 @@ function isUpcoming(dateStr) { return parseLocalDate(dateStr) > getToday(); }
 
 const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+// Escape HTML entities to prevent XSS in innerHTML
+function _escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function getSeriesNames() {
   const s = new Set();
   ALL_ISSUES.forEach(i => s.add(i.series));
@@ -132,7 +140,8 @@ function loadCollectionCart() {
   try { collectionCart = JSON.parse(localStorage.getItem(COLLECTION_CART_KEY) || '[]'); } catch(e) { collectionCart = []; }
 }
 function saveCollectionCart() {
-  localStorage.setItem(COLLECTION_CART_KEY, JSON.stringify(collectionCart));
+  try { localStorage.setItem(COLLECTION_CART_KEY, JSON.stringify(collectionCart)); }
+  catch(e) { if (typeof _showStorageError === 'function') _showStorageError(); }
 }
 
 function isInCart(issueKey) {
@@ -201,6 +210,12 @@ var _pickerIssue = null;      // current issue object
 var _pickerKey = null;         // issueKey of current issue
 var _pickerSlug = null;        // slug for variant lookup
 var _pickerSelected = {};      // { "base": true, "0": true, "1": true, ... }
+var _pickerTrigger = null;     // element that opened the picker (for focus restoration)
+
+// Close variant picker on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && _pickerIssue) closeVariantPicker();
+});
 
 function isVariantInCart(iKey, variantId) {
   for (var i = 0; i < collectionCart.length; i++) {
@@ -210,6 +225,7 @@ function isVariantInCart(iKey, variantId) {
 }
 
 function openVariantPicker(issue) {
+  _pickerTrigger = document.activeElement;
   _pickerIssue = issue;
   _pickerKey = issueKey(issue);
   _pickerSlug = makeSlug(issue.title);
@@ -220,7 +236,7 @@ function openVariantPicker(issue) {
   var title = document.getElementById('variantPickerTitle');
   if (!overlay || !grid) return;
 
-  title.textContent = issue.title;
+  if (title) title.textContent = issue.title;
   grid.innerHTML = '';
 
   var variants = _variantData[_pickerSlug] || [];
@@ -235,7 +251,7 @@ function openVariantPicker(issue) {
   var baseBadge = '';
   if (baseOwned) baseBadge = '<span class="variant-pick-badge vpb-owned">Owned</span>';
   else if (baseInCart) baseBadge = '<span class="variant-pick-badge vpb-cart">In Cart</span>';
-  baseCard.innerHTML = '<div class="variant-pick-img-wrap"><img class="variant-pick-img" src="' + baseCover + '" alt="Cover A" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#1e293b,#334155)\';this.style.objectFit=\'contain\';this.alt=\'Cover A (No Image)\'"></div>' +
+  baseCard.innerHTML = '<div class="variant-pick-img-wrap"><img class="variant-pick-img" src="' + _escHtml(baseCover) + '" alt="Cover A" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#1e293b,#334155)\';this.style.objectFit=\'contain\';this.alt=\'Cover A (No Image)\'"></div>' +
     '<div class="variant-pick-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
     baseBadge +
     '<div class="variant-pick-info">Cover A (Base)</div>';
@@ -257,11 +273,12 @@ function openVariantPicker(issue) {
       if (vOwned) badge = '<span class="variant-pick-badge vpb-owned">Owned</span>';
       else if (vInCart) badge = '<span class="variant-pick-badge vpb-cart">In Cart</span>';
 
-      var shortName = v.cover || v.name.replace(/^.*#\d+\s*/, '').replace(/\s*Variant\s*$/i, '') || 'Cover ' + String.fromCharCode(66 + idx);
-      card.innerHTML = '<div class="variant-pick-img-wrap"><img class="variant-pick-img" src="' + v.url + '" alt="' + shortName + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#1e293b,#334155)\';this.style.objectFit=\'contain\'"></div>' +
+      var letterLabel = idx < 26 ? String.fromCharCode(66 + idx) : 'V' + (idx + 2);
+      var shortName = v.cover || v.name.replace(/^.*#\d+\s*/, '').replace(/\s*Variant\s*$/i, '') || 'Cover ' + letterLabel;
+      card.innerHTML = '<div class="variant-pick-img-wrap"><img class="variant-pick-img" src="' + _escHtml(v.url) + '" alt="' + _escHtml(shortName) + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#1e293b,#334155)\';this.style.objectFit=\'contain\'"></div>' +
         '<div class="variant-pick-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
         badge +
-        '<div class="variant-pick-info" title="' + v.name + '">' + shortName + '</div>';
+        '<div class="variant-pick-info" title="' + _escHtml(v.name) + '">' + _escHtml(shortName) + '</div>';
       if (!vInCart) {
         card.addEventListener('click', function() { togglePickerSelection(vid, this); });
       }
@@ -280,6 +297,11 @@ function closeVariantPicker() {
   _pickerKey = null;
   _pickerSlug = null;
   _pickerSelected = {};
+  // Restore focus to the element that opened the picker
+  if (_pickerTrigger && typeof _pickerTrigger.focus === 'function') {
+    _pickerTrigger.focus();
+    _pickerTrigger = null;
+  }
 }
 
 function togglePickerSelection(vid, cardEl) {
@@ -327,7 +349,8 @@ function addPickerSelectionToCart() {
       var idx = parseInt(vid, 10);
       var v = variants[idx];
       if (v && !isVariantInCart(_pickerKey, vid)) {
-        var shortName = v.cover || v.name.replace(/^.*#\d+\s*/, '').replace(/\s*Variant\s*$/i, '') || 'Cover ' + String.fromCharCode(66 + idx);
+        var letterLabel = idx < 26 ? String.fromCharCode(66 + idx) : 'V' + (idx + 2);
+        var shortName = v.cover || v.name.replace(/^.*#\d+\s*/, '').replace(/\s*Variant\s*$/i, '') || 'Cover ' + letterLabel;
         collectionCart.push({
           key: _pickerKey,
           title: _pickerIssue.title,

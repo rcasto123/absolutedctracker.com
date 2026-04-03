@@ -28,7 +28,7 @@ window.addEventListener('unhandledrejection', function(e) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com">
 <title>DC Absolute Universe — Collection Tracker</title>
-<link rel="stylesheet" href="js/styles.css?v=11">
+<link rel="stylesheet" href="js/styles.css?v=12">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -45,8 +45,6 @@ window.addEventListener('unhandledrejection', function(e) {
 }
 </script>
 </head>
-</head>
-<body>
 <body>
 
 <!-- ââ Hero ââ -->
@@ -141,11 +139,11 @@ window.addEventListener('unhandledrejection', function(e) {
     </div>
     <div id="collectionContainer" aria-live="polite"></div>
     <!-- Variant Picker Modal -->
-    <div class="variant-picker-overlay" id="variantPickerOverlay">
+    <div class="variant-picker-overlay" id="variantPickerOverlay" role="dialog" aria-modal="true" aria-labelledby="variantPickerTitle">
       <div class="variant-picker">
         <div class="variant-picker-header">
           <span class="variant-picker-title" id="variantPickerTitle">Select Covers</span>
-          <button class="variant-picker-close" id="variantPickerClose">&times;</button>
+          <button class="variant-picker-close" id="variantPickerClose" aria-label="Close variant picker">&times;</button>
         </div>
         <div class="variant-picker-grid" id="variantPickerGrid"></div>
         <div class="variant-picker-footer">
@@ -270,6 +268,11 @@ window.addEventListener('unhandledrejection', function(e) {
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="whats-new-body" id="whatsNewBody" role="region" aria-labelledby="whatsNewToggle">
+      <div class="changelog-entry">
+        <time datetime="2026-04-03" class="changelog-date">April 3, 2026</time>
+        <div class="changelog-title"><span class="changelog-tag fix">Fix</span> Bug sweep — 9 fixes across the codebase</div>
+        <div class="changelog-desc">Fixed duplicate HTML tags, added error handling for cart saves, sanitized variant picker inputs against XSS, added ARIA roles and Escape-key support to the variant picker modal, restored focus after closing the picker, improved cart icon and checkbox visibility, fixed variant naming for issues with 26+ covers, and added cache busting for price data.</div>
+      </div>
       <div class="changelog-entry">
         <time datetime="2026-04-03" class="changelog-date">April 3, 2026</time>
         <div class="changelog-title"><span class="changelog-tag feature">Feature</span> Shopping cart with variant picker</div>
@@ -619,7 +622,7 @@ window.addEventListener('unhandledrejection', function(e) {
 </div>
 
 <script src="js/data.js?v=3" defer></script>
-<script src="js/state.js?v=6" defer></script>
+<script src="js/state.js?v=7" defer></script>
 <script src="js/renders.js?v=4" defer></script>
 <script src="js/cover-map.js?v=2" defer></script>
 <script src="js/features/export.js?v=2" defer></script>
