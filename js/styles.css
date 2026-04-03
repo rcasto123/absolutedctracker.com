@@ -1989,7 +1989,6 @@
   position: relative;
   border: 2px solid var(--border);
   border-radius: 6px;
-  overflow: hidden;
   cursor: pointer;
   transition: all 0.15s;
   background: var(--bg-card);
@@ -2004,6 +2003,7 @@
   width: 100%;
   padding-top: 150%; /* 2:3 aspect ratio via padding hack — works everywhere */
   overflow: hidden;
+  border-radius: 4px 4px 0 0;
   background: var(--bg-primary);
 }
 .variant-pick-img {

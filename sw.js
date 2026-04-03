@@ -6,7 +6,7 @@
 // their collection.
 // ============================================================
 
-var CACHE_NAME = 'au-tracker-v55';
+var CACHE_NAME = 'au-tracker-v56';
 
 // App shell — files to pre-cache on install
 var APP_SHELL = [
