@@ -1284,6 +1284,13 @@ let calendarShowAll = false;
 let shopFilter = 'missing';
 let shopSearch = '';
 
+function getShopAccState() {
+  try { return JSON.parse(localStorage.getItem('shop_acc_state') || '{}'); } catch(e) { return {}; }
+}
+function saveShopAccState(s) {
+  try { localStorage.setItem('shop_acc_state', JSON.stringify(s)); } catch(e) {}
+}
+
 function renderShop() {
   const container = document.getElementById('shopContainer');
   const statsEl = document.getElementById('shopStats');
@@ -1292,6 +1299,7 @@ function renderShop() {
   const released = ALL_ISSUES.filter(i => isReleased(i.date));
   const ownedCount = released.filter(i => owned[issueKey(i)]).length;
   const missingCount = released.length - ownedCount;
+  const accState = getShopAccState();
 
   // Stats summary
   if (statsEl) {
@@ -1332,12 +1340,15 @@ function renderShop() {
     const color = SERIES_COLORS[sName] || '#555';
     const allInSeries = released.filter(i => i.series === sName);
     const ownedInSeries = allInSeries.filter(i => owned[issueKey(i)]).length;
+    const isCollapsed = accState[sName] === true;
 
     html += '<div class="shop-series-group">';
-    html += '<div class="shop-series-header" style="border-left-color:' + color + '">';
+    html += '<div class="shop-series-header' + (isCollapsed ? ' collapsed' : '') + '" data-series="' + sName + '" style="border-left-color:' + color + '" role="button" tabindex="0" aria-expanded="' + !isCollapsed + '">';
+    html += '<svg class="shop-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
     html += '<span class="shop-series-name">' + sName + '</span>';
     html += '<span class="shop-series-count">' + ownedInSeries + '/' + allInSeries.length + '</span>';
     html += '</div>';
+    html += '<div class="shop-series-body' + (isCollapsed ? ' collapsed' : '') + '">';
 
     sIssues.forEach(issue => {
       const key = issueKey(issue);
@@ -1353,10 +1364,24 @@ function renderShop() {
       html += '</div>';
     });
 
-    html += '</div>';
+    html += '</div></div>';
   });
 
   container.innerHTML = html;
+
+  // Accordion toggle on series headers
+  container.querySelectorAll('.shop-series-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const sName = header.dataset.series;
+      const state = getShopAccState();
+      state[sName] = !state[sName];
+      saveShopAccState(state);
+      header.classList.toggle('collapsed');
+      header.setAttribute('aria-expanded', !header.classList.contains('collapsed'));
+      const body = header.nextElementSibling;
+      if (body) body.classList.toggle('collapsed');
+    });
+  });
 
   // Attach click handlers for own buttons
   container.querySelectorAll('.shop-own-btn').forEach(btn => {

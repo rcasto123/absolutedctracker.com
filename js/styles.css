@@ -1306,19 +1306,32 @@
   .shop-series-group { margin-bottom: 2px; }
   .shop-series-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 6px;
     padding: 6px 12px;
     border-left: 3px solid #555;
     background: rgba(255,255,255,0.04);
     position: sticky;
     top: 72px;
     z-index: 5;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
+  .shop-series-header:active { background: rgba(255,255,255,0.08); }
+  .shop-chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    color: var(--text-muted, #8b92a8);
+  }
+  .shop-series-header.collapsed .shop-chevron { transform: rotate(-90deg); }
+  .shop-series-body.collapsed { display: none; }
   .shop-series-name {
     font-weight: 700;
     font-size: 13px;
     color: var(--text-primary, #e8eaf0);
+    flex: 1;
   }
   .shop-series-count {
     font-size: 11px;
