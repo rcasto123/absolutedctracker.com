@@ -529,8 +529,13 @@
         clearTimeout(_syncTimeout);
         // Use adaptive delay: if previous sync was slow, wait longer
         var delay = _lastSyncDuration ? Math.max(1000, Math.min(_lastSyncDuration * 2, 5000)) : _syncDelay;
-        _syncTimeout = setTimeout(function() {
-          if (_syncInProgress) return; // Don't sync while handleSignIn is running
+        _syncTimeout = setTimeout(function syncDebounced() {
+          if (_syncInProgress) {
+            // handleSignIn is running — retry in 1s instead of dropping the sync
+            clearTimeout(_syncTimeout);
+            _syncTimeout = setTimeout(syncDebounced, 1000);
+            return;
+          }
           // Rate limit: skip if synced too recently
           var elapsed = Date.now() - _lastSyncTime;
           if (elapsed < _minSyncInterval) {
