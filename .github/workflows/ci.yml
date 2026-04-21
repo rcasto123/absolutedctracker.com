@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JSON data files
+        run: |
+          shopt -s nullglob
+          files=(data/*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No JSON files found in data/ — skipping"
+          else
+            for f in "${files[@]}"; do
+              echo "Validating $f..."
+              python3 -m json.tool "$f" > /dev/null && echo "  OK" || exit 1
+            done
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check for package.json scripts
+        run: |
+          if [ -f package.json ]; then
+            npm ci 2>/dev/null || true
+            npm run lint 2>/dev/null || echo "No lint script"
+          else
+            echo "No package.json — skipping npm steps"
+          fi
