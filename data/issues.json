@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "lastUpdated": "2026-04-02",
+    "lastUpdated": "2026-05-13",
     "source": "Automated pipeline v2.0",
-    "issueCount": 111,
-    "coverCount": 111
+    "issueCount": 113,
+    "coverCount": 113
   },
   "issues": [
     {
@@ -27,225 +27,6 @@
       "upc": "76194138584600111"
     },
     {
-      "series": "Absolute Batman",
-      "issue": "#2",
-      "title": "Absolute Batman #2",
-      "date": "2024-11-13",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584600211"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#3",
-      "title": "Absolute Batman #3",
-      "date": "2024-12-11",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584600311"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#4",
-      "title": "Absolute Batman #4",
-      "date": "2025-01-08",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584600411"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#5",
-      "title": "Absolute Batman #5",
-      "date": "2025-02-12",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584600511"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#6",
-      "title": "Absolute Batman #6",
-      "date": "2025-03-12",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584600611"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#7",
-      "title": "Absolute Batman #7",
-      "date": "2025-04-09",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584600711"
-    },
-    {
-      "series": "DC All In",
-      "issue": "FCBD Special",
-      "title": "DC All In FCBD 2025",
-      "date": "2025-05-03",
-      "writer": "Jeff Lemire & Dan Slott",
-      "artist": "Giuseppe Camuncoli & Rafael Albuquerque",
-      "price": 0
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#8",
-      "title": "Absolute Batman #8",
-      "date": "2025-05-14",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584600811"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#9",
-      "title": "Absolute Batman #9",
-      "date": "2025-06-11",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584600911"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#10",
-      "title": "Absolute Batman #10",
-      "date": "2025-07-09",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601011"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#11",
-      "title": "Absolute Batman #11",
-      "date": "2025-08-13",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601111"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#12",
-      "title": "Absolute Batman #12",
-      "date": "2025-09-10",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601211"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#13",
-      "title": "Absolute Batman #13",
-      "date": "2025-10-08",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601311"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#14",
-      "title": "Absolute Batman #14",
-      "date": "2025-11-12",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601411"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#15",
-      "title": "Absolute Batman #15",
-      "date": "2025-12-10",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601511"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#16",
-      "title": "Absolute Batman #16",
-      "date": "2026-01-14",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601611"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#17",
-      "title": "Absolute Batman #17",
-      "date": "2026-02-11",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601711"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#18",
-      "title": "Absolute Batman #18",
-      "date": "2026-03-11",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601811"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#19",
-      "title": "Absolute Batman #19",
-      "date": "2026-04-08",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584601911"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "#20",
-      "title": "Absolute Batman #20",
-      "date": "2026-05-13",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194138584602011"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "Annual #1",
-      "title": "Absolute Batman 2025 Annual #1",
-      "date": "2025-10-29",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 5.99,
-      "upc": "76194139348300111"
-    },
-    {
-      "series": "Absolute Batman",
-      "issue": "Ark M #1",
-      "title": "Absolute Batman: Ark M Special #1",
-      "date": "2026-01-07",
-      "writer": "Scott Snyder",
-      "artist": "Nick Dragotta",
-      "price": 4.99,
-      "upc": "76194139648400111"
-    },
-    {
       "series": "Absolute Wonder Woman",
       "issue": "#1",
       "title": "Absolute Wonder Woman #1",
@@ -254,6 +35,26 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586000111"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#1",
+      "title": "Absolute Superman #1",
+      "date": "2024-11-06",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300111"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#2",
+      "title": "Absolute Batman #2",
+      "date": "2024-11-13",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584600211"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -266,6 +67,26 @@
       "upc": "76194138586000211"
     },
     {
+      "series": "Absolute Superman",
+      "issue": "#2",
+      "title": "Absolute Superman #2",
+      "date": "2024-12-04",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300211"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#3",
+      "title": "Absolute Batman #3",
+      "date": "2024-12-11",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584600311"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#3",
       "title": "Absolute Wonder Woman #3",
@@ -274,6 +95,26 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586000311"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#3",
+      "title": "Absolute Superman #3",
+      "date": "2025-01-01",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300311"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#4",
+      "title": "Absolute Batman #4",
+      "date": "2025-01-08",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584600411"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -286,6 +127,26 @@
       "upc": "76194138586000411"
     },
     {
+      "series": "Absolute Superman",
+      "issue": "#4",
+      "title": "Absolute Superman #4",
+      "date": "2025-02-05",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300411"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#5",
+      "title": "Absolute Batman #5",
+      "date": "2025-02-12",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584600511"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#5",
       "title": "Absolute Wonder Woman #5",
@@ -294,6 +155,36 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586000511"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#5",
+      "title": "Absolute Superman #5",
+      "date": "2025-03-05",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300511"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#6",
+      "title": "Absolute Batman #6",
+      "date": "2025-03-12",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584600611"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#1",
+      "title": "Absolute Flash #1",
+      "date": "2025-03-19",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500111"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -306,6 +197,56 @@
       "upc": "76194138586000611"
     },
     {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#1",
+      "title": "Absolute Martian Manhunter #1",
+      "date": "2025-03-26",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800111"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#6",
+      "title": "Absolute Superman #6",
+      "date": "2025-04-02",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300611"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#1",
+      "title": "Absolute Green Lantern #1",
+      "date": "2025-04-02",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500111"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#7",
+      "title": "Absolute Batman #7",
+      "date": "2025-04-09",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584600711"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#2",
+      "title": "Absolute Flash #2",
+      "date": "2025-04-16",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500211"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#7",
       "title": "Absolute Wonder Woman #7",
@@ -314,6 +255,65 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586000711"
+    },
+    {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#2",
+      "title": "Absolute Martian Manhunter #2",
+      "date": "2025-04-23",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800211"
+    },
+    {
+      "series": "DC All In",
+      "issue": "FCBD Special",
+      "title": "DC All In FCBD 2025",
+      "date": "2025-05-03",
+      "writer": "Jeff Lemire & Dan Slott",
+      "artist": "Giuseppe Camuncoli & Rafael Albuquerque",
+      "price": 0
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#7",
+      "title": "Absolute Superman #7",
+      "date": "2025-05-07",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300711"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#2",
+      "title": "Absolute Green Lantern #2",
+      "date": "2025-05-07",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500211"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#8",
+      "title": "Absolute Batman #8",
+      "date": "2025-05-14",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584600811"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#3",
+      "title": "Absolute Flash #3",
+      "date": "2025-05-21",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500311"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -326,6 +326,56 @@
       "upc": "76194138586000811"
     },
     {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#3",
+      "title": "Absolute Martian Manhunter #3",
+      "date": "2025-05-28",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800311"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#8",
+      "title": "Absolute Superman #8",
+      "date": "2025-06-04",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300811"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#3",
+      "title": "Absolute Green Lantern #3",
+      "date": "2025-06-04",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500311"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#9",
+      "title": "Absolute Batman #9",
+      "date": "2025-06-11",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584600911"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#4",
+      "title": "Absolute Flash #4",
+      "date": "2025-06-18",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500411"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#9",
       "title": "Absolute Wonder Woman #9",
@@ -334,6 +384,56 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586000911"
+    },
+    {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#4",
+      "title": "Absolute Martian Manhunter #4",
+      "date": "2025-06-25",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800411"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#9",
+      "title": "Absolute Superman #9",
+      "date": "2025-07-02",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585300911"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#4",
+      "title": "Absolute Green Lantern #4",
+      "date": "2025-07-02",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500411"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#10",
+      "title": "Absolute Batman #10",
+      "date": "2025-07-09",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601011"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#5",
+      "title": "Absolute Flash #5",
+      "date": "2025-07-16",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500511"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -346,6 +446,56 @@
       "upc": "76194138586001011"
     },
     {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#5",
+      "title": "Absolute Martian Manhunter #5",
+      "date": "2025-07-23",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800511"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#10",
+      "title": "Absolute Superman #10",
+      "date": "2025-08-06",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301011"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#5",
+      "title": "Absolute Green Lantern #5",
+      "date": "2025-08-06",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500511"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#11",
+      "title": "Absolute Batman #11",
+      "date": "2025-08-13",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601111"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#6",
+      "title": "Absolute Flash #6",
+      "date": "2025-08-20",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500611"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#11",
       "title": "Absolute Wonder Woman #11",
@@ -354,6 +504,56 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586001111"
+    },
+    {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#6",
+      "title": "Absolute Martian Manhunter #6",
+      "date": "2025-08-27",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800611"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#11",
+      "title": "Absolute Superman #11",
+      "date": "2025-09-03",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301111"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#6",
+      "title": "Absolute Green Lantern #6",
+      "date": "2025-09-03",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500611"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#12",
+      "title": "Absolute Batman #12",
+      "date": "2025-09-10",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601211"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#7",
+      "title": "Absolute Flash #7",
+      "date": "2025-09-17",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500711"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -366,6 +566,66 @@
       "upc": "76194138586001211"
     },
     {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#7",
+      "title": "Absolute Martian Manhunter #7",
+      "date": "2025-09-24",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800711"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#12",
+      "title": "Absolute Superman #12",
+      "date": "2025-10-01",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301211"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#7",
+      "title": "Absolute Green Lantern #7",
+      "date": "2025-10-01",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500711"
+    },
+    {
+      "series": "Absolute Evil",
+      "issue": "#1",
+      "title": "Absolute Evil #1",
+      "date": "2025-10-01",
+      "writer": "Al Ewing",
+      "artist": "Giuseppe Camuncoli",
+      "price": 4.99,
+      "upc": "76194139222600111"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#13",
+      "title": "Absolute Batman #13",
+      "date": "2025-10-08",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601311"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#8",
+      "title": "Absolute Flash #8",
+      "date": "2025-10-15",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500811"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#13",
       "title": "Absolute Wonder Woman #13",
@@ -374,6 +634,66 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586001311"
+    },
+    {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#8",
+      "title": "Absolute Martian Manhunter #8",
+      "date": "2025-10-22",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800811"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "Annual #1",
+      "title": "Absolute Batman 2025 Annual #1",
+      "date": "2025-10-29",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 5.99,
+      "upc": "76194139348300111"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#13",
+      "title": "Absolute Superman #13",
+      "date": "2025-11-05",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301311"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#8",
+      "title": "Absolute Green Lantern #8",
+      "date": "2025-11-05",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500811"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#14",
+      "title": "Absolute Batman #14",
+      "date": "2025-11-12",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601411"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#9",
+      "title": "Absolute Flash #9",
+      "date": "2025-11-19",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792500911"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -386,6 +706,56 @@
       "upc": "76194138586001411"
     },
     {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#9",
+      "title": "Absolute Martian Manhunter #9",
+      "date": "2025-11-26",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788800911"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#14",
+      "title": "Absolute Superman #14",
+      "date": "2025-12-03",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301411"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#9",
+      "title": "Absolute Green Lantern #9",
+      "date": "2025-12-03",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648500911"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#15",
+      "title": "Absolute Batman #15",
+      "date": "2025-12-10",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601511"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#10",
+      "title": "Absolute Flash #10",
+      "date": "2025-12-17",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792501011"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#15",
       "title": "Absolute Wonder Woman #15",
@@ -394,6 +764,66 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586001511"
+    },
+    {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#10",
+      "title": "Absolute Martian Manhunter #10",
+      "date": "2025-12-24",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788801011"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "Ark M #1",
+      "title": "Absolute Batman: Ark M Special #1",
+      "date": "2026-01-07",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194139648400111"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#15",
+      "title": "Absolute Superman #15",
+      "date": "2026-01-07",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301511"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#10",
+      "title": "Absolute Green Lantern #10",
+      "date": "2026-01-07",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648501011"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#16",
+      "title": "Absolute Batman #16",
+      "date": "2026-01-14",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601611"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#11",
+      "title": "Absolute Flash #11",
+      "date": "2026-01-21",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792501111"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -406,6 +836,56 @@
       "upc": "76194138586001611"
     },
     {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#11",
+      "title": "Absolute Martian Manhunter #11",
+      "date": "2026-01-28",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788801111"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#16",
+      "title": "Absolute Superman #16",
+      "date": "2026-02-04",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301611"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#11",
+      "title": "Absolute Green Lantern #11",
+      "date": "2026-02-04",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648501111"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#17",
+      "title": "Absolute Batman #17",
+      "date": "2026-02-11",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601711"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#12",
+      "title": "Absolute Flash #12",
+      "date": "2026-02-18",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792501211"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#17",
       "title": "Absolute Wonder Woman #17",
@@ -416,6 +896,46 @@
       "upc": "76194138586001711"
     },
     {
+      "series": "Absolute Superman",
+      "issue": "#17",
+      "title": "Absolute Superman #17",
+      "date": "2026-03-04",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301711"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#12",
+      "title": "Absolute Green Lantern #12",
+      "date": "2026-03-04",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648501211"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#18",
+      "title": "Absolute Batman #18",
+      "date": "2026-03-11",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601811"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#13",
+      "title": "Absolute Flash #13",
+      "date": "2026-03-18",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792501311"
+    },
+    {
       "series": "Absolute Wonder Woman",
       "issue": "#18",
       "title": "Absolute Wonder Woman #18",
@@ -424,6 +944,46 @@
       "artist": "Hayden Sherman",
       "price": 4.99,
       "upc": "76194138586001811"
+    },
+    {
+      "series": "Absolute Superman",
+      "issue": "#18",
+      "title": "Absolute Superman #18",
+      "date": "2026-04-01",
+      "writer": "Jason Aaron",
+      "artist": "Rafa Sandoval",
+      "price": 4.99,
+      "upc": "76194138585301811"
+    },
+    {
+      "series": "Absolute Green Lantern",
+      "issue": "#13",
+      "title": "Absolute Green Lantern #13",
+      "date": "2026-04-01",
+      "writer": "Al Ewing",
+      "artist": "Jahnoy Lindsay",
+      "price": 4.99,
+      "upc": "76194138648501311"
+    },
+    {
+      "series": "Absolute Batman",
+      "issue": "#19",
+      "title": "Absolute Batman #19",
+      "date": "2026-04-08",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
+      "price": 4.99,
+      "upc": "76194138584601911"
+    },
+    {
+      "series": "Absolute Flash",
+      "issue": "#14",
+      "title": "Absolute Flash #14",
+      "date": "2026-04-15",
+      "writer": "Jeff Lemire",
+      "artist": "Nick Robles",
+      "price": 4.99,
+      "upc": "76194138792501411"
     },
     {
       "series": "Absolute Wonder Woman",
@@ -437,573 +997,31 @@
     },
     {
       "series": "Absolute Superman",
-      "issue": "#1",
-      "title": "Absolute Superman #1",
-      "date": "2024-11-06",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300111"
+      "issue": "#19",
+      "title": "Absolute Superman #19",
+      "date": "2026-05-06",
+      "writer": "TBA",
+      "artist": "TBA",
+      "price": 4.99
     },
     {
-      "series": "Absolute Superman",
-      "issue": "#2",
-      "title": "Absolute Superman #2",
-      "date": "2024-12-04",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300211"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#3",
-      "title": "Absolute Superman #3",
-      "date": "2025-01-01",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300311"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#4",
-      "title": "Absolute Superman #4",
-      "date": "2025-02-05",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300411"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#5",
-      "title": "Absolute Superman #5",
-      "date": "2025-03-05",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300511"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#6",
-      "title": "Absolute Superman #6",
-      "date": "2025-04-02",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300611"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#7",
-      "title": "Absolute Superman #7",
-      "date": "2025-05-07",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300711"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#8",
-      "title": "Absolute Superman #8",
-      "date": "2025-06-04",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300811"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#9",
-      "title": "Absolute Superman #9",
-      "date": "2025-07-02",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585300911"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#10",
-      "title": "Absolute Superman #10",
-      "date": "2025-08-06",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585301011"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#11",
-      "title": "Absolute Superman #11",
-      "date": "2025-09-03",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585301111"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#12",
-      "title": "Absolute Superman #12",
-      "date": "2025-10-01",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585301211"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#13",
-      "title": "Absolute Superman #13",
-      "date": "2025-11-05",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585301311"
-    },
-    {
-      "series": "Absolute Superman",
+      "series": "Absolute Green Lantern",
       "issue": "#14",
-      "title": "Absolute Superman #14",
-      "date": "2025-12-03",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585301411"
+      "title": "Absolute Green Lantern #14",
+      "date": "2026-05-06",
+      "writer": "TBA",
+      "artist": "TBA",
+      "price": 4.99
     },
     {
-      "series": "Absolute Superman",
-      "issue": "#15",
-      "title": "Absolute Superman #15",
-      "date": "2026-01-07",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
+      "series": "Absolute Batman",
+      "issue": "#20",
+      "title": "Absolute Batman #20",
+      "date": "2026-05-13",
+      "writer": "Scott Snyder",
+      "artist": "Nick Dragotta",
       "price": 4.99,
-      "upc": "76194138585301511"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#16",
-      "title": "Absolute Superman #16",
-      "date": "2026-02-04",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585301611"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#17",
-      "title": "Absolute Superman #17",
-      "date": "2026-03-04",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585301711"
-    },
-    {
-      "series": "Absolute Superman",
-      "issue": "#18",
-      "title": "Absolute Superman #18",
-      "date": "2026-04-01",
-      "writer": "Jason Aaron",
-      "artist": "Rafa Sandoval",
-      "price": 4.99,
-      "upc": "76194138585301811"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#1",
-      "title": "Absolute Flash #1",
-      "date": "2025-03-19",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500111"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#2",
-      "title": "Absolute Flash #2",
-      "date": "2025-04-16",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500211"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#3",
-      "title": "Absolute Flash #3",
-      "date": "2025-05-21",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500311"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#4",
-      "title": "Absolute Flash #4",
-      "date": "2025-06-18",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500411"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#5",
-      "title": "Absolute Flash #5",
-      "date": "2025-07-16",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500511"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#6",
-      "title": "Absolute Flash #6",
-      "date": "2025-08-20",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500611"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#7",
-      "title": "Absolute Flash #7",
-      "date": "2025-09-17",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500711"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#8",
-      "title": "Absolute Flash #8",
-      "date": "2025-10-15",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500811"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#9",
-      "title": "Absolute Flash #9",
-      "date": "2025-11-19",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792500911"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#10",
-      "title": "Absolute Flash #10",
-      "date": "2025-12-17",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792501011"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#11",
-      "title": "Absolute Flash #11",
-      "date": "2026-01-21",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792501111"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#12",
-      "title": "Absolute Flash #12",
-      "date": "2026-02-18",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792501211"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#13",
-      "title": "Absolute Flash #13",
-      "date": "2026-03-18",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792501311"
-    },
-    {
-      "series": "Absolute Flash",
-      "issue": "#14",
-      "title": "Absolute Flash #14",
-      "date": "2026-04-15",
-      "writer": "Jeff Lemire",
-      "artist": "Nick Robles",
-      "price": 4.99,
-      "upc": "76194138792501411"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#1",
-      "title": "Absolute Martian Manhunter #1",
-      "date": "2025-03-26",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800111"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#2",
-      "title": "Absolute Martian Manhunter #2",
-      "date": "2025-04-23",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800211"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#3",
-      "title": "Absolute Martian Manhunter #3",
-      "date": "2025-05-28",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800311"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#4",
-      "title": "Absolute Martian Manhunter #4",
-      "date": "2025-06-25",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800411"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#5",
-      "title": "Absolute Martian Manhunter #5",
-      "date": "2025-07-23",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800511"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#6",
-      "title": "Absolute Martian Manhunter #6",
-      "date": "2025-08-27",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800611"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#7",
-      "title": "Absolute Martian Manhunter #7",
-      "date": "2025-09-24",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800711"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#8",
-      "title": "Absolute Martian Manhunter #8",
-      "date": "2025-10-22",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800811"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#9",
-      "title": "Absolute Martian Manhunter #9",
-      "date": "2025-11-26",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788800911"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#10",
-      "title": "Absolute Martian Manhunter #10",
-      "date": "2025-12-24",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788801011"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#11",
-      "title": "Absolute Martian Manhunter #11",
-      "date": "2026-01-28",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788801111"
-    },
-    {
-      "series": "Absolute Martian Manhunter",
-      "issue": "#12",
-      "title": "Absolute Martian Manhunter #12",
-      "date": "2026-05-27",
-      "writer": "Deniz Camp",
-      "artist": "Javier Rodr\u00edguez",
-      "price": 4.99,
-      "upc": "76194138788801211"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#1",
-      "title": "Absolute Green Lantern #1",
-      "date": "2025-04-02",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500111"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#2",
-      "title": "Absolute Green Lantern #2",
-      "date": "2025-05-07",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500211"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#3",
-      "title": "Absolute Green Lantern #3",
-      "date": "2025-06-04",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500311"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#4",
-      "title": "Absolute Green Lantern #4",
-      "date": "2025-07-02",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500411"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#5",
-      "title": "Absolute Green Lantern #5",
-      "date": "2025-08-06",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500511"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#6",
-      "title": "Absolute Green Lantern #6",
-      "date": "2025-09-03",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500611"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#7",
-      "title": "Absolute Green Lantern #7",
-      "date": "2025-10-01",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500711"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#8",
-      "title": "Absolute Green Lantern #8",
-      "date": "2025-11-05",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500811"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#9",
-      "title": "Absolute Green Lantern #9",
-      "date": "2025-12-03",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648500911"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#10",
-      "title": "Absolute Green Lantern #10",
-      "date": "2026-01-07",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648501011"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#11",
-      "title": "Absolute Green Lantern #11",
-      "date": "2026-02-04",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648501111"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#12",
-      "title": "Absolute Green Lantern #12",
-      "date": "2026-03-04",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648501211"
-    },
-    {
-      "series": "Absolute Green Lantern",
-      "issue": "#13",
-      "title": "Absolute Green Lantern #13",
-      "date": "2026-04-01",
-      "writer": "Al Ewing",
-      "artist": "Jahnoy Lindsay",
-      "price": 4.99,
-      "upc": "76194138648501311"
+      "upc": "76194138584602011"
     },
     {
       "series": "Absolute Green Arrow",
@@ -1016,6 +1034,26 @@
       "upc": "76194139422000111"
     },
     {
+      "series": "Absolute Martian Manhunter",
+      "issue": "#12",
+      "title": "Absolute Martian Manhunter #12",
+      "date": "2026-05-27",
+      "writer": "Deniz Camp",
+      "artist": "Javier Rodríguez",
+      "price": 4.99,
+      "upc": "76194138788801211"
+    },
+    {
+      "series": "Absolute Catwoman",
+      "issue": "#1",
+      "title": "Absolute Catwoman #1",
+      "date": "2026-06-10",
+      "writer": "Che Grayson & Scott Snyder",
+      "artist": "Bengal",
+      "price": 4.99,
+      "upc": "76194139423700111"
+    },
+    {
       "series": "Absolute Green Arrow",
       "issue": "#2",
       "title": "Absolute Green Arrow #2",
@@ -1024,6 +1062,16 @@
       "artist": "Rafael Albuquerque",
       "price": 4.99,
       "upc": "76194139422000211"
+    },
+    {
+      "series": "Absolute Catwoman",
+      "issue": "#2",
+      "title": "Absolute Catwoman #2",
+      "date": "2026-07-08",
+      "writer": "Che Grayson & Scott Snyder",
+      "artist": "Bengal",
+      "price": 4.99,
+      "upc": "76194139423700211"
     },
     {
       "series": "Absolute Green Arrow",
@@ -1036,6 +1084,16 @@
       "upc": "76194139422000311"
     },
     {
+      "series": "Absolute Catwoman",
+      "issue": "#3",
+      "title": "Absolute Catwoman #3",
+      "date": "2026-08-12",
+      "writer": "Che Grayson & Scott Snyder",
+      "artist": "Bengal",
+      "price": 4.99,
+      "upc": "76194139423700311"
+    },
+    {
       "series": "Absolute Green Arrow",
       "issue": "#4",
       "title": "Absolute Green Arrow #4",
@@ -1044,6 +1102,16 @@
       "artist": "Rafael Albuquerque",
       "price": 4.99,
       "upc": "76194139422000411"
+    },
+    {
+      "series": "Absolute Catwoman",
+      "issue": "#4",
+      "title": "Absolute Catwoman #4",
+      "date": "2026-09-09",
+      "writer": "Che Grayson & Scott Snyder",
+      "artist": "Bengal",
+      "price": 4.99,
+      "upc": "76194139423700411"
     },
     {
       "series": "Absolute Green Arrow",
@@ -1064,56 +1132,6 @@
       "artist": "Rafael Albuquerque",
       "price": 4.99,
       "upc": "76194139422000611"
-    },
-    {
-      "series": "Absolute Catwoman",
-      "issue": "#1",
-      "title": "Absolute Catwoman #1",
-      "date": "2026-06-10",
-      "writer": "Che Grayson & Scott Snyder",
-      "artist": "Bengal",
-      "price": 4.99,
-      "upc": "76194139423700111"
-    },
-    {
-      "series": "Absolute Catwoman",
-      "issue": "#2",
-      "title": "Absolute Catwoman #2",
-      "date": "2026-07-08",
-      "writer": "Che Grayson & Scott Snyder",
-      "artist": "Bengal",
-      "price": 4.99,
-      "upc": "76194139423700211"
-    },
-    {
-      "series": "Absolute Catwoman",
-      "issue": "#3",
-      "title": "Absolute Catwoman #3",
-      "date": "2026-08-12",
-      "writer": "Che Grayson & Scott Snyder",
-      "artist": "Bengal",
-      "price": 4.99,
-      "upc": "76194139423700311"
-    },
-    {
-      "series": "Absolute Catwoman",
-      "issue": "#4",
-      "title": "Absolute Catwoman #4",
-      "date": "2026-09-09",
-      "writer": "Che Grayson & Scott Snyder",
-      "artist": "Bengal",
-      "price": 4.99,
-      "upc": "76194139423700411"
-    },
-    {
-      "series": "Absolute Evil",
-      "issue": "#1",
-      "title": "Absolute Evil #1",
-      "date": "2025-10-01",
-      "writer": "Al Ewing",
-      "artist": "Giuseppe Camuncoli",
-      "price": 4.99,
-      "upc": "76194139222600111"
     }
   ],
   "coverMap": {
@@ -1227,7 +1245,9 @@
     "Absolute Catwoman #2": "https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg",
     "Absolute Catwoman #3": "https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg",
     "Absolute Catwoman #4": "https://static.dc.com/2026-02/Absolute%20Catwoman%201%20Main%20Bengal_0.jpg",
-    "Absolute Evil #1": "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-evil-1-one-shot-cover-a-giussepe-camuncoli-stefano-nesi-4517323.jpg"
+    "Absolute Evil #1": "https://cdn.shopify.com/s/files/1/0403/3514/7159/files/absolute-evil-1-one-shot-cover-a-giussepe-camuncoli-stefano-nesi-4517323.jpg",
+    "Absolute Superman #19": "https://comicvine.gamespot.com/a/uploads/scale_medium/11161/111615891/10060444-cover.jpg",
+    "Absolute Green Lantern #14": "https://comicvine.gamespot.com/a/uploads/scale_medium/11161/111615891/10060438-cover.jpg"
   },
   "seriesColors": {
     "Absolute Batman": "#5b8fbe",
